@@ -69,6 +69,23 @@
         /* Sections */
         section {
             padding: 60px 0;
+            position: relative;
+        }
+
+        /* Decorative divider after each section */
+        section::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 1px;
+            background: linear-gradient(to right, transparent, #e0e0e0, transparent);
+        }
+
+        section:last-of-type::after {
+            display: none;
         }
 
         section h2 {
@@ -77,6 +94,19 @@
             font-weight: 400;
             letter-spacing: 1px;
             color: #6b9080;
+            position: relative;
+            padding-bottom: 15px;
+        }
+
+        /* Decorative underline on section headers */
+        section h2::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 40px;
+            height: 2px;
+            background: linear-gradient(to right, #a8c5e0, #b4d3b2);
         }
 
         /* Carousel Container */
@@ -140,15 +170,15 @@
 
         /* Different color for each experience card */
         .experience-card:nth-child(1) {
-            border-left: 4px solid #6b9bd1;
+            border-left: 4px solid #a8c5e0;
         }
 
         .experience-card:nth-child(2) {
-            border-left: 4px solid #7cb083;
+            border-left: 4px solid #b4d3b2;
         }
 
         .experience-card:nth-child(3) {
-            border-left: 4px solid #e9c46a;
+            border-left: 4px solid #f4dc9a;
         }
 
         .experience-card h3 {
@@ -217,6 +247,30 @@
             border-left: 4px solid #b4d3b2;
         }
 
+        .project-card:nth-child(6) {
+            border-left: 4px solid #d4c5f9;
+        }
+
+        .project-card:nth-child(7) {
+            border-left: 4px solid #f4a261;
+        }
+
+        .project-card:nth-child(8) {
+            border-left: 4px solid #e9c46a;
+        }
+
+        .project-card:nth-child(9) {
+            border-left: 4px solid #ffb3c1;
+        }
+
+        .project-card:nth-child(10) {
+            border-left: 4px solid #a8dadc;
+        }
+
+        .project-card:nth-child(11) {
+            border-left: 4px solid #b4d3b2;
+        }
+
         .project-card h3 {
             font-size: 16px;
             margin-bottom: 12px;
@@ -231,40 +285,10 @@
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
 
-        /* Publications - Horizontal Scroll */
-        .publications-scroll {
-            overflow-x: auto;
-            overflow-y: hidden;
-            padding-bottom: 20px;
-        }
-
-        .publications-scroll::-webkit-scrollbar {
-            height: 8px;
-        }
-
-        .publications-scroll::-webkit-scrollbar-track {
-            background: #e0e0e0;
-            border-radius: 4px;
-        }
-
-        .publications-scroll::-webkit-scrollbar-thumb {
-            background: #999;
-            border-radius: 4px;
-        }
-
-        .publications-scroll::-webkit-scrollbar-thumb:hover {
-            background: #666;
-        }
-
-        .publications-list {
-            display: flex;
-            gap: 20px;
-        }
-
         .publication-card {
-            min-width: 400px;
+            min-width: calc(33.333% - 14px);
             background: white;
-            padding: 25px 30px;
+            padding: 28px 32px;
             border-radius: 2px;
             border: 1px solid #e0e0e0;
         }
@@ -497,33 +521,39 @@
         <!-- Publications Section -->
         <section id="publications">
             <h2>publications</h2>
-            <div class="publications-scroll">
-                <div class="publications-list">
-                    <div class="publication-card">
-                        <h3>Profiling BMPR2-Derived Endothelial Circular RNAs in Pulmonary Arterial Hypertension</h3>
-                        <p class="authors">VandenBroek, M. M., Sharp, M., et al.</p>
-                        <p class="venue">2023</p>
+            <div class="carousel-container projects-carousel">
+                <div class="carousel-wrapper">
+                    <div class="carousel" id="publications-carousel">
+                        <div class="publication-card">
+                            <h3>Profiling BMPR2-Derived Endothelial Circular RNAs in Pulmonary Arterial Hypertension</h3>
+                            <p class="authors">VandenBroek, M. M., Sharp, M., et al.</p>
+                            <p class="venue">2023</p>
+                        </div>
+                        <div class="publication-card">
+                            <h3>Profiling Circular RNA Expression and the Impact of BMPR2 Loss in Human Pulmonary Artery Endothelial Cells</h3>
+                            <p class="authors">VandenBroek, M. M., Sharp, M., et al.</p>
+                            <p class="venue">2023</p>
+                        </div>
+                        <div class="publication-card">
+                            <h3>ViPRE: An open-source software implementation for end-to-end analysis of mass spectrometry data</h3>
+                            <p class="authors">Elmi, H., Jamzad, A., Sharp, M., et al.</p>
+                            <p class="venue">SPIE Medical Imaging 2023</p>
+                        </div>
+                        <div class="publication-card">
+                            <h3>Circular RNA profiling identifies circ5078 as a BMPR2-derived regulator of endothelial proliferation and stress responses</h3>
+                            <p class="authors">VandenBroek, M. M., Sharp, M., et al.</p>
+                            <p class="venue">2023</p>
+                        </div>
+                        <div class="publication-card">
+                            <h3>Standardized Nomenclature for Legal Prompting in Generative Language Models</h3>
+                            <p class="authors">Sivakumar, A., Gelman, Sharp, M., et al.</p>
+                            <p class="venue">Columbia Law School Preprint 2024</p>
+                        </div>
                     </div>
-                    <div class="publication-card">
-                        <h3>Profiling Circular RNA Expression and the Impact of BMPR2 Loss in Human Pulmonary Artery Endothelial Cells</h3>
-                        <p class="authors">VandenBroek, M. M., Sharp, M., et al.</p>
-                        <p class="venue">2023</p>
-                    </div>
-                    <div class="publication-card">
-                        <h3>ViPRE: An open-source software implementation for end-to-end analysis of mass spectrometry data</h3>
-                        <p class="authors">Elmi, H., Jamzad, A., Sharp, M., et al.</p>
-                        <p class="venue">SPIE Medical Imaging 2023</p>
-                    </div>
-                    <div class="publication-card">
-                        <h3>Circular RNA profiling identifies circ5078 as a BMPR2-derived regulator of endothelial proliferation and stress responses</h3>
-                        <p class="authors">VandenBroek, M. M., Sharp, M., et al.</p>
-                        <p class="venue">2023</p>
-                    </div>
-                    <div class="publication-card">
-                        <h3>Standardized Nomenclature for Legal Prompting in Generative Language Models</h3>
-                        <p class="authors">Sivakumar, A., Gelman, Sharp, M., et al.</p>
-                        <p class="venue">Columbia Law School Preprint 2024</p>
-                    </div>
+                </div>
+                <div class="carousel-controls">
+                    <button class="carousel-btn" id="pub-prev">←</button>
+                    <button class="carousel-btn" id="pub-next">→</button>
                 </div>
             </div>
         </section>
@@ -579,12 +609,12 @@
         <!-- Contact Section -->
         <section id="contact">
             <h2>contact</h2>
-            <div style="background: white; padding: 50px; border: 1px solid #e0e0e0; border-left: 4px solid #6b9bd1; text-align: center;">
+            <div style="background: white; padding: 50px; border: 1px solid #e0e0e0; border-left: 4px solid #a8c5e0; text-align: center;">
                 <p style="font-size: 16px; color: #2c2c2c; margin-bottom: 25px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;">
                     Interested in collaborating on ML systems, data infrastructure, or research projects?
                 </p>
                 <p style="font-size: 14px; color: #666; margin-bottom: 20px;">
-                    <a href="mailto:mackenziesharp5@gmail.com" style="color: #6b9bd1; text-decoration: none; transition: color 0.2s; font-size: 15px;">mackenziesharp5@gmail.com</a>
+                    <a href="mailto:mackenziesharp5@gmail.com" style="color: #6b9080; text-decoration: none; transition: color 0.2s; font-size: 15px;">mackenziesharp5@gmail.com</a>
                 </p>
                 <p style="font-size: 13px; color: #999; margin-bottom: 15px;">
                     San Francisco, CA
@@ -648,7 +678,40 @@
         // Initialize carousels
         setupCarousel('experience-carousel', 'exp-prev', 'exp-next');
         setupCarousel('projects-carousel', 'proj-prev', 'proj-next');
+        setupCarousel('publications-carousel', 'pub-prev', 'pub-next');
         setupCarousel('creative-carousel', 'creative-prev', 'creative-next');
+
+        // Trailing sparkle effect
+        const sparkleChars = ['✦', '✧', '⋆', '·', '˚', '✵', '∗'];
+        const colors = ['#a8c5e0', '#b4d3b2', '#f4dc9a', '#ffb3c1', '#d4c5f9'];
+        
+        document.addEventListener('mousemove', (e) => {
+            // Only create sparkle occasionally (not every mousemove)
+            if (Math.random() > 0.7) {
+                const sparkle = document.createElement('span');
+                sparkle.textContent = sparkleChars[Math.floor(Math.random() * sparkleChars.length)];
+                sparkle.style.position = 'fixed';
+                sparkle.style.left = e.clientX + (Math.random() * 20 - 10) + 'px';
+                sparkle.style.top = e.clientY + (Math.random() * 20 - 10) + 'px';
+                sparkle.style.pointerEvents = 'none';
+                sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.style.fontSize = Math.random() * 8 + 12 + 'px';
+                sparkle.style.zIndex = '9999';
+                sparkle.style.transition = 'all 1s ease-out';
+                sparkle.style.opacity = '0.8';
+                
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    sparkle.style.opacity = '0';
+                    sparkle.style.transform = `translateY(-${Math.random() * 30 + 20}px) translateX(${Math.random() * 20 - 10}px)`;
+                }, 50);
+                
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 1100);
+            }
+        });
     </script>
 </body>
 </html>
