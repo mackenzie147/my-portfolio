@@ -24,12 +24,28 @@
             padding: 0 40px;
         }
 
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 20px;
+            }
+        }
+
         /* Header */
         header {
             padding: 60px 0 40px 0;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        @media (max-width: 768px) {
+            header {
+                padding: 40px 0 30px 0;
+                flex-direction: column;
+                align-items: flex-start;
+            }
         }
 
         h1 {
@@ -37,6 +53,12 @@
             font-weight: 400;
             letter-spacing: 2px;
             text-transform: lowercase;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 28px;
+            }
         }
 
         .social-links {
@@ -72,6 +94,12 @@
             position: relative;
         }
 
+        @media (max-width: 768px) {
+            section {
+                padding: 40px 0;
+            }
+        }
+
         /* Decorative divider after each section */
         section::after {
             content: '';
@@ -96,6 +124,13 @@
             color: #6b9080;
             position: relative;
             padding-bottom: 15px;
+        }
+
+        @media (max-width: 768px) {
+            section h2 {
+                font-size: 20px;
+                margin-bottom: 30px;
+            }
         }
 
         /* Decorative underline on section headers */
@@ -160,12 +195,25 @@
             gap: 20px;
         }
 
+        @media (max-width: 768px) {
+            .experience-carousel .carousel {
+                gap: 15px;
+            }
+        }
+
         .experience-card {
             min-width: calc(33.333% - 14px);
             background: white;
             padding: 30px;
             border-radius: 2px;
             border: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .experience-card {
+                min-width: calc(100% - 15px);
+                padding: 25px;
+            }
         }
 
         /* Different color for each experience card */
@@ -179,6 +227,10 @@
 
         .experience-card:nth-child(3) {
             border-left: 4px solid #f4dc9a;
+        }
+
+        .experience-card:nth-child(4) {
+            border-left: 4px solid #ffb3c1;
         }
 
         .experience-card h3 {
@@ -218,12 +270,25 @@
             gap: 20px;
         }
 
+        @media (max-width: 768px) {
+            .projects-carousel .carousel {
+                gap: 15px;
+            }
+        }
+
         .project-card {
             min-width: calc(33.333% - 14px);
             background: white;
             padding: 30px;
             border-radius: 2px;
             border: 1px solid #e0e0e0;
+        }
+
+        @media (max-width: 768px) {
+            .project-card {
+                min-width: calc(100% - 15px);
+                padding: 25px;
+            }
         }
 
         /* Different colored borders for each project */
@@ -293,6 +358,13 @@
             border: 1px solid #e0e0e0;
         }
 
+        @media (max-width: 768px) {
+            .publication-card {
+                min-width: calc(100% - 15px);
+                padding: 25px;
+            }
+        }
+
         /* Different colored borders for publications */
         .publication-card:nth-child(1) {
             border-left: 4px solid #e9c46a;
@@ -352,6 +424,13 @@
             transition: all 0.2s;
         }
 
+        @media (max-width: 768px) {
+            .tag {
+                font-size: 12px;
+                padding: 8px 16px;
+            }
+        }
+
         .tag:nth-child(1):hover {
             border-color: #ffb3c1;
             color: #ffb3c1;
@@ -389,6 +468,12 @@
             color: #999;
             font-size: 13px;
         }
+
+        @media (max-width: 768px) {
+            footer {
+                padding: 30px 0;
+            }
+        }
     </style>
 </head>
 <body>
@@ -419,9 +504,20 @@
                 <div class="carousel-wrapper">
                     <div class="carousel" id="experience-carousel">
                         <div class="experience-card">
+                            <h3>Opal Camera</h3>
+                            <p class="role">Viral Growth Marketing</p>
+                            <p class="date">January 2026 - Present</p>
+                            <ul>
+                                <li>Architecting viral content strategies and growth loops across Twitter, Reddit, and emerging platforms</li>
+                                <li>Crafting high-leverage social experiments and memetic campaigns to accelerate brand awareness</li>
+                                <li>Building automated content pipelines and sentiment analysis tools to identify trending narratives</li>
+                                <li>Orchestrating community-driven campaigns that blur the line between marketing and cultural moments</li>
+                            </ul>
+                        </div>
+                        <div class="experience-card">
                             <h3>Ironsite AI</h3>
                             <p class="role">Founding Engineer</p>
-                            <p class="date">June 2025 - Present</p>
+                            <p class="date">June 2025 - January 2026</p>
                             <ul>
                                 <li>One of three founding engineers at pre-Series A construction intelligence startup</li>
                                 <li>Built full-stack features (TypeScript/React/Node/Kotlin) and real-time analytics dashboards</li>
@@ -619,7 +715,7 @@
                 <p style="font-size: 13px; color: #999; margin-bottom: 15px;">
                     San Francisco, CA
                 </p>
-                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px; flex-wrap: wrap;">
                     <a href="https://github.com/mackenzie147" target="_blank" style="color: #666; text-decoration: none; font-size: 13px; transition: color 0.2s;">GitHub</a>
                     <a href="https://www.linkedin.com/in/mackenziecatherinesharp/" target="_blank" style="color: #666; text-decoration: none; font-size: 13px; transition: color 0.2s;">LinkedIn</a>
                     <a href="https://researchandart.substack.com/" target="_blank" style="color: #666; text-decoration: none; font-size: 13px; transition: color 0.2s;">Substack</a>
@@ -643,15 +739,20 @@
             const totalCards = cards.length;
             let currentIndex = 0;
 
+            function getCardsPerView() {
+                return window.innerWidth <= 768 ? 1 : 3;
+            }
+
             function updateCarousel() {
                 const cardWidth = cards[0].offsetWidth;
-                const gap = 20;
+                const gap = window.innerWidth <= 768 ? 15 : 20;
                 const offset = currentIndex * (cardWidth + gap);
                 carousel.style.transform = `translateX(-${offset}px)`;
 
+                const cardsPerView = getCardsPerView();
                 // Update button states
                 prevBtn.disabled = currentIndex === 0;
-                nextBtn.disabled = currentIndex >= totalCards - 3;
+                nextBtn.disabled = currentIndex >= totalCards - cardsPerView;
             }
 
             prevBtn.addEventListener('click', () => {
@@ -662,7 +763,8 @@
             });
 
             nextBtn.addEventListener('click', () => {
-                if (currentIndex < totalCards - 3) {
+                const cardsPerView = getCardsPerView();
+                if (currentIndex < totalCards - cardsPerView) {
                     currentIndex++;
                     updateCarousel();
                 }
@@ -672,7 +774,14 @@
             updateCarousel();
 
             // Handle window resize
-            window.addEventListener('resize', updateCarousel);
+            let resizeTimeout;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimeout);
+                resizeTimeout = setTimeout(() => {
+                    currentIndex = 0;
+                    updateCarousel();
+                }, 100);
+            });
         }
 
         // Initialize carousels
@@ -685,33 +794,36 @@
         const sparkleChars = ['✦', '✧', '⋆', '·', '˚', '✵', '∗'];
         const colors = ['#a8c5e0', '#b4d3b2', '#f4dc9a', '#ffb3c1', '#d4c5f9'];
         
-        document.addEventListener('mousemove', (e) => {
-            // Only create sparkle occasionally (not every mousemove)
-            if (Math.random() > 0.7) {
-                const sparkle = document.createElement('span');
-                sparkle.textContent = sparkleChars[Math.floor(Math.random() * sparkleChars.length)];
-                sparkle.style.position = 'fixed';
-                sparkle.style.left = e.clientX + (Math.random() * 20 - 10) + 'px';
-                sparkle.style.top = e.clientY + (Math.random() * 20 - 10) + 'px';
-                sparkle.style.pointerEvents = 'none';
-                sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
-                sparkle.style.fontSize = Math.random() * 8 + 12 + 'px';
-                sparkle.style.zIndex = '9999';
-                sparkle.style.transition = 'all 1s ease-out';
-                sparkle.style.opacity = '0.8';
-                
-                document.body.appendChild(sparkle);
-                
-                setTimeout(() => {
-                    sparkle.style.opacity = '0';
-                    sparkle.style.transform = `translateY(-${Math.random() * 30 + 20}px) translateX(${Math.random() * 20 - 10}px)`;
-                }, 50);
-                
-                setTimeout(() => {
-                    sparkle.remove();
-                }, 1100);
-            }
-        });
+        // Only enable sparkles on non-mobile devices
+        if (window.innerWidth > 768) {
+            document.addEventListener('mousemove', (e) => {
+                // Only create sparkle occasionally (not every mousemove)
+                if (Math.random() > 0.7) {
+                    const sparkle = document.createElement('span');
+                    sparkle.textContent = sparkleChars[Math.floor(Math.random() * sparkleChars.length)];
+                    sparkle.style.position = 'fixed';
+                    sparkle.style.left = e.clientX + (Math.random() * 20 - 10) + 'px';
+                    sparkle.style.top = e.clientY + (Math.random() * 20 - 10) + 'px';
+                    sparkle.style.pointerEvents = 'none';
+                    sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                    sparkle.style.fontSize = Math.random() * 8 + 12 + 'px';
+                    sparkle.style.zIndex = '9999';
+                    sparkle.style.transition = 'all 1s ease-out';
+                    sparkle.style.opacity = '0.8';
+                    
+                    document.body.appendChild(sparkle);
+                    
+                    setTimeout(() => {
+                        sparkle.style.opacity = '0';
+                        sparkle.style.transform = `translateY(-${Math.random() * 30 + 20}px) translateX(${Math.random() * 20 - 10}px)`;
+                    }, 50);
+                    
+                    setTimeout(() => {
+                        sparkle.remove();
+                    }, 1100);
+                }
+            });
+        }
     </script>
 </body>
 </html>
