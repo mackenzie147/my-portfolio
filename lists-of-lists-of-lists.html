@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lists of Lists of Lists - Mackenzie Sharp</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Input Mono', 'Courier New', Courier, monospace;
+            background-color: #fef9f3;
+            color: #2c2c2c;
+            padding: 40px 60px;
+            line-height: 1.5;
+            font-size: 14px;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: 30px 20px;
+                font-size: 13px;
+            }
+        }
+
+        .back-button {
+            display: inline-block;
+            margin-bottom: 30px;
+            padding: 8px 16px;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 2px;
+            text-decoration: none;
+            color: #2c2c2c;
+            font-size: 13px;
+            transition: all 0.2s;
+        }
+
+        .back-button:hover {
+            background: #f5f5f5;
+            transform: translateX(-2px);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 30px;
+            color: #2c2c2c;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-top: 40px;
+            margin-bottom: 15px;
+            color: #2c2c2c;
+        }
+
+        @media (max-width: 768px) {
+            h1 {
+                font-size: 24px;
+            }
+        }
+
+        .code-block {
+            background: #2c2c2c;
+            color: #a8c5e0;
+            padding: 30px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.6;
+            margin-bottom: 40px;
+        }
+
+        .code-block .keyword {
+            color: #ff6b9d;
+        }
+
+        .code-block .string {
+            color: #b4d3b2;
+        }
+
+        .code-block .comment {
+            color: #999;
+            font-style: italic;
+        }
+
+        /* Console styles */
+        .console-container {
+            background: #1a1a1a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+
+        .console-header {
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #333;
+        }
+
+        .console-output {
+            min-height: 200px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .console-line {
+            margin-bottom: 8px;
+            color: #a8c5e0;
+        }
+
+        .console-prompt {
+            color: #ff6b9d;
+        }
+
+        .console-result {
+            color: #b4d3b2;
+            margin-left: 0;
+            white-space: pre-wrap;
+        }
+
+        .console-error {
+            color: #ff6b6b;
+        }
+
+        .console-input-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .console-input-container .prompt {
+            color: #ff6b9d;
+            flex-shrink: 0;
+        }
+
+        .console-input {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: #a8c5e0;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 13px;
+            outline: none;
+            padding: 4px 0;
+        }
+
+        .console-hints {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #333;
+            color: #666;
+            font-size: 12px;
+        }
+
+        .console-hints code {
+            background: #2c2c2c;
+            padding: 2px 6px;
+            border-radius: 3px;
+            color: #a8c5e0;
+        }
+
+        .sparkle {
+            position: fixed;
+            pointer-events: none;
+            font-size: 20px;
+            opacity: 0.8;
+            animation: sparkle-fade 1s ease-out forwards;
+            z-index: 9999;
+        }
+
+        @keyframes sparkle-fade {
+            0% {
+                opacity: 0.8;
+                transform: translateY(0) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translateY(-30px) scale(0.5);
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">← back home</a>
+
+    <h1>lists of lists of lists</h1>
+
+    <div class="code-block">
+<span class="comment"># a python list of lists holding my list of lists</span>
+
+mackenzies_lists = [
+    [
+        <span class="string">"songs i think are perfect"</span>,
+        [
+            <span class="string">"Cannock Chase - Labi Siffre"</span>,
+            <span class="string">"Daisy Lady - 2012 Remaster - Tír na nÓg"</span>,
+            <span class="string">"Bad Decisions - The Strokes"</span>,
+            <span class="comment"># ... 59 more songs</span>
+        ]
+    ],
+    [
+        <span class="string">"what can't she do"</span>,
+        [
+            <span class="string">"cook very well"</span>,
+            <span class="string">"horseback riding"</span>,
+            <span class="string">"do and put the laundry away in one sitting"</span>,
+            <span class="string">"open my eyes underwater"</span>,
+            <span class="string">"remember to put my airpods back in the case properly"</span>
+        ]
+    ],
+    [
+        <span class="string">"things i like"</span>,
+        [
+            <span class="string">"turbulence"</span>,
+            <span class="string">"airships"</span>,
+            <span class="string">"sudoku"</span>,
+            <span class="comment"># ... 17 more things</span>
+        ]
+    ],
+    [
+        <span class="string">"library of alexandria"</span>,
+        [<span class="string">"coming soon..."</span>]
+    ],
+    [
+        <span class="string">"book recommendations"</span>,
+        [<span class="string">"coming soon..."</span>]
+    ]
+]
+
+<span class="comment"># you get it</span>
+    </div>
+
+    <h2>interactive console</h2>
+    <p style="color: #666; margin-bottom: 15px;">try querying the data structure yourself</p>
+
+    <div class="console-container">
+        <div class="console-header">Python 3.11.0 (main, Jan 2026) :: mackenzie's lists</div>
+        
+        <div class="console-output" id="consoleOutput">
+            <div class="console-line">
+                <span class="console-prompt">>>> </span>
+                <span style="color: #999;">mackenzies_lists</span>
+            </div>
+            <div class="console-line console-result">&lt;list object containing 5 lists&gt;</div>
+        </div>
+
+        <div class="console-input-container">
+            <span class="prompt">>>> </span>
+            <input type="text" class="console-input" id="consoleInput" placeholder="try: mackenzies_lists[0], len(mackenzies_lists), etc.">
+        </div>
+
+        <div class="console-hints">
+            <strong>hints:</strong> try <code>mackenzies_lists[0]</code>, <code>mackenzies_lists[1][1]</code>, <code>len(mackenzies_lists)</code>, <code>mackenzies_lists[0][0]</code>, or <code>help()</code>
+        </div>
+    </div>
+
+    <script>
+        // The actual data structure
+        const mackenzies_lists = [
+            [
+                "songs i think are perfect",
+                [
+                    "Cannock Chase - Labi Siffre",
+                    "Daisy Lady - 2012 Remaster - Tír na nÓg",
+                    "Bad Decisions - The Strokes",
+                    "Backseat - Balu Brigada",
+                    "Telescope - Cage The Elephant",
+                    "Social Cues - Cage The Elephant",
+                    "Video Games - Trixie Mattel",
+                    "Bad Romance - Lady Gaga",
+                    "Sex, Drugs, Etc. - Beach Weather",
+                    "Wish You Were Here - Pink Floyd",
+                    "Freakin' Out On the Interstate - Briston Maroney",
+                    "I'll Try Anything Once (You Only Live Once Demo) - The Strokes",
+                    "Midnight Train to Georgia - Gladys Knight & The Pips",
+                    "Holding Out For A Hero - Frou Frou",
+                    "Amber - 311",
+                    "O Canada - Bilingual Version - Vic Vogel",
+                    "Angie - Remastered 2009 - The Rolling Stones",
+                    "For No One - Remastered 2009 - The Beatles",
+                    "The Adults Are Talking - The Strokes",
+                    "Someday - The Strokes",
+                    "Freaking Out the Neighborhood - Mac DeMarco",
+                    "Voulez-Vous - ABBA",
+                    "Mic Check - Sophie Hunter",
+                    "Dancing in the Moonlight - Toploader",
+                    "Strangers In The Night - Frank Sinatra",
+                    "That Should Be Me - Justin Bieber, Rascal Flatts",
+                    "Axel F - Crazy Frog",
+                    "Livin' la Vida Loca - Ricky Martin",
+                    "Master Of Puppets - Metallica",
+                    "The Lion Sleeps Tonight (Wimoweh) - The Tokens",
+                    "50 Ways to Say Goodbye - Train",
+                    "Alejandro - Lady Gaga",
+                    "Slow Dancing in a Burning Room - John Mayer",
+                    "Baby, It's Cold Outside (feat. Darren Criss) - Glee Cast, Darren Criss",
+                    "Foreigner's God - Hozier",
+                    "Cough Syrup - Young the Giant",
+                    "Island In The Sun - Weezer",
+                    "Cigarette Daydreams - Cage The Elephant",
+                    "If U Seek Amy - Britney Spears",
+                    "Young, Wild & Free (feat. Bruno Mars) - Snoop Dogg, Wiz Khalifa, Bruno Mars",
+                    "Wasted - Tiësto, Matthew Koma",
+                    "Sign of the Times - Harry Styles",
+                    "Oops!...I Did It Again - Britney Spears",
+                    "Would You Mind - PRETTYMUCH",
+                    "Get Back - Demi Lovato",
+                    "Vienna - Billy Joel",
+                    "The Star Spangled Banner (U.S. National Anthem) - U.S. Army Band",
+                    "Star Spangled Banner - Live At Woodstock / 1969 - Jimi Hendrix",
+                    "Mary Queen of Arkansas - Bruce Springsteen",
+                    "Bless the Telephone - Labi Siffre",
+                    "Ain't No Sunshine - Bill Withers",
+                    "Don't Speak - No Doubt",
+                    "Chasing Pavements - Adele",
+                    "Amnesia - 5 Seconds of Summer",
+                    "Cold as Ice - Foreigner",
+                    "Roxanne - The Police",
+                    "Somewhere Only We Know - Keane",
+                    "Asshole - The Lumineers",
+                    "Jasmine - Carneyval, Armani White, Jack Harlow",
+                    "Goodie Bag - Still Woozy",
+                    "Phantom - Mac DeMarco",
+                    "(I Left My Heart) In San Francisco - Tony Bennett"
+                ]
+            ],
+            [
+                "what can't she do",
+                [
+                    "cook very well",
+                    "horseback riding",
+                    "do and put the laundry away in one sitting",
+                    "open my eyes underwater",
+                    "remember to put my airpods back in the case properly"
+                ]
+            ],
+            [
+                "things i like",
+                [
+                    "turbulence",
+                    "airships",
+                    "sudoku",
+                    "writing",
+                    "violin pop covers",
+                    "art",
+                    "movies",
+                    "highest ranking penguin in the world",
+                    "sailing",
+                    "national parks",
+                    "travelling",
+                    "big wave surfing",
+                    "the worst idea in the world podcast",
+                    "nathan fielder",
+                    "projection mapping",
+                    "drone shows",
+                    "poker",
+                    "chess",
+                    "eve babitz",
+                    "planespotting"
+                ]
+            ],
+            [
+                "library of alexandria",
+                ["coming soon..."]
+            ],
+            [
+                "book recommendations",
+                ["coming soon..."]
+            ]
+        ];
+
+        const consoleInput = document.getElementById('consoleInput');
+        const consoleOutput = document.getElementById('consoleOutput');
+
+        function addToConsole(command, result, isError = false) {
+            const commandLine = document.createElement('div');
+            commandLine.className = 'console-line';
+            commandLine.innerHTML = `<span class="console-prompt">>>> </span><span style="color: #a8c5e0;">${command}</span>`;
+            consoleOutput.appendChild(commandLine);
+
+            const resultLine = document.createElement('div');
+            resultLine.className = `console-line ${isError ? 'console-error' : 'console-result'}`;
+            resultLine.textContent = result;
+            consoleOutput.appendChild(resultLine);
+
+            consoleOutput.scrollTop = consoleOutput.scrollHeight;
+        }
+
+        function formatOutput(value) {
+            if (Array.isArray(value)) {
+                if (value.length > 10) {
+                    return `[\n  "${value.slice(0, 10).join('",\n  "')}",\n  ... ${value.length - 10} more items\n]`;
+                }
+                return JSON.stringify(value, null, 2);
+            }
+            if (typeof value === 'string') {
+                return `"${value}"`;
+            }
+            return String(value);
+        }
+
+        function evaluateCommand(command) {
+            const cmd = command.trim();
+
+            // Help command
+            if (cmd === 'help()' || cmd === 'help') {
+                return `Available commands:
+- mackenzies_lists: access the full data structure
+- mackenzies_lists[i]: access list at index i (0-4)
+- mackenzies_lists[i][0]: get list name
+- mackenzies_lists[i][1]: get list items
+- len(mackenzies_lists): get number of lists
+- len(mackenzies_lists[i][1]): get number of items in a list
+- clear: clear console`;
+            }
+
+            // Clear command
+            if (cmd === 'clear' || cmd === 'clear()') {
+                consoleOutput.innerHTML = '';
+                return null;
+            }
+
+            // len() function
+            if (cmd.startsWith('len(')) {
+                try {
+                    const inner = cmd.slice(4, -1).trim();
+                    const result = evaluateExpression(inner);
+                    if (Array.isArray(result)) {
+                        return result.length.toString();
+                    }
+                    throw new Error("object has no len()");
+                } catch (e) {
+                    throw e;
+                }
+            }
+
+            // Direct evaluation
+            return formatOutput(evaluateExpression(cmd));
+        }
+
+        function evaluateExpression(expr) {
+            // Handle mackenzies_lists access
+            if (expr === 'mackenzies_lists') {
+                return mackenzies_lists;
+            }
+
+            // Handle indexing: mackenzies_lists[0], mackenzies_lists[0][0], etc.
+            const indexPattern = /^mackenzies_lists(\[\d+\])+$/;
+            if (indexPattern.test(expr)) {
+                try {
+                    return eval(expr);
+                } catch (e) {
+                    throw new Error("IndexError: list index out of range");
+                }
+            }
+
+            throw new Error(`NameError: name '${expr}' is not defined`);
+        }
+
+        consoleInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = consoleInput.value;
+                if (command.trim()) {
+                    try {
+                        const result = evaluateCommand(command);
+                        if (result !== null) {
+                            addToConsole(command, result);
+                        }
+                    } catch (error) {
+                        addToConsole(command, error.message, true);
+                    }
+                    consoleInput.value = '';
+                }
+            }
+        });
+
+        // Sparkles
+        const sparkleChars = ['✦', '✧', '⋆', '·', '˚', '✵', '∗'];
+        const colors = ['#a8c5e0', '#b4d3b2', '#f4dc9a', '#ffb3c1', '#d4c5f9'];
+        
+        document.addEventListener('mousemove', (e) => {
+            if (Math.random() > 0.7) {
+                const sparkle = document.createElement('span');
+                sparkle.className = 'sparkle';
+                sparkle.textContent = sparkleChars[Math.floor(Math.random() * sparkleChars.length)];
+                sparkle.style.left = e.clientX + (Math.random() * 20 - 10) + 'px';
+                sparkle.style.top = e.clientY + (Math.random() * 20 - 10) + 'px';
+                sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
+                sparkle.style.fontSize = Math.random() * 8 + 12 + 'px';
+                
+                document.body.appendChild(sparkle);
+                
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 1000);
+            }
+        });
+    </script>
+</body>
+</html>
