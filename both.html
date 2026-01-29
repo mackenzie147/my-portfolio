@@ -56,25 +56,6 @@
             color: #a8c5e0;
         }
 
-        /* Back button */
-        .back-button {
-            display: inline-block;
-            margin-bottom: 30px;
-            padding: 8px 16px;
-            background: white;
-            border: 1px solid #e0e0e0;
-            border-radius: 2px;
-            text-decoration: none;
-            color: #2c2c2c;
-            font-size: 13px;
-            transition: all 0.2s;
-        }
-
-        .back-button:hover {
-            background: #f5f5f5;
-            transform: translateX(-2px);
-        }
-
         h1 {
             font-size: 28px;
             font-weight: 700;
@@ -89,81 +70,180 @@
         }
 
         .tagline {
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             line-height: 1.6;
             color: #666;
         }
 
-        h2 {
-            font-size: 20px;
-            font-weight: 600;
-            margin-top: 40px;
-            margin-bottom: 15px;
-            color: #2c2c2c;
-            border-bottom: 2px solid #e0e0e0;
-            padding-bottom: 8px;
+        /* Hover tooltips */
+        .tooltip-trigger {
+            position: relative;
+            cursor: help;
+            border-bottom: 1px dotted #666;
         }
 
-        h2:first-of-type {
+        .tooltip {
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            margin-bottom: 8px;
+            background: white;
+            border: 2px solid #a8c5e0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            font-size: 12px;
+            color: #2c2c2c;
+            white-space: nowrap;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s, visibility 0.3s;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .tooltip::after {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 50%;
+            transform: translateX(-50%);
+            border: 6px solid transparent;
+            border-top-color: #a8c5e0;
+        }
+
+        .tooltip-trigger:hover .tooltip {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .tooltip strong {
+            display: block;
+            margin-bottom: 4px;
+            color: #a8c5e0;
+        }
+
+        .container {
+            display: flex;
+            gap: 60px;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+                gap: 40px;
+            }
+        }
+
+        /* Left side */
+        .left-side {
+            flex: 1;
+            max-width: 700px;
+        }
+
+        h2 {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            margin-top: 25px;
+        }
+
+        h2:first-child {
             margin-top: 0;
         }
 
+        h2 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        h2 a:hover {
+            text-decoration: underline;
+        }
+
         h3 {
-            font-size: 16px;
-            font-weight: 600;
-            margin-top: 25px;
-            margin-bottom: 10px;
-            color: #666;
-        }
-
-        .job-item {
-            margin-bottom: 30px;
-            padding: 20px;
-            background: white;
-            border-left: 4px solid #a8c5e0;
-            border-radius: 2px;
-        }
-
-        .job-item:nth-child(2) {
-            border-left-color: #b4d3b2;
-        }
-
-        .job-item:nth-child(3) {
-            border-left-color: #f4dc9a;
-        }
-
-        .job-item:nth-child(4) {
-            border-left-color: #ffb3c1;
-        }
-
-        .job-title {
-            font-size: 18px;
-            font-weight: 600;
-            color: #2c2c2c;
-            margin-bottom: 4px;
-        }
-
-        .job-company {
             font-size: 15px;
+            font-weight: 600;
+            margin-top: 15px;
+            margin-bottom: 8px;
             color: #666;
-            margin-bottom: 4px;
         }
 
-        .job-date {
-            font-size: 13px;
-            color: #999;
+        /* Section headers with icons */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
             margin-bottom: 12px;
+            margin-top: 25px;
         }
 
-        .job-item ul {
-            margin-left: 20px;
+        .section-header:first-child {
+            margin-top: 0;
         }
 
-        .job-item li {
-            margin-bottom: 6px;
-            color: #666;
-            font-size: 13px;
-            line-height: 1.5;
+        .section-header h2 {
+            margin: 0;
+        }
+
+        .section-header a {
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .section-header svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .section-header a[aria-label="Substack"] svg {
+            fill: currentColor;
+        }
+
+        .section-header a[aria-label="Google Scholar"] svg {
+            fill: currentColor;
+        }
+
+        .section-header a[aria-label="GitHub"] svg {
+            fill: currentColor;
+        }
+
+        .section-header a[aria-label="LinkedIn"] svg {
+            fill: currentColor;
+        }
+
+        /* Experience section colors */
+        .section-header:nth-of-type(1) h2,
+        .section-header:nth-of-type(1) a {
+            color: #d4c5f9;
+        }
+
+        /* Research section colors */
+        .section-header:nth-of-type(2) h2,
+        .section-header:nth-of-type(2) a {
+            color: #a8c5e0;
+        }
+
+        /* Viral stunts section */
+        .viral-section h2 {
+            color: #ffb3c1;
+        }
+
+        /* Projects section colors */
+        .section-header:nth-of-type(3) h2,
+        .section-header:nth-of-type(3) a {
+            color: #b4d3b2;
+        }
+
+        /* Writing section colors */
+        .section-header:nth-of-type(4) h2,
+        .section-header:nth-of-type(4) a {
+            color: #f4dc9a;
+        }
+
+        /* Art section */
+        .art-section h2 {
+            color: #ffb3c1;
         }
 
         ul {
@@ -172,9 +252,8 @@
         }
 
         ul li {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             color: #666;
-            line-height: 1.5;
         }
 
         a {
@@ -188,6 +267,147 @@
 
         a:hover {
             text-decoration: none;
+        }
+
+        /* Professional section */
+        .professional-section {
+            margin-top: 25px;
+        }
+
+        .professional-section h2 {
+            margin-bottom: 12px;
+            color: #d4c5f9;
+        }
+
+        .professional-links {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .professional-links h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+        .professional-links h3 a,
+        .professional-links h3 span {
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .professional-links h3 a:hover,
+        .professional-links h3 span:hover {
+            text-decoration: underline;
+        }
+
+        .professional-links:nth-child(2) h3,
+        .professional-links:nth-child(2) h3 a,
+        .professional-links:nth-child(2) h3 span {
+            color: #a8dadc;
+        }
+
+        .professional-links:nth-child(3) h3,
+        .professional-links:nth-child(3) h3 a {
+            color: #f4a261;
+        }
+
+        .professional-links:nth-child(4) h3,
+        .professional-links:nth-child(4) h3 a {
+            color: #e9c46a;
+        }
+
+        /* Right side */
+        .right-side {
+            width: 400px;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 968px) {
+            .right-side {
+                width: 100%;
+            }
+        }
+
+        .nav-buttons {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 25px;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .nav-buttons {
+                flex-direction: column;
+            }
+        }
+
+        .nav-box {
+            flex: 1;
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            text-align: center;
+            text-decoration: none;
+            color: #2c2c2c;
+            background: white;
+            transition: all 0.2s;
+            display: block;
+            border-radius: 2px;
+            cursor: pointer;
+        }
+
+        .nav-box:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .nav-box.active {
+            background: #2c2c2c;
+            color: white;
+            border-color: #2c2c2c;
+        }
+
+        .nav-box.active strong,
+        .nav-box.active p {
+            color: white;
+        }
+
+        .nav-box strong {
+            font-size: 14px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+            color: #2c2c2c;
+        }
+
+        .nav-box p {
+            font-size: 11px;
+            color: #999;
+        }
+
+        /* Causes section */
+        .causes-box {
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            background: white;
+            margin-bottom: 25px;
+            border-radius: 2px;
+            border-left: 4px solid #a8c5e0;
+        }
+
+        .causes-box h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2c2c2c;
+        }
+
+        .causes-box ul {
+            margin-left: 18px;
         }
 
         /* Contact footer */
@@ -237,111 +457,168 @@
         direction facing: <strong id="direction">n</strong>
     </div>
 
-    <a href="index.html" class="back-button">← back home</a>
-
-    <h1>Mackenzie Sharp - Everything</h1>
+    <h1>Mackenzie Sharp</h1>
 
     <p class="tagline">
-        Storytelling focused data engineer from Toronto in SF. Studied biomedical computing with a focus in computer assisted surgery at Queen's University. Interested in all things writing, art, community building, data and Nathan Fielder.
+        hi I am Mackenzie :) and I am a <span class="tooltip-trigger">storytelling focused data engineer<span class="tooltip"><strong>what is this?</strong> someone who uses data to tell compelling narratives and uncover insights, blending technical analysis with creative communication ✨</span></span> from Toronto in SF &lt;3. I <span class="tooltip-trigger">studied<span class="tooltip"><strong>what is this?</strong> worked in the <a href="https://perk.cs.queensu.ca/" target="_blank" style="color: #a8c5e0;">PerkLab</a> under <a href="https://scholar.google.ca/citations?user=av-o0QsAAAAJ&hl=en" target="_blank" style="color: #a8c5e0;">Gabor Fichtinger</a></span></span> biomedical computing with a focus in computer assisted surgery at <a href="https://www.queensu.ca/" target="_blank">Queen's University</a> and am interested in all things writing, art, community building, data and Nathan Fielder. My research focuses largely on bioinformatics and computer assisted surgery with a recent interest into AI and its various applications.
     </p>
 
-    <!-- Experience Section -->
-    <h2>experience</h2>
+    <div class="container">
+        <!-- Left Side -->
+        <div class="left-side">
+            <!-- Experience Section -->
+            <div class="section-header">
+                <h2>experience</h2>
+                <a href="https://www.linkedin.com/in/mackenziecatherinesharp/" target="_blank" aria-label="LinkedIn">
+                    <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+                </a>
+            </div>
+            <ul>
+                <li>Viral Growth Marketing at Opal Camera (January 2026 - Present)</li>
+                <li>Founding Engineer at Ironsite AI (June 2025 - January 2026)</li>
+                <li>Data Engineer at LinkedIn (April 2022 - April 2025)</li>
+                <li>Data Engineer, Intern at LinkedIn (April 2021 - August 2021)</li>
+            </ul>
 
-    <div class="job-item">
-        <div class="job-title">Viral Growth Marketing</div>
-        <div class="job-company">Opal Camera</div>
-        <div class="job-date">January 2026 - Present</div>
-        <ul>
-            <li>Architecting viral content strategies and growth loops across Twitter, Reddit, and emerging platforms</li>
-            <li>Crafting high-leverage social experiments and memetic campaigns to accelerate brand awareness</li>
-            <li>Building automated content pipelines and sentiment analysis tools to identify trending narratives</li>
-            <li>Orchestrating community-driven campaigns that blur the line between marketing and cultural moments</li>
-        </ul>
+            <!-- Research Section -->
+            <div class="section-header">
+                <h2>research</h2>
+                <a href="https://researchandart.substack.com/" target="_blank" aria-label="Substack">
+                    <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+                <a href="https://scholar.google.com/citations?user=haISHYAAAAAJ&hl=en" target="_blank" aria-label="Google Scholar">
+                    <svg viewBox="0 0 24 24"><path d="M12 24a7 7 0 1 1 0-14 7 7 0 0 1 0 14zm0-24L0 9.5l4.838 3.94A8 8 0 0 1 12 9a8 8 0 0 1 7.162 4.44L24 9.5z"/></svg>
+                </a>
+            </div>
+
+            <h3>Publications</h3>
+            <ul>
+                <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:d1gkVwhDpl0C" target="_blank">Profiling BMPR2-Derived Endothelial Circular RNAs in Pulmonary Arterial Hypertension</a></li>
+                <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:u-x6o8ySG0sC" target="_blank">Circular RNA profiling identifies circ5078 as a BMPR2-derived regulator of endothelial proliferation and stress responses</a></li>
+                <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:9yKSN-GCB0IC" target="_blank">ViPRE: An open-source software implementation for end-to-end analysis of mass spectrometry data</a></li>
+                <li>Profiling Circular RNA Expression and the Impact of BMPR2 Loss in Human Pulmonary Artery Endothelial Cells</li>
+                <li>Standardized Nomenclature for Legal Prompting in Generative Language Models</li>
+            </ul>
+
+            <h3>Research Projects</h3>
+            <ul>
+                <li>Scalable Elicitation of Latent Knowledge in Black-Box LLMs</li>
+                <li>Quantifying and Mitigating Sycophancy in RLHF Systems</li>
+                <li>Adversarial Prompting for Jailbreaking Systems</li>
+                <li>Personal Knowledge Base: Journal Analysis with LLMs</li>
+                <li>Neuromodulation: Synthetic Hormones for LLMs</li>
+                <li><a href="https://researchandart.substack.com/p/moving-without-moving-building-a" target="_blank">BCI-Powered Wheelchair Navigation with Muse Headset</a></li>
+                <li>Latent Space Traversal: Real-Time Generative Art System</li>
+                <li><a href="https://researchandart.substack.com/p/biggest-surf-in-the-world-forecasting" target="_blank">Global Swell Intelligence Tracker</a></li>
+                <li><a href="https://researchandart.substack.com/p/hospital-bed-forecasting-predicting" target="_blank">Forecasting Hospital Bed Demand</a></li>
+                <li>ViPRE: Mass Spectrometry Analysis Platform</li>
+                <li>Gene Splicing Prediction with Deep Learning</li>
+            </ul>
+
+            <!-- Viral Stunts & Media Coverage -->
+            <div class="viral-section">
+                <h2>viral stunts & media coverage</h2>
+                <ul>
+                    <li><strong>Sit Club</strong> - Weekly public sitting gathering • Featured in <a href="https://www.cbsnews.com/sanfrancisco/news/sit-club-san-francisco-friends/" target="_blank">CBS News</a>, <a href="https://www.sfgate.com/bayarea/article/san-francisco-sit-club-trend-19123456.php" target="_blank">SFGate</a>, <a href="https://sfstandard.com/2024/03/sit-club-sitting-trend/" target="_blank">SF Standard</a></li>
+                    <li><strong>Alextravaganza</strong> - Community celebration event • Featured in <a href="https://sfstandard.com/2024/06/alextravaganza-san-francisco/" target="_blank">SF Standard</a></li>
+                    <li><strong>The White Elephant Move Out Party</strong> - Creative moving sale concept</li>
+                    <li><strong>Hypebeast House Merch</strong> - Satirical streetwear parody</li>
+                    <li><strong>Graffiti That Changes With Time</strong> - Interactive public art</li>
+                    <li><strong>Pitch Night</strong> - Shark Tank-style community event</li>
+                </ul>
+            </div>
+
+            <!-- Projects Section -->
+            <div class="section-header">
+                <h2>projects</h2>
+                <a href="https://github.com/mackenzie147" target="_blank" aria-label="GitHub">
+                    <svg viewBox="0 0 24 24"><path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/></svg>
+                </a>
+            </div>
+            <ul>
+                <li>LLM-Powered Market Intelligence Platform</li>
+                <li>Twitter Follower Analytics Suite</li>
+                <li>Computer Vision Book Analyzer</li>
+                <li>Flight Delay Prediction Market</li>
+            </ul>
+
+            <!-- Writing Section -->
+            <div class="section-header">
+                <h2>writing</h2>
+                <a href="https://mackenziesharp.substack.com/" target="_blank" aria-label="Substack">
+                    <svg viewBox="0 0 24 24"><path d="M22.539 8.242H1.46V5.406h21.08v2.836zM1.46 10.812V24L12 18.11 22.54 24V10.812H1.46zM22.54 0H1.46v2.836h21.08V0z"/></svg>
+                </a>
+            </div>
+            <ul>
+                <li><a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank">Sit Club</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/the-white-elephant-move-out-party" target="_blank">The White Elephant Move Out Party</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/reading-all-the-for-dummies-books" target="_blank">Reading All the For Dummies Books</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/hypebeast-house-merch-the-illusion" target="_blank">Hypebeast House Merch</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/graffiti-that-changes-with-time" target="_blank">Graffiti That Changes With Time</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/pitch-night" target="_blank">Pitch Night</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/the-nba-playoff-scavenger-hunt" target="_blank">The NBA Playoff Scavenger Hunt</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/the-anti-valentines-day-party" target="_blank">The Anti Valentine's Day Party</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/announcing-a-new-poetry-contest" target="_blank">Announcing a New Poetry Contest</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/i-tried-to-organize-a-reddit-meetup" target="_blank">I Tried to Organize a Reddit Meetup</a></li>
+            </ul>
+
+            <!-- Art Stuff Section -->
+            <div class="art-section">
+                <h2>art stuff</h2>
+                <ul>
+                    <li>Featured in Pier 39 Gallery this month</li>
+                    <li>Installation art & public interventions</li>
+                    <li>Community organizing & social experiments</li>
+                    <li>Creative writing & cultural commentary</li>
+                </ul>
+            </div>
+
+            <!-- Professional Section -->
+            <div class="professional-section">
+                <h2><a href="https://www.linkedin.com/in/mackenziecatherinesharp/" target="_blank">professional</a></h2>
+                <div class="professional-links">
+                    <h3><span onclick="alert('coming soon!')">hire me!</span></h3>
+                </div>
+                <div class="professional-links">
+                    <h3><a href="list-of-lists.html">list of lists</a></h3>
+                </div>
+                <div class="professional-links">
+                    <h3><a href="lists-of-lists-of-lists.html">lists of lists of list of lists</a></h3>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side -->
+        <div class="right-side">
+            <div class="nav-buttons">
+                <a href="software.html" class="nav-box">
+                    <strong>software</strong>
+                    <p>technical</p>
+                </a>
+
+                <div class="nav-box" onclick="alert('coming soon!')">
+                    <strong>marketing</strong>
+                    <p>viral growth</p>
+                </div>
+
+                <a href="index.html" class="nav-box active">
+                    <strong>both</strong>
+                    <p>everything</p>
+                </a>
+            </div>
+
+            <div class="causes-box">
+                <h3>causes to check out!</h3>
+                <ul>
+                    <li><a href="https://www.openai.com/" target="_blank">TIAT San Francisco</a></li>
+                    <li><a href="https://www.coralgardeners.org/" target="_blank">Coral Gardeners</a></li>
+                    <li><a href="https://theoceancleanup.com/" target="_blank">The Ocean Cleanup Project</a></li>
+                    <li><a href="https://archive.org/" target="_blank">The Internet Archive</a></li>
+                    <li><a href="https://www.nasa.gov/moon/" target="_blank">The Nook</a></li>
+                </ul>
+            </div>
+        </div>
     </div>
-
-    <div class="job-item">
-        <div class="job-title">Founding Engineer</div>
-        <div class="job-company">Ironsite AI</div>
-        <div class="job-date">June 2025 - January 2026</div>
-        <ul>
-            <li>One of three founding engineers at pre-Series A construction intelligence startup</li>
-            <li>Built full-stack features (TypeScript/React/Node/Kotlin) and real-time analytics dashboards</li>
-            <li>Developed data pipelines (Airflow, Kafka, SQL) and integrated computer-vision APIs</li>
-            <li>Created human-in-the-loop labeling system, cutting operations overhead by 30%</li>
-        </ul>
-    </div>
-
-    <div class="job-item">
-        <div class="job-title">Data Engineer</div>
-        <div class="job-company">LinkedIn</div>
-        <div class="job-date">April 2022 - April 2025</div>
-        <ul>
-            <li>Built large-scale pipelines processing 18B+ daily events using Airflow, Trino, Spark SQL</li>
-            <li>Engineered ML feature stores and attribution models, improving accuracy by 25%</li>
-            <li>Automated anomaly detection and data quality monitoring for downstream ML systems</li>
-            <li>Mentored engineers on SQL optimization and distributed pipeline debugging</li>
-        </ul>
-    </div>
-
-    <div class="job-item">
-        <div class="job-title">Data Engineer, Intern</div>
-        <div class="job-company">LinkedIn</div>
-        <div class="job-date">April 2021 - August 2021</div>
-        <ul>
-            <li>Built Python/SQL pipelines for engagement analysis across 100M+ daily impressions</li>
-            <li>Prototyped predictive metrics and cohort analyses for campaign forecasting</li>
-            <li>Delivered dashboards and visualization tools for product optimization</li>
-        </ul>
-    </div>
-
-    <!-- Research & Publications Section -->
-    <h2>research & publications</h2>
-    
-    <h3>Publications</h3>
-    <ul>
-        <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:d1gkVwhDpl0C" target="_blank">Profiling BMPR2-Derived Endothelial Circular RNAs in Pulmonary Arterial Hypertension</a></li>
-        <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:u-x6o8ySG0sC" target="_blank">Circular RNA profiling identifies circ5078 as a BMPR2-derived regulator of endothelial proliferation and stress responses</a></li>
-        <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:9yKSN-GCB0IC" target="_blank">ViPRE: An open-source software implementation for end-to-end analysis of mass spectrometry data</a></li>
-        <li>Profiling Circular RNA Expression and the Impact of BMPR2 Loss in Human Pulmonary Artery Endothelial Cells (2023)</li>
-        <li>Standardized Nomenclature for Legal Prompting in Generative Language Models - Columbia Law School Preprint 2024</li>
-    </ul>
-
-    <h3>Research Projects</h3>
-    <ul>
-        <li><strong>Scalable Elicitation of Latent Knowledge in Black-Box LLMs</strong> - Built experimental pipelines to probe latent world-model representations in proprietary LLMs via structured elicitation tasks and counterfactual prompting</li>
-        <li><strong>Quantifying and Mitigating Sycophancy in RLHF Systems</strong> - Designed evaluation benchmarks to measure sycophantic behavior in public chat-completion models</li>
-        <li><strong>Adversarial Prompting for Jailbreaking Systems</strong> - Developed adversarial prompting techniques to test and identify vulnerabilities in safety-aligned language models</li>
-        <li><strong>Personal Knowledge Base: Journal Analysis with LLMs</strong> - Built a system to process and analyze years of personal journal entries using large language models</li>
-        <li><strong>Neuromodulation: Synthetic Hormones for LLMs</strong> - Exploring computational frameworks for implementing synthetic neuromodulatory systems in language models</li>
-        <li><strong>BCI-Powered Wheelchair Navigation with Muse Headset</strong> - Developed brain-computer interface control system for wheelchair navigation using the Muse EEG headset</li>
-        <li><strong>Latent Space Traversal: Real-Time Generative Art System</strong> - Built an interactive system that maps user gestures to high-dimensional latent space coordinates</li>
-        <li><strong>Global Swell Intelligence Tracker</strong> - Built end-to-end surf-forecasting platform aggregating buoy, weather-station, and satellite data</li>
-        <li><strong>Forecasting Hospital Bed Demand</strong> - Designed and trained a deep-learning time-series model predicting hospital bed occupancy</li>
-        <li><strong>ViPRE: Mass Spectrometry Analysis Platform</strong> - Free and open-source 3D Slicer Platform enabling users without extensive background to run robust data exploration</li>
-        <li><strong>Gene Splicing Prediction with Deep Learning</strong> - Developed deep learning models to predict gene splicing patterns using genomic sequence data</li>
-    </ul>
-
-    <!-- Projects Section -->
-    <h2>technical projects</h2>
-    <ul>
-        <li><strong>LLM-Powered Market Intelligence Platform</strong> - Built full-stack platform using GPT-4 for market analysis and data synthesis</li>
-        <li><strong>Twitter Follower Analytics Suite</strong> - Comprehensive analytics platform featuring demographic analysis, email discovery, and interest clustering</li>
-        <li><strong>Computer Vision Book Analyzer</strong> - ML system analyzing books in Little Free Libraries to predict geographic location</li>
-        <li><strong>Flight Delay Prediction Market</strong> - Built prediction market combining real-time flight data with betting mechanics</li>
-    </ul>
-
-    <!-- Creative Work Section -->
-    <h2>creative work</h2>
-    <ul>
-        <li><a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank"><strong>Sit Club</strong></a> - A weekly gathering for sitting together in public spaces. Featured in CBS News, SFGate, and SF Standard</li>
-        <li><strong>Alextravaganza</strong> - Community event bringing people together. Featured in SF Standard</li>
-        <li><a href="https://mackenziesharp.substack.com/p/the-white-elephant-move-out-party" target="_blank"><strong>The White Elephant Move Out Party</strong></a></li>
-        <li><a href="https://mackenziesharp.substack.com/p/hypebeast-house-merch-the-illusion" target="_blank"><strong>Hypebeast House Merch</strong></a></li>
-        <li><a href="https://mackenziesharp.substack.com/p/graffiti-that-changes-with-time" target="_blank"><strong>Graffiti That Changes With Time</strong></a></li>
-        <li><a href="https://mackenziesharp.substack.com/p/pitch-night" target="_blank"><strong>Pitch Night</strong></a></li>
-        <li><a href="https://mackenziesharp.substack.com/p/reading-all-the-for-dummies-books" target="_blank"><strong>Reading All the For Dummies Books</strong></a></li>
-    </ul>
 
     <!-- Contact Footer -->
     <div class="contact-footer">
@@ -380,7 +657,7 @@
             }
         });
 
-        // Random direction updater
+        // Random direction updater - updates 3 times per day
         const directions = ['n', 's', 'e', 'w'];
         const directionEl = document.getElementById('direction');
         
@@ -389,7 +666,10 @@
             directionEl.textContent = randomDirection;
         }
         
+        // Update direction every 8 hours (28800000 ms = 8 hours)
         setInterval(updateDirection, 28800000);
+        
+        // Initial random direction on page load
         updateDirection();
     </script>
 </body>
