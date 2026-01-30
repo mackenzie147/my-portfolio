@@ -203,13 +203,14 @@
             bottom: 10%; 
             right: 8%; 
             transform: rotate(-8deg);
+            z-index: 20;
         }
         
         .airpods { 
             width: 360px;
             height: 300px;
             top: 24%; 
-            left: 12%; 
+            left: 8%; 
             transform: rotate(-15deg);
         }
         
@@ -224,9 +225,10 @@
         .phone { 
             width: 154px;
             height: 297px;
-            top: 30%; 
-            left: 31%; 
+            bottom: 12%; 
+            right: 12%; 
             transform: rotate(8deg);
+            z-index: 21;
         }
         
         .laptop { 
@@ -235,6 +237,7 @@
             top: 38%; 
             left: 32%; 
             transform: translateX(-50%) rotate(0deg);
+            z-index: 15;
         }
         
         .ipad { 
@@ -264,9 +267,9 @@
         .book { 
             width: 250px;
             height: 320px;
-            top: 8%; 
-            left: 30%; 
-            transform: rotate(12deg);
+            bottom: 8%; 
+            right: 18%; 
+            transform: rotate(-12deg);
         }
 
         /* Item labels - DIRECTLY ON ITEMS */
@@ -301,7 +304,7 @@
             top: 100px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 35px;
+            font-size: 42px;
             font-weight: 400;
             font-family: 'Brush Script MT', cursive;
             letter-spacing: 1px;
@@ -969,79 +972,139 @@
             filter: drop-shadow(0 4px 12px rgba(107, 127, 255, 0.5));
         }
 
-        /* Notebook interactive styles - OPEN BOOK */
+        /* Notebook interactive styles - OPEN BOOK WITH VISIBLE COVER AND GRAPH PAPER */
         .notebook-interactive {
             position: fixed;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%) perspective(1500px);
-            width: 80vw;
-            max-width: 1200px;
-            height: 75vh;
-            max-height: 800px;
+            width: 85vw;
+            max-width: 1300px;
+            height: 78vh;
+            max-height: 850px;
             display: flex;
             z-index: 25001;
             filter: drop-shadow(0 30px 60px rgba(0,0,0,0.5));
         }
 
-        /* Left page */
+        /* Book cover visible on left - with inside visible */
         .notebook-interactive::before {
             content: '';
             position: absolute;
-            left: 0;
-            top: 0;
-            width: 50%;
-            height: 100%;
+            left: -25px;
+            top: -5px;
+            width: calc(50% + 30px);
+            height: calc(100% + 10px);
             background: 
-                repeating-linear-gradient(
-                    transparent,
-                    transparent 30px,
-                    #cbd5e0 30px,
-                    #cbd5e0 31px
+                /* Inside cover color */
+                linear-gradient(to right, 
+                    #8b7355 0%, 
+                    #8b7355 10px,
+                    #f5f5dc 10px,
+                    #f5f5dc calc(100% - 5px),
+                    #b8b8b8 calc(100% - 5px)
                 ),
-                linear-gradient(to right, #ff9999 0px, #ff9999 2px, transparent 2px, transparent 60px),
-                #fffef9;
-            transform: rotateY(-3deg);
+                /* Binding/edge shadow */
+                linear-gradient(0deg, 
+                    rgba(0,0,0,0.2) 0%, 
+                    transparent 3%, 
+                    transparent 97%, 
+                    rgba(0,0,0,0.2) 100%
+                );
+            transform: rotateY(-8deg);
             transform-origin: right center;
-            border: 1px solid #d4d4d4;
-            border-right: none;
-            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #6b5d47;
+            border-right: 3px solid #5d4e3c;
+            box-shadow: -10px 0 25px rgba(0,0,0,0.4);
+            z-index: 1;
         }
 
-        /* Right page */
+        /* Book cover visible on right - with inside visible */
         .notebook-interactive::after {
             content: '';
             position: absolute;
-            right: 0;
-            top: 0;
-            width: 50%;
-            height: 100%;
+            right: -25px;
+            top: -5px;
+            width: calc(50% + 30px);
+            height: calc(100% + 10px);
             background: 
-                repeating-linear-gradient(
-                    transparent,
-                    transparent 30px,
-                    #cbd5e0 30px,
-                    #cbd5e0 31px
+                /* Inside cover color */
+                linear-gradient(to left, 
+                    #8b7355 0%, 
+                    #8b7355 10px,
+                    #f5f5dc 10px,
+                    #f5f5dc calc(100% - 5px),
+                    #b8b8b8 calc(100% - 5px)
                 ),
-                #fffef9;
-            transform: rotateY(3deg);
+                /* Binding/edge shadow */
+                linear-gradient(0deg, 
+                    rgba(0,0,0,0.2) 0%, 
+                    transparent 3%, 
+                    transparent 97%, 
+                    rgba(0,0,0,0.2) 100%
+                );
+            transform: rotateY(8deg);
             transform-origin: left center;
-            border: 1px solid #d4d4d4;
-            border-left: none;
-            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+            border: 1px solid #6b5d47;
+            border-left: 3px solid #5d4e3c;
+            box-shadow: 10px 0 25px rgba(0,0,0,0.4);
+            z-index: 1;
         }
 
         /* Spine */
         .notebook-spine {
             position: absolute;
             left: 50%;
-            top: 0;
+            top: -5px;
             transform: translateX(-50%);
-            width: 20px;
-            height: 100%;
-            background: linear-gradient(to right, #8b7355 0%, #6b5945 50%, #8b7355 100%);
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            width: 28px;
+            height: calc(100% + 10px);
+            background: linear-gradient(to right, #5d4e3c 0%, #4a3d2e 50%, #5d4e3c 100%);
+            box-shadow: 
+                inset 0 0 15px rgba(0,0,0,0.6),
+                inset 2px 0 5px rgba(0,0,0,0.3),
+                inset -2px 0 5px rgba(0,0,0,0.3);
             z-index: 10;
+            border-top: 1px solid #3a2f22;
+            border-bottom: 1px solid #3a2f22;
+        }
+
+        /* Suggestion of other pages in the book */
+        .notebook-pages-left,
+        .notebook-pages-right {
+            position: absolute;
+            top: -3px;
+            height: calc(100% + 6px);
+            width: 8px;
+            z-index: 2;
+        }
+
+        .notebook-pages-left {
+            left: -18px;
+            background: linear-gradient(to right,
+                rgba(255,255,255,0.3) 0%,
+                rgba(255,255,255,0.5) 20%,
+                rgba(255,255,255,0.7) 40%,
+                rgba(255,255,255,0.9) 60%,
+                #ffffff 80%
+            );
+            box-shadow: 
+                inset -1px 0 1px rgba(0,0,0,0.1),
+                -1px 0 3px rgba(0,0,0,0.2);
+        }
+
+        .notebook-pages-right {
+            right: -18px;
+            background: linear-gradient(to left,
+                rgba(255,255,255,0.3) 0%,
+                rgba(255,255,255,0.5) 20%,
+                rgba(255,255,255,0.7) 40%,
+                rgba(255,255,255,0.9) 60%,
+                #ffffff 80%
+            );
+            box-shadow: 
+                inset 1px 0 1px rgba(0,0,0,0.1),
+                1px 0 3px rgba(0,0,0,0.2);
         }
 
         .notebook-content {
@@ -1055,8 +1118,26 @@
         .notebook-page {
             display: none;
             width: 50%;
-            padding: 60px 60px 60px 80px;
+            padding: 70px 70px 60px 90px;
             overflow-y: auto;
+            /* Graph paper background */
+            background-image: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 19px,
+                    #d4e5f0 19px,
+                    #d4e5f0 20px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 19px,
+                    #d4e5f0 19px,
+                    #d4e5f0 20px
+                );
+            background-color: #ffffff;
+            background-size: 20px 20px;
         }
 
         .notebook-page.active {
@@ -1065,18 +1146,18 @@
 
         .notebook-title {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 42px;
+            font-size: 50.6px; /* 46px * 1.1 */
             color: #2b4fd6;
-            margin-bottom: 40px;
+            margin-bottom: 48.4px; /* 44px * 1.1 */
             text-align: left;
             margin-left: 0;
         }
 
         .notebook-index-item {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 28px;
+            font-size: 34.1px; /* 31px * 1.1 */
             color: #2b4fd6;
-            margin: 30px 0;
+            margin: 36.3px 0; /* 33px * 1.1 */
             cursor: pointer;
             transition: all 0.2s;
             padding: 5px 15px;
@@ -1091,15 +1172,15 @@
 
         .notebook-article {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 20px;
+            font-size: 24.2px; /* 22px * 1.1 */
             color: #2b4fd6;
-            margin: 22px 0;
+            margin: 26.4px 0; /* 24px * 1.1 */
             padding: 5px 10px;
             cursor: pointer;
             transition: all 0.2s;
             text-decoration: none;
             display: block;
-            line-height: 30px;
+            line-height: 36.3px; /* 33px * 1.1 */
             margin-left: 30px;
             text-indent: -15px;
         }
@@ -1116,9 +1197,9 @@
 
         .notebook-back {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 16px;
+            font-size: 19.8px; /* 18px * 1.1 */
             color: #2b4fd6;
-            margin-top: 40px;
+            margin-top: 48.4px; /* 44px * 1.1 */
             margin-left: 0;
             cursor: pointer;
             text-decoration: none;
@@ -1171,14 +1252,362 @@
             .notebook-interactive { width: 95vw; padding: 30px; }
         }
 
+        /* MOBILE OPTIMIZATION */
+        @media (max-width: 768px) {
+            .header h1 { font-size: 48px; }
+            .header p { font-size: 14px; }
+            
+            .back-button {
+                top: 15px;
+                left: 15px;
+                padding: 10px 20px;
+                font-size: 14px;
+            }
+
+            /* Scale down all desk items for mobile */
+            .camera { width: 150px; height: 117px; }
+            .paints { width: 280px; height: 315px; top: 5%; right: 2%; }
+            .planner { width: 250px; height: 300px; bottom: 5%; right: 5%; }
+            .airpods { width: 250px; height: 208px; top: 18%; left: 5%; }
+            .coffee { width: 100px; height: 100px; top: 25%; left: 60%; }
+            .phone { width: 110px; height: 212px; bottom: 8%; right: 8%; }
+            .laptop { width: 450px; height: 315px; top: 35%; left: 50%; }
+            .ipad { width: 340px; height: 485px; top: 28%; left: 2%; }
+            .newspaper { width: 275px; height: 200px; top: 5%; left: 5%; }
+            .notebook { width: 210px; height: 266px; bottom: 5%; left: 5%; }
+            .book { width: 175px; height: 224px; bottom: 5%; right: 15%; }
+
+            /* Mobile popup adjustments */
+            .booking-popup {
+                width: 90vw;
+                padding: 25px 30px;
+            }
+
+            .booking-popup h2 {
+                font-size: 18px;
+            }
+
+            .coffee-popup {
+                width: 320px;
+                height: 320px;
+            }
+
+            .coffee-popup h3 {
+                font-size: 18px;
+            }
+
+            .coffee-stat {
+                font-size: 15px;
+            }
+
+            /* Headphones popup - mobile */
+            .popup-heading {
+                font-size: 32px;
+                top: 80px;
+            }
+
+            .airpods-center {
+                width: 280px;
+                height: 280px;
+            }
+
+            .songs-circle {
+                width: 100vw;
+                height: 100vh;
+            }
+
+            .song-card {
+                width: 140px;
+                padding: 10px;
+            }
+
+            .song-card img {
+                height: 120px;
+            }
+
+            .song-title {
+                font-size: 13px;
+            }
+
+            .song-artist {
+                font-size: 11px;
+            }
+
+            .song-card:nth-child(1) { 
+                bottom: 5%; 
+                left: 50%; 
+                transform: translateX(-50%);
+            }
+            .song-card:nth-child(2) { 
+                bottom: 12%; 
+                left: 5%;
+            }
+            .song-card:nth-child(3) { 
+                top: 20%; 
+                left: 5%;
+            }
+            .song-card:nth-child(4) { 
+                top: 20%; 
+                right: 5%;
+            }
+            .song-card:nth-child(5) { 
+                bottom: 12%; 
+                right: 5%;
+            }
+
+            /* Phone popup - mobile */
+            .phone-center {
+                width: 200px;
+                height: 386px;
+            }
+
+            .contacts-circle {
+                width: 100vw;
+                height: 100vh;
+            }
+
+            .contact-card-mini {
+                width: 160px !important;
+            }
+
+            .contact-card-mini:first-child {
+                width: 200px !important;
+            }
+
+            .contact-card-mini:hover {
+                transform: translate(-50%, -50%) scale(1.4) !important;
+            }
+
+            .contact-card-mini:nth-child(1) { 
+                transform: translate(calc(-50% - 120px), calc(-50% - 200px));
+            }
+            .contact-card-mini:nth-child(2) { 
+                transform: translate(calc(-50% + 120px), calc(-50% - 80px));
+            }
+            .contact-card-mini:nth-child(3) { 
+                transform: translate(calc(-50% + 140px), calc(-50% + 40px));
+            }
+            .contact-card-mini:nth-child(4) { 
+                transform: translate(calc(-50% + 100px), calc(-50% + 150px));
+            }
+            .contact-card-mini:nth-child(5) { 
+                transform: translate(-50%, calc(-50% + 180px));
+            }
+            .contact-card-mini:nth-child(6) { 
+                transform: translate(calc(-50% - 100px), calc(-50% + 150px));
+            }
+            .contact-card-mini:nth-child(7) { 
+                transform: translate(calc(-50% - 140px), -50%);
+            }
+
+            /* Art popup - mobile */
+            .art-instagram {
+                position: static;
+                transform: none;
+                width: 200px;
+                margin: 80px auto 30px;
+                display: block;
+            }
+
+            .art-gallery {
+                position: static;
+                transform: none;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                padding: 20px;
+                max-width: 90vw;
+                margin: 0 auto;
+            }
+
+            .art-frame:nth-child(1), .art-frame:nth-child(2), 
+            .art-frame:nth-child(3), .art-frame:nth-child(4),
+            .art-frame:nth-child(5), .art-frame:nth-child(6),
+            .art-frame:nth-child(7), .art-frame:nth-child(8),
+            .art-frame:nth-child(9) {
+                width: 130px !important;
+                height: 150px !important;
+            }
+
+            /* Newspaper popup - mobile */
+            .newspaper-title {
+                font-size: 24px;
+                top: 60px;
+            }
+
+            .news-image-container img {
+                max-width: 85vw;
+                max-height: 65vh;
+            }
+
+            .news-counter {
+                bottom: 30px;
+                font-size: 12px;
+                padding: 8px 20px;
+            }
+
+            /* Notebook popup - mobile */
+            .notebook-interactive {
+                width: 95vw;
+                height: 85vh;
+                max-width: none;
+                max-height: none;
+            }
+
+            .notebook-interactive::before,
+            .notebook-interactive::after {
+                width: calc(50% + 20px);
+                left: -15px;
+                right: -15px;
+            }
+
+            .notebook-spine {
+                width: 20px;
+            }
+
+            .notebook-page {
+                padding: 40px 30px 30px 40px;
+            }
+
+            .notebook-title {
+                font-size: 36px;
+                margin-bottom: 30px;
+            }
+
+            .notebook-index-item {
+                font-size: 24px;
+                margin: 24px 0;
+                margin-left: 20px;
+            }
+
+            .notebook-article {
+                font-size: 18px;
+                margin: 18px 0;
+                line-height: 26px;
+                margin-left: 20px;
+            }
+
+            .notebook-back {
+                font-size: 16px;
+                margin-top: 30px;
+            }
+
+            /* Gallery popup - mobile */
+            .gallery-popup {
+                width: 90vw;
+                padding: 40px 30px;
+            }
+
+            .gallery-popup h2 {
+                font-size: 36px;
+            }
+
+            .gallery-popup p {
+                font-size: 14px;
+            }
+
+            /* Schemes popup - mobile */
+            .schemes-image-container img {
+                max-width: 95vw;
+                max-height: 80vh;
+            }
+
+            .hover-hint {
+                font-size: 13px;
+                padding: 10px 20px;
+                bottom: 20px;
+            }
+        }
+
+        /* EXTRA SMALL MOBILE */
+        @media (max-width: 480px) {
+            .header h1 { font-size: 36px; }
+            .header p { font-size: 12px; }
+
+            .camera { width: 120px; height: 94px; }
+            .paints { width: 220px; height: 247px; }
+            .planner { width: 200px; height: 240px; }
+            .airpods { width: 200px; height: 167px; }
+            .coffee { width: 80px; height: 80px; }
+            .phone { width: 90px; height: 173px; }
+            .laptop { width: 350px; height: 245px; }
+            .ipad { width: 270px; height: 385px; }
+            .newspaper { width: 220px; height: 160px; }
+            .notebook { width: 170px; height: 215px; }
+            .book { width: 140px; height: 179px; }
+
+            .popup-heading {
+                font-size: 28px;
+                top: 70px;
+            }
+
+            .airpods-center {
+                width: 220px;
+                height: 220px;
+            }
+
+            .song-card {
+                width: 110px;
+                padding: 8px;
+            }
+
+            .song-card img {
+                height: 95px;
+            }
+
+            .phone-center {
+                width: 160px;
+                height: 309px;
+            }
+
+            .contact-card-mini {
+                width: 120px !important;
+            }
+
+            .contact-card-mini:first-child {
+                width: 150px !important;
+            }
+
+            .art-gallery {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .art-frame:nth-child(1), .art-frame:nth-child(2), 
+            .art-frame:nth-child(3), .art-frame:nth-child(4),
+            .art-frame:nth-child(5), .art-frame:nth-child(6),
+            .art-frame:nth-child(7), .art-frame:nth-child(8),
+            .art-frame:nth-child(9) {
+                width: 160px !important;
+                height: 180px !important;
+            }
+
+            .notebook-page {
+                padding: 30px 20px 20px 30px;
+            }
+
+            .notebook-title {
+                font-size: 28px;
+                margin-bottom: 24px;
+            }
+
+            .notebook-index-item {
+                font-size: 20px;
+                margin: 20px 0;
+            }
+
+            .notebook-article {
+                font-size: 16px;
+                line-height: 22px;
+            }
+        }
+
         .newspaper-popup {
             position: fixed;
             top: 0;
             left: 0;
             width: 100vw;
             height: 100vh;
-            background: rgba(0, 0, 0, 0.5);
-            backdrop-filter: blur(10px);
+            background: transparent;
             display: none;
             z-index: 25000;
             pointer-events: none;
@@ -1220,11 +1649,11 @@
         }
 
         .news-image-container img {
-            max-width: 60vw;
-            max-height: 70vh;
+            max-width: 65vw;
+            max-height: 75vh;
             object-fit: contain;
-            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.7));
             display: block;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.4));
         }
 
         .news-image-container:active {
@@ -1355,10 +1784,10 @@
             <a href="/cdn-cgi/l/email-protection#422f232129272c382b27312a2330327702252f232b2e6c212d2f" target="_blank" class="contact-card-mini">
                 <img src="contact_card.png" alt="Contact Card">
             </a>
-            <a href="https://instagram.com/mackenziesharp" target="_blank" class="contact-card-mini">
+            <a href="https://instagram.com/mackenziecsharp" target="_blank" class="contact-card-mini">
                 <img src="instagram.png" alt="Instagram">
             </a>
-            <a href="https://twitter.com/mackenziesharp" target="_blank" class="contact-card-mini">
+            <a href="https://twitter.com/mackenzie___s" target="_blank" class="contact-card-mini">
                 <img src="x.png" alt="X">
             </a>
             <a href="https://mackenziesharp.substack.com" target="_blank" class="contact-card-mini">
@@ -1370,7 +1799,7 @@
             <a href="https://scholar.google.com/citations?user=haISHYAAAAAJ" target="_blank" class="contact-card-mini">
                 <img src="google_scholar.png" alt="Google Scholar">
             </a>
-            <a href="https://www.linkedin.com/in/mackenziecatherinesharp" target="_blank" class="contact-card-mini">
+            <a href="https://www.linkedin.com/in/mackenziecsharp" target="_blank" class="contact-card-mini">
                 <img src="linkedin.png" alt="LinkedIn">
             </a>
         </div>
@@ -1465,7 +1894,9 @@
     <!-- Notebook popup -->
     <div class="notebook-popup" id="notebookPopup">
         <div class="notebook-interactive">
+            <div class="notebook-pages-left"></div>
             <div class="notebook-spine"></div>
+            <div class="notebook-pages-right"></div>
             <div class="notebook-content">
                 <!-- Index page -->
                 <div class="notebook-page active" id="indexPage">
@@ -1562,7 +1993,7 @@
         </div>
     </div>
 
-    <script>
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
         const deskScene = document.getElementById('deskScene');
         let isDragging = false;
         let currentNotebookSection = 'index';
