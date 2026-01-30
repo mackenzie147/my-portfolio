@@ -5,6 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Mackenzie Sharp - Marketing</title>
     <style>
+        @font-face {
+            font-family: 'MyFont';
+            src: url('myfont-regular.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,8 +19,8 @@
         }
 
         body {
-            font-family: 'Input Mono', 'Courier New', Courier, monospace;
-            background-color: #1a1a1a;
+            font-family: 'MyFont', 'Input Mono', 'Courier New', Courier, monospace;
+            background: #1a1a1a;
             color: #2c2c2c;
             overflow: hidden;
         }
@@ -21,18 +28,18 @@
         /* Back button */
         .back-button {
             position: fixed;
-            top: 20px;
-            left: 20px;
-            padding: 12px 24px;
+            top: 25px;
+            left: 25px;
+            padding: 15px 30px;
             background: rgba(255, 255, 255, 0.95);
-            border: 2px solid #2c2c2c;
-            border-radius: 5px;
+            border: 1px solid rgba(0,0,0,0.1);
             text-decoration: none;
             color: #2c2c2c;
-            font-size: 14px;
+            font-size: 16px;
             transition: all 0.2s;
             z-index: 10000;
-            font-family: 'Input Mono', 'Courier New', monospace;
+            font-family: 'MyFont', 'Input Mono', monospace;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
         }
 
         .back-button:hover {
@@ -40,19 +47,36 @@
             color: white;
         }
 
-        /* Page title */
-        .page-title {
+        /* Header - NEW STYLE */
+        .header {
             position: fixed;
-            top: 20px;
-            right: 20px;
-            font-size: 24px;
-            font-weight: 400;
-            color: white;
-            z-index: 10000;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+            top: 60px;
+            left: 50%;
+            transform: translateX(-50%);
+            text-align: center;
+            z-index: 9999;
+            animation: fadeInDown 0.8s ease;
         }
 
-        /* Desk scene container */
+        .header h1 {
+            font-size: 72px;
+            font-weight: 400;
+            color: #6B7FFF;
+            font-family: 'Brush Script MT', cursive;
+            letter-spacing: 3px;
+            margin-bottom: 5px;
+        }
+
+        .header p {
+            font-size: 18px;
+            color: white;
+            font-weight: 400;
+            letter-spacing: 2px;
+            font-family: 'Courier New', monospace;
+            text-transform: lowercase;
+        }
+
+        /* Desk scene */
         .desk-scene {
             position: relative;
             width: 100vw;
@@ -60,330 +84,1115 @@
             background-image: url('background.png');
             background-size: cover;
             background-position: center;
+            padding-top: 120px;
+            transition: filter 0.3s ease;
+        }
+
+        .desk-scene.blurred {
+            filter: blur(8px);
+        }
+
+        .desk-scene::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, transparent 0%, rgba(0,0,0,0.25) 100%);
+            pointer-events: none;
         }
 
         /* Draggable items */
         .desk-item {
             position: absolute;
-            cursor: move;
-            transition: filter 0.3s ease, transform 0.3s ease;
+            cursor: pointer;
+            transition: all 0.3s ease;
             user-select: none;
             z-index: 10;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
+            animation: floatIn 1s ease forwards;
+            opacity: 0;
         }
 
         .desk-item:hover {
-            filter: drop-shadow(0 0 20px rgba(255, 107, 157, 0.6));
-            transform: scale(1.05);
+            filter: drop-shadow(0 8px 24px rgba(0,0,0,0.3));
+            transform: translateY(-8px) scale(1.05);
             z-index: 100;
         }
 
         .desk-item.dragging {
-            opacity: 0.8;
+            opacity: 0.9;
             z-index: 1000;
         }
 
-        .desk-item img {
+        .desk-item img, .desk-item svg {
             width: 100%;
             height: 100%;
             object-fit: contain;
             pointer-events: none;
         }
 
-        /* Individual item sizes and starting positions - LAPTOP CENTERED AND LARGE */
-        .laptop {
-            width: 500px;
-            height: 360px;
+        /* Coming soon badge */
+        .coming-soon-badge {
+            position: absolute;
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
+            background: rgba(255, 182, 193, 0.95);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
 
-        .coffee {
-            width: 120px;
-            height: 170px;
-            top: 25%;
-            right: 20%;
+        .desk-item.coming-soon:hover .coming-soon-badge {
+            opacity: 1;
         }
 
-        .headphones {
+        .desk-item.coming-soon {
+            cursor: default;
+        }
+
+        .desk-item:nth-child(1) { animation-delay: 0.1s; }
+        .desk-item:nth-child(2) { animation-delay: 0.2s; }
+        .desk-item:nth-child(3) { animation-delay: 0.3s; }
+        .desk-item:nth-child(4) { animation-delay: 0.4s; }
+        .desk-item:nth-child(5) { animation-delay: 0.5s; }
+        .desk-item:nth-child(6) { animation-delay: 0.6s; }
+        .desk-item:nth-child(7) { animation-delay: 0.7s; }
+        .desk-item:nth-child(8) { animation-delay: 0.8s; }
+        .desk-item:nth-child(9) { animation-delay: 0.9s; }
+
+        @keyframes floatIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translate(-50%, -20px); }
+            to { opacity: 1; transform: translate(-50%, 0); }
+        }
+
+        /* UPDATED positions */
+        .camera { 
+            width: 212px;
+            height: 166px;
+            bottom: 37%; 
+            right: 12%; 
+            transform: rotate(3deg);
+        }
+        
+        .paints { 
+            width: 410px;
+            height: 461px;
+            top: 8%; 
+            right: 5%; 
+            transform: rotate(-2deg);
+        }
+        
+        .planner { 
+            width: 360px;
+            height: 432px;
+            bottom: 10%; 
+            right: 8%; 
+            transform: rotate(-8deg);
+        }
+        
+        .airpods { 
+            width: 360px;
+            height: 300px;
+            top: 24%; 
+            left: 12%; 
+            transform: rotate(-15deg);
+        }
+        
+        .coffee { 
+            width: 140px; 
+            height: 140px; 
+            top: 30%; 
+            left: 64%; 
+            transform: translateX(-50%) rotate(-3deg);
+        }
+        
+        .phone { 
+            width: 154px;
+            height: 297px;
+            top: 30%; 
+            left: 31%; 
+            transform: rotate(8deg);
+        }
+        
+        .laptop { 
+            width: 621px;
+            height: 435px;
+            top: 38%; 
+            left: 32%; 
+            transform: translateX(-50%) rotate(0deg);
+        }
+        
+        .ipad { 
+            width: 484px;
+            height: 691px;
+            top: 33%; 
+            left: 5%; 
+            transform: rotate(-8deg);
+        }
+        
+        .newspaper { 
+            width: 392px;
+            height: 284px;
+            top: 8%; 
+            left: 8%; 
+            transform: rotate(12deg);
+        }
+
+        .notebook { 
+            width: 300px;
+            height: 380px;
+            bottom: 8%; 
+            left: 8%; 
+            transform: rotate(-5deg);
+        }
+
+        /* Item labels - DIRECTLY ON ITEMS */
+        .item-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(255, 255, 255, 0.95);
+            color: #2c2c2c;
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            z-index: 100;
+            font-family: 'Brush Script MT', cursive;
+            letter-spacing: 0.5px;
+        }
+
+        .desk-item:hover .item-label {
+            opacity: 1;
+        }
+
+        /* Popup heading - smaller for Spotify */
+        .popup-heading {
+            position: fixed;
+            top: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 32px;
+            font-weight: 400;
+            font-family: 'Brush Script MT', cursive;
+            letter-spacing: 1px;
+            color: #6B7FFF;
+            z-index: 25010;
+            text-align: center;
+            animation: fadeIn 0.5s ease;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            padding: 15px 35px;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .popup-heading.hidden {
+            display: none;
+        }
+
+        /* Coffee popup */
+        .coffee-popup {
+            position: fixed;
+            width: 400px;
+            height: 400px;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-3deg);
+            background-image: url('coffee.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            z-index: 25000;
+            display: none;
+            pointer-events: none;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
+        }
+
+        .coffee-popup.active {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: all;
+        }
+
+        .coffee-popup h3 {
+            font-size: 24px;
+            margin-bottom: 15px;
+            color: white;
+            text-align: center;
+            font-family: 'Georgia', serif;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.8);
+        }
+
+        .coffee-stat {
+            margin: 8px 0;
+            font-size: 18px;
+            font-family: 'Georgia', serif;
+            text-align: center;
+            color: white;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        }
+
+        .coffee-label {
+            display: inline;
+            color: white;
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .coffee-value {
+            display: inline;
+            color: white;
+            font-size: 18px;
+            margin-left: 8px;
+        }
+
+        .coffee-update {
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 2px solid rgba(255,255,255,0.4);
+            font-size: 16px;
+            color: white;
+            text-align: center;
+            font-family: 'Georgia', serif;
+            text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+        }
+
+        .close-popup {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 40px;
+            height: 40px;
+            background: rgba(0,0,0,0.1);
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: #666;
+            transition: all 0.2s;
+            z-index: 10;
+        }
+
+        .close-popup:hover {
+            background: rgba(0,0,0,0.2);
+            transform: rotate(90deg);
+        }
+
+        /* Headphones popup */
+        .headphones-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            display: none;
+            z-index: 25000;
+            pointer-events: none;
+        }
+
+        .headphones-popup.active {
+            display: block;
+            pointer-events: all;
+        }
+
+        .headphones-popup.active ~ .header {
+            display: none;
+        }
+
+        .airpods-center {
+            width: 400px;
+            height: 400px;
+            background-image: url('airpods.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) rotate(-15deg);
+            z-index: 25005;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
+            animation: subtleWiggle 3s ease-in-out infinite;
+        }
+
+        @keyframes subtleWiggle {
+            0%, 100% { 
+                transform: translate(-50%, -50%) rotate(-15deg);
+            }
+            25% { 
+                transform: translate(-50%, -50%) rotate(-16deg);
+            }
+            75% { 
+                transform: translate(-50%, -50%) rotate(-14deg);
+            }
+        }
+
+        .songs-circle {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 900px;
+            height: 900px;
+            transform: translate(-50%, -50%);
+            z-index: 25001;
+        }
+
+        .song-card {
+            position: absolute;
             width: 180px;
-            height: 180px;
-            top: 20%;
-            left: 25%;
+            background: white;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            transition: transform 0.3s;
+            text-decoration: none;
+            display: block;
         }
 
-        .camera {
-            width: 150px;
-            height: 140px;
-            bottom: 20%;
-            left: 25%;
+        .song-card:hover {
+            transform: scale(1.1);
+            z-index: 25010;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
         }
 
-        .phone {
-            width: 100px;
-            height: 170px;
-            top: 55%;
-            right: 15%;
-        }
-
-        .vision-board {
-            width: 280px;
-            height: 200px;
-            top: 10%;
-            left: 5%;
-        }
-
-        .watercolour {
-            width: 220px;
+        .song-card img {
+            width: 100%;
             height: 160px;
-            bottom: 15%;
-            right: 18%;
+            object-fit: cover;
+            border-radius: 6px;
+            margin-bottom: 10px;
         }
 
-        .newspaper {
-            width: 200px;
-            height: 140px;
-            top: 15%;
-            right: 8%;
+        .song-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 5px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: Arial, sans-serif;
         }
 
-        .journal {
-            width: 160px;
-            height: 200px;
-            bottom: 12%;
+        .song-artist {
+            font-size: 13px;
+            color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            font-family: Arial, sans-serif;
+        }
+
+        .song-card:nth-child(1) { 
+            bottom: 8%; 
+            left: 50%; 
+            transform: translateX(-50%);
+        }
+        .song-card:nth-child(2) { 
+            bottom: 18%; 
+            left: 10%;
+        }
+        .song-card:nth-child(3) { 
+            top: 25%; 
             left: 8%;
         }
+        .song-card:nth-child(4) { 
+            top: 25%; 
+            right: 8%;
+        }
+        .song-card:nth-child(5) { 
+            bottom: 18%; 
+            right: 10%;
+        }
 
-        /* Popup panels */
-        .popup {
-            position: absolute;
-            top: -250px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 255, 255, 0.98);
-            border: 2px solid #2c2c2c;
-            border-radius: 12px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.4);
-            opacity: 0;
-            visibility: hidden;
-            transition: all 0.3s ease;
-            z-index: 200;
-            min-width: 280px;
-            max-width: 380px;
+        /* Phone popup - NO MORE HEADING */
+        .phone-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            display: none;
+            z-index: 25000;
             pointer-events: none;
-            backdrop-filter: blur(10px);
         }
 
-        .desk-item:hover .popup {
-            opacity: 1;
-            visibility: visible;
+        .phone-popup.active {
+            display: block;
+            pointer-events: all;
         }
 
-        .popup h3 {
-            font-size: 18px;
-            margin-bottom: 12px;
-            color: #2c2c2c;
-            font-weight: 600;
-            border-bottom: 2px solid #ff6b9d;
-            padding-bottom: 8px;
+        .phone-popup.active ~ .header {
+            display: none;
         }
 
-        .popup p {
-            font-size: 13px;
-            line-height: 1.6;
-            color: #666;
-            margin-bottom: 8px;
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        .phone-center {
+            width: 250px;
+            height: 483px;
+            background-image: url('phone.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 24999;
+            filter: drop-shadow(0 0 30px rgba(255, 255, 255, 0.4));
+            animation: subtleWiggle 3s ease-in-out infinite;
         }
 
-        .popup a {
-            color: #ff6b9d;
-            text-decoration: none;
-            font-size: 13px;
-            display: inline-block;
-            margin-top: 8px;
-            font-weight: 600;
-            pointer-events: auto;
+        .contacts-circle {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            width: 1200px;
+            height: 1200px;
+            transform: translate(-50%, -50%);
+            z-index: 25005;
         }
 
-        .popup a:hover {
-            text-decoration: underline;
+        .contact-card-mini {
+            position: absolute;
+            width: 240px;
+            transition: all 0.5s ease;
+            cursor: pointer;
+            z-index: 25006;
         }
 
-        /* Spotify embed */
-        .spotify-embed {
-            margin-top: 12px;
+        .contact-card-mini:hover {
+            z-index: 25011 !important;
+            transform: translate(-50%, -50%) scale(1.8) !important;
+            top: 50% !important;
+            left: 50% !important;
+        }
+
+        .contact-card-mini img {
+            width: 100%;
+            height: auto;
+            object-fit: contain;
+            display: block;
+        }
+
+        .contact-card-mini:nth-child(1) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(calc(-50% - 300px), calc(-50% - 280px));
+        }
+        .contact-card-mini:nth-child(2) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(calc(-50% + 300px), calc(-50% - 100px));
+        }
+        .contact-card-mini:nth-child(3) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(calc(-50% + 350px), calc(-50% + 100px));
+        }
+        .contact-card-mini:nth-child(4) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(calc(-50% + 250px), calc(-50% + 280px));
+        }
+        .contact-card-mini:nth-child(5) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(-50%, calc(-50% + 350px));
+        }
+        .contact-card-mini:nth-child(6) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(calc(-50% - 250px), calc(-50% + 280px));
+        }
+        .contact-card-mini:nth-child(7) { 
+            top: 50%; 
+            left: 50%; 
+            transform: translate(calc(-50% - 350px), -50%);
+        }
+
+        .popup {
+            position: fixed;
             border-radius: 12px;
-            overflow: hidden;
-            pointer-events: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            z-index: 25000;
+            display: none;
+            animation: popIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* Hover hint */
+        .popup.active {
+            display: block;
+        }
+
+        @keyframes popIn {
+            from { opacity: 0; transform: scale(0.8); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        /* Booking popup - VIDEO GAME DIALOGUE STYLE */
+        .booking-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            background: #2a2a3e;
+            border: 3px solid #ffffff;
+            border-radius: 8px;
+            padding: 30px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+            z-index: 25000;
+            text-align: center;
+            display: none;
+        }
+
+        .booking-popup.active {
+            display: block;
+        }
+
+        .booking-popup h2 {
+            font-family: 'Courier New', monospace;
+            font-size: 20px;
+            color: #ffffff;
+            margin-bottom: 25px;
+            text-align: left;
+            line-height: 1.6;
+        }
+
+        .booking-popup a {
+            display: inline-block;
+            background: transparent;
+            color: #ffffff;
+            padding: 12px 30px;
+            border: 2px solid #ffffff;
+            border-radius: 4px;
+            text-decoration: none;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            font-weight: normal;
+            margin-top: 15px;
+            transition: all 0.2s;
+        }
+
+        .booking-popup a:hover {
+            background: #ffffff;
+            color: #2a2a3e;
+        }
+
+        /* Notebook popup - BIGGER PAGES */
+        .notebook-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            display: none;
+            z-index: 25000;
+            pointer-events: none;
+        }
+
+        .notebook-popup.active {
+            display: block;
+            pointer-events: all;
+        }
+
+        .notebook-popup.active ~ .header {
+            display: none;
+        }
+
+        .notebook-image {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25001;
+            cursor: pointer;
+            filter: drop-shadow(0 20px 60px rgba(0,0,0,0.4));
+            transition: all 0.3s;
+        }
+
+        .notebook-image.index-page {
+            max-width: 70%;
+            max-height: 85%;
+        }
+
+        .notebook-image.inside-page {
+            max-width: 85%;
+            max-height: 95%;
+        }
+
+        /* Art popup - REPOSITIONED with ART DECO FRAMES */
+        .art-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            display: none;
+            z-index: 25000;
+            pointer-events: none;
+        }
+
+        .art-popup.active {
+            display: block;
+            pointer-events: all;
+        }
+
+        .art-popup.active ~ .header {
+            display: none;
+        }
+
+        .art-instagram {
+            position: fixed;
+            left: 15%;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 280px;
+            z-index: 25001;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+        .art-instagram:hover {
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        .art-gallery {
+            position: fixed;
+            right: 8%;
+            top: 50%;
+            transform: translateY(-50%);
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 60px;
+            z-index: 25001;
+        }
+
+        .art-frame {
+            position: relative;
+            width: 160px;
+            height: 160px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        /* Art Deco Gold Frame */
+        .art-frame::before {
+            content: '';
+            position: absolute;
+            top: -18px;
+            left: -18px;
+            right: -18px;
+            bottom: -18px;
+            background: linear-gradient(135deg, #d4af37 0%, #f4e5b0 25%, #d4af37 50%, #8b7322 75%, #d4af37 100%);
+            border: 3px solid #8b7322;
+            box-shadow: 
+                inset 0 2px 4px rgba(255,255,255,0.4),
+                inset 0 -2px 4px rgba(0,0,0,0.3),
+                0 8px 20px rgba(0,0,0,0.4);
+            z-index: 1;
+        }
+
+        /* Inner decorative border */
+        .art-frame::after {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            border: 2px solid #8b7322;
+            z-index: 2;
+            box-shadow: 0 0 0 1px #f4e5b0;
+        }
+
+        .art-frame:hover {
+            transform: scale(1.08);
+            filter: drop-shadow(0 12px 30px rgba(212, 175, 55, 0.5));
+        }
+
+        .art-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            position: relative;
+            z-index: 3;
+        }
+
+        .newspaper-popup {
+            width: 700px;
+            height: 600px;
+            bottom: 14%;
+            right: 12%;
+            background: white;
+            padding: 40px;
+        }
+
+        .newspaper-content h2 {
+            font-size: 36px;
+            margin-bottom: 25px;
+            font-family: 'Brush Script MT', cursive;
+            color: #6B7FFF;
+        }
+
+        .newspaper-content p {
+            font-size: 16px;
+            line-height: 1.8;
+            color: #2c2c2c;
+            margin-bottom: 18px;
+        }
+
         .hover-hint {
             position: fixed;
-            bottom: 30px;
+            bottom: 35px;
             left: 50%;
             transform: translateX(-50%);
-            color: rgba(255, 255, 255, 0.9);
-            font-size: 14px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 15px;
             z-index: 9999;
-            animation: fadeInOut 3s ease-in-out infinite;
-            background: rgba(0, 0, 0, 0.7);
-            padding: 10px 20px;
-            border-radius: 20px;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            padding: 12px 25px;
+            border-radius: 25px;
+            font-weight: 400;
+            animation: fadeIn 1s ease 1s both;
         }
 
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Mobile adjustments */
-        @media (max-width: 768px) {
-            .laptop {
-                width: 350px;
-                height: 250px;
-            }
-
-            .popup {
-                min-width: 250px;
-                max-width: 90vw;
-                font-size: 12px;
-            }
-            
-            .page-title {
-                font-size: 18px;
-            }
-
-            .desk-item:not(.laptop) {
-                transform: scale(0.7);
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
     <a href="index.html" class="back-button">← back home</a>
-    <div class="page-title">viral marketing</div>
-    <div class="hover-hint">drag items around • hover for info ✨</div>
 
-    <div class="desk-scene">
-        
-        <!-- Laptop - CENTER AND LARGE -->
-        <div class="desk-item laptop" draggable="true">
-            <img src="laptop.png" alt="laptop">
-            <div class="popup">
-                <h3>digital workspace 💻</h3>
-                <p>Building viral campaigns for Opal Camera</p>
-                <p>Automated content pipelines & growth loops</p>
-                <p>Memetic frameworks & social experiments</p>
-                <a href="https://github.com/mackenzie147" target="_blank">github →</a>
-            </div>
-        </div>
-
-        <!-- Coffee - top right -->
-        <div class="desk-item coffee" draggable="true">
-            <img src="coffee.png" alt="coffee">
-            <div class="popup">
-                <h3>fuel ☕</h3>
-                <p>Staying caffeinated while scheming</p>
-                <p>Usually: matcha or cold brew</p>
-                <p>Consumption level: concerning</p>
-            </div>
-        </div>
-
-        <!-- Headphones - top left -->
-        <div class="desk-item headphones" draggable="true">
-            <img src="headphones.png" alt="headphones">
-            <div class="popup">
-                <h3>current vibe 🎧</h3>
-                <p>what i'm listening to while plotting</p>
-                <div class="spotify-embed">
-                    <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/37i9dQZF1DXcBWIGoYBM5M?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
-                </div>
-            </div>
-        </div>
-
-        <!-- Camera - bottom left -->
-        <div class="desk-item camera" draggable="true">
-            <img src="camera.png" alt="camera">
-            <div class="popup">
-                <h3>contax t2 📷</h3>
-                <p>Documenting SF moments</p>
-                <p>Film: Portra 400 usually</p>
-                <p>Content creation IRL</p>
-            </div>
-        </div>
-
-        <!-- Phone - middle right -->
-        <div class="desk-item phone" draggable="true">
-            <img src="phone.png" alt="phone">
-            <div class="popup">
-                <h3>doom scrolling device 📱</h3>
-                <p>Twitter: research & engagement</p>
-                <p>Reddit: trend spotting</p>
-                <p>TikTok: memetic analysis</p>
-            </div>
-        </div>
-
-        <!-- Vision Board - far top left -->
-        <div class="desk-item vision-board" draggable="true">
-            <img src="red_string_board.png" alt="vision board">
-            <div class="popup">
-                <h3>the conspiracy board 🧵</h3>
-                <p>Connecting the dots</p>
-                <p>Campaign flows & content calendars</p>
-                <p>Where the magic happens</p>
-            </div>
-        </div>
-
-        <!-- Watercolour - bottom right -->
-        <div class="desk-item watercolour" draggable="true">
-            <img src="watercolour.png" alt="watercolour">
-            <div class="popup">
-                <h3>creative tools 🎨</h3>
-                <p>For visual brainstorming</p>
-                <p>Campaign mood boards</p>
-                <p>Analog creativity meets digital strategy</p>
-            </div>
-        </div>
-
-        <!-- Newspaper - far top right -->
-        <div class="desk-item newspaper" draggable="true">
-            <img src="newspaper.png" alt="newspaper">
-            <div class="popup">
-                <h3>research & inspo 📰</h3>
-                <p>Staying on top of trends</p>
-                <p>Cultural moments & news cycles</p>
-                <p>Analog inspiration</p>
-            </div>
-        </div>
-
-        <!-- Journal - far bottom left -->
-        <div class="desk-item journal" draggable="true">
-            <img src="journal.png" alt="journal">
-            <div class="popup">
-                <h3>schemes & ideas 📓</h3>
-                <p>Campaign concepts & growth experiments</p>
-                <p>Viral mechanics & engagement loops</p>
-                <a href="https://mackenziesharp.substack.com/" target="_blank">my writing →</a>
-            </div>
-        </div>
-
+    <div class="header">
+        <h1>my desk</h1>
+        <p>creative portfolio</p>
     </div>
 
-    <script>
-        // Drag and drop functionality
+    <!-- Booking popup -->
+    <div class="booking-popup" id="bookingPopup">
+        <button class="close-popup" onclick="closePopup('bookingPopup')">×</button>
+        <h2>want to chat?</h2>
+        <a href="https://calendar.app.google/Ve7QmQjQkUDT5FDdA" target="_blank">https://calendar.app.google/Ve7QmQjQkUDT5FDdA</a>
+    </div>
+
+    <!-- Coffee popup -->
+    <div class="coffee-popup" id="coffeePopup">
+        <h3>Live Coffee Tracker <span style="font-size: 13px; font-weight: 600; margin-left: 8px; font-style: italic;">sourced from my credit card statements</span></h3>
+        <div class="coffee-stat">
+            <span class="coffee-label">Coffee #</span><span class="coffee-value" id="coffeeNumber">2</span>
+        </div>
+        <div class="coffee-stat">
+            <span class="coffee-label">Brew</span><span class="coffee-value" id="coffeeBrew">Oatmilk Latte</span>
+        </div>
+        <div class="coffee-stat">
+            <span class="coffee-label">From</span><span class="coffee-value" id="coffeeShop">Sightglass</span>
+        </div>
+        <div class="coffee-stat">
+            <span class="coffee-label">Location</span><span class="coffee-value" id="coffeeLocation">SOMA, SF</span>
+        </div>
+        <div class="coffee-stat">
+            <span class="coffee-label">Beans from</span><span class="coffee-value" id="coffeeBeans">Ethiopia</span>
+        </div>
+        <div class="coffee-stat">
+            <span class="coffee-label">Caffeine</span><span class="coffee-value" id="coffeeCaffeine">~150mg</span>
+        </div>
+        <div class="coffee-update">
+            <span id="coffeeTime">Last coffee: Today 3:00 PM</span>
+        </div>
+        <button class="close-popup" onclick="closePopup('coffeePopup')" style="background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Headphones popup -->
+    <div class="headphones-popup" id="headphonesPopup">
+        <div class="popup-heading">last 5 songs... linked to my spotify</div>
+        <div class="airpods-center"></div>
+        <div class="songs-circle">
+            <a href="https://open.spotify.com/track/4HjtHraeKy5wA4DA9o92HZ" target="_blank" class="song-card">
+                <img src="backseat.png" alt="Charli XCX - Backseat">
+                <div class="song-title">Backseat (feat. Carly Rae Jepsen)</div>
+                <div class="song-artist">Charli XCX</div>
+            </a>
+            <a href="https://open.spotify.com/track/0WAEGVylZjbe2mQ6Or6HxY" target="_blank" class="song-card">
+                <img src="cannock.png" alt="Labi Siffre - Cannock Chase">
+                <div class="song-title">Cannock Chase</div>
+                <div class="song-artist">Labi Siffre</div>
+            </a>
+            <a href="https://open.spotify.com/track/3cVTB0mY8R5yjl47mgNCQq" target="_blank" class="song-card">
+                <img src="daily_lady.png" alt="Djo - Daily Lady">
+                <div class="song-title">Daily Lady</div>
+                <div class="song-artist">Djo</div>
+            </a>
+            <a href="https://open.spotify.com/track/45Z3m6yazmAi4jZuW0tzW0" target="_blank" class="song-card">
+                <img src="harry.png" alt="Harry Styles - Aperture">
+                <div class="song-title">Aperture</div>
+                <div class="song-artist">Harry Styles</div>
+            </a>
+            <a href="https://open.spotify.com/track/1nkNVZ1kqM1yLrwQS6YrmS" target="_blank" class="song-card">
+                <img src="social_cues.png" alt="Cage The Elephant - Social Cues">
+                <div class="song-title">Social Cues</div>
+                <div class="song-artist">Cage The Elephant</div>
+            </a>
+        </div>
+        <button class="close-popup" onclick="closePopup('headphonesPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Phone popup -->
+    <div class="phone-popup" id="phonePopup">
+        <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); font-size: 42px; font-family: 'Brush Script MT', cursive; color: #6B7FFF; z-index: 25010;">contact me</div>
+        <div class="phone-center"></div>
+        <div class="contacts-circle">
+            <a href="/cdn-cgi/l/email-protection#422f232129272c382b27312a2330327702252f232b2e6c212d2f" target="_blank" class="contact-card-mini">
+                <img src="contact_card.png" alt="Contact Card">
+            </a>
+            <a href="https://instagram.com/mackenziesharp" target="_blank" class="contact-card-mini">
+                <img src="instagram.png" alt="Instagram">
+            </a>
+            <a href="https://twitter.com/mackenziesharp" target="_blank" class="contact-card-mini">
+                <img src="x.png" alt="X">
+            </a>
+            <a href="https://mackenziesharp.substack.com" target="_blank" class="contact-card-mini">
+                <img src="substack.png" alt="Substack">
+            </a>
+            <a href="https://researchandart.substack.com" target="_blank" class="contact-card-mini">
+                <img src="research.png" alt="Research">
+            </a>
+            <a href="https://scholar.google.com/citations?user=haISHYAAAAAJ" target="_blank" class="contact-card-mini">
+                <img src="google_scholar.png" alt="Google Scholar">
+            </a>
+            <a href="https://www.linkedin.com/in/mackenziecatherinesharp" target="_blank" class="contact-card-mini">
+                <img src="linkedin.png" alt="LinkedIn">
+            </a>
+        </div>
+        <button class="close-popup" onclick="closePopup('phonePopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Notebook popup -->
+    <div class="notebook-popup" id="notebookPopup">
+        <img src="writing_index.png" alt="Writing Index" class="notebook-image index-page" id="notebookImage" onclick="nextNotebookPage()">
+        <button class="close-popup" onclick="closePopup('notebookPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Art popup -->
+    <div class="art-popup" id="artPopup">
+        <a href="https://instagram.com/mackenziesharp" target="_blank" id="artInstagramLink">
+            <img src="art_instagram.png" alt="Art Instagram" class="art-instagram">
+        </a>
+        <div class="art-gallery">
+            <div class="art-frame">
+                <img src="photo01.png" alt="Art 1">
+            </div>
+            <div class="art-frame">
+                <img src="photo02.png" alt="Art 2">
+            </div>
+            <div class="art-frame">
+                <img src="photo03.png" alt="Art 3">
+            </div>
+            <div class="art-frame">
+                <img src="photo04.png" alt="Art 4">
+            </div>
+            <div class="art-frame">
+                <img src="photo05.png" alt="Art 5">
+            </div>
+            <div class="art-frame">
+                <img src="photo06.png" alt="Art 6">
+            </div>
+            <div class="art-frame">
+                <img src="photo07.png" alt="Art 7">
+            </div>
+            <div class="art-frame">
+                <img src="photo08.png" alt="Art 8">
+            </div>
+            <div class="art-frame">
+                <img src="photo09.png" alt="Art 9">
+            </div>
+        </div>
+        <button class="close-popup" onclick="closePopup('artPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Newspaper popup -->
+    <div class="popup newspaper-popup" id="newspaperPopup">
+        <button class="close-popup" onclick="closePopup('newspaperPopup')">×</button>
+        <div class="newspaper-content">
+            <h2>Coming Soon</h2>
+            <p>This section is currently under construction. Check back soon for updates!</p>
+        </div>
+    </div>
+
+    <div class="desk-scene" id="deskScene">
+        <div class="desk-item camera coming-soon" draggable="true">
+            <img src="camera.png" alt="Camera">
+            <div class="coming-soon-badge">coming soon</div>
+            <div class="item-label">gallery</div>
+        </div>
+
+        <div class="desk-item paints" draggable="true" onclick="showPopup('artPopup')">
+            <img src="paints.png" alt="Paints">
+            <div class="item-label">art stuff</div>
+        </div>
+
+        <div class="desk-item planner" draggable="true" onclick="showPopup('bookingPopup')">
+            <img src="planner.png" alt="Planner">
+            <div class="item-label">calendar</div>
+        </div>
+
+        <div class="desk-item airpods" draggable="true" onclick="showPopup('headphonesPopup')">
+            <img src="airpods.png" alt="AirPods">
+            <div class="item-label">Music</div>
+        </div>
+
+        <div class="desk-item coffee" draggable="true" onclick="showPopup('coffeePopup')">
+            <img src="coffee.png" alt="Coffee">
+            <div class="item-label">Coffee Tracker</div>
+        </div>
+
+        <div class="desk-item phone" draggable="true" onclick="showPopup('phonePopup')">
+            <img src="phone.png" alt="Phone">
+            <div class="item-label">Contact</div>
+        </div>
+
+        <div class="desk-item laptop coming-soon" draggable="true">
+            <img src="laptop.png" alt="Laptop">
+            <div class="coming-soon-badge">coming soon</div>
+            <div class="item-label">schemes and projects</div>
+        </div>
+
+        <div class="desk-item ipad coming-soon" draggable="true">
+            <img src="ipad.png" alt="iPad">
+            <div class="coming-soon-badge">coming soon</div>
+            <div class="item-label">coming soon...</div>
+        </div>
+
+        <div class="desk-item newspaper coming-soon" draggable="true">
+            <img src="newspaper.png" alt="Newspaper">
+            <div class="coming-soon-badge">coming soon</div>
+            <div class="item-label">as seen in</div>
+        </div>
+
+        <div class="desk-item notebook" draggable="true" onclick="showPopup('notebookPopup')">
+            <img src="notebook.png" alt="Notebook">
+            <div class="item-label">writing</div>
+        </div>
+    </div>
+
+    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+        const deskScene = document.getElementById('deskScene');
+        let isDragging = false;
+        let notebookPage = 0;
+
+        function showPopup(popupId) {
+            if (isDragging) return;
+            
+            document.querySelectorAll('.popup').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.headphones-popup, .phone-popup, .coffee-popup, .booking-popup, .notebook-popup, .art-popup').forEach(p => p.classList.remove('active'));
+            
+            deskScene.classList.add('blurred');
+            
+            if (popupId === 'headphonesPopup') {
+                const heading = document.querySelector('.popup-heading');
+                if (heading) heading.classList.remove('hidden');
+                document.querySelector('.header').style.display = 'none';
+            }
+            
+            if (popupId === 'notebookPopup') {
+                notebookPage = 0;
+                const img = document.getElementById('notebookImage');
+                img.src = 'writing_index.png';
+                img.className = 'notebook-image index-page';
+                document.querySelector('.header').style.display = 'none';
+            }
+            
+            if (popupId === 'artPopup' || popupId === 'phonePopup') {
+                document.querySelector('.header').style.display = 'none';
+            }
+            
+            document.getElementById(popupId).classList.add('active');
+        }
+
+        function closePopup(popupId) {
+            document.getElementById(popupId).classList.remove('active');
+            deskScene.classList.remove('blurred');
+            document.querySelector('.header').style.display = 'block';
+        }
+
+        function nextNotebookPage() {
+            const img = document.getElementById('notebookImage');
+            if (notebookPage === 0) {
+                notebookPage = 1;
+                img.src = 'inside.png';
+                img.className = 'notebook-image inside-page';
+            } else {
+                // Loop back to start or go to next page if you add more
+                notebookPage = 0;
+                img.src = 'writing_index.png';
+                img.className = 'notebook-image index-page';
+            }
+        }
+
+        function updateCoffeeData() {
+            const now = new Date();
+            const time = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+            document.getElementById('coffeeTime').textContent = `Last coffee: Today 3:00 PM`;
+        }
+
+        setInterval(updateCoffeeData, 60000);
+        updateCoffeeData();
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.popup').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.headphones-popup, .phone-popup, .coffee-popup, .booking-popup, .notebook-popup, .art-popup').forEach(p => p.classList.remove('active'));
+                deskScene.classList.remove('blurred');
+                document.querySelector('.header').style.display = 'block';
+            }
+        });
+
         let draggedElement = null;
         let offsetX = 0;
         let offsetY = 0;
 
         document.querySelectorAll('.desk-item').forEach(item => {
             item.addEventListener('dragstart', (e) => {
+                isDragging = true;
                 draggedElement = item;
                 item.classList.add('dragging');
                 
-                // Calculate offset from where user clicked
                 const rect = item.getBoundingClientRect();
                 offsetX = e.clientX - rect.left;
                 offsetY = e.clientY - rect.top;
@@ -394,10 +1203,10 @@
             item.addEventListener('dragend', (e) => {
                 item.classList.remove('dragging');
                 draggedElement = null;
+                setTimeout(() => { isDragging = false; }, 100);
             });
         });
 
-        // Allow drop on desk
         document.querySelector('.desk-scene').addEventListener('dragover', (e) => {
             e.preventDefault();
             e.dataTransfer.dropEffect = 'move';
@@ -406,7 +1215,6 @@
         document.querySelector('.desk-scene').addEventListener('drop', (e) => {
             e.preventDefault();
             if (draggedElement) {
-                // Position relative to desk scene
                 const deskRect = document.querySelector('.desk-scene').getBoundingClientRect();
                 const newX = e.clientX - deskRect.left - offsetX;
                 const newY = e.clientY - deskRect.top - offsetY;
@@ -415,42 +1223,8 @@
                 draggedElement.style.top = newY + 'px';
                 draggedElement.style.bottom = 'auto';
                 draggedElement.style.right = 'auto';
-                draggedElement.style.transform = 'none';
             }
         });
-
-        // Sparkle trail effect
-        const sparkleChars = ['✦', '✧', '⋆', '·', '˚', '✵', '∗'];
-        const colors = ['#ff6b9d', '#a855f7', '#6bcf7f', '#ffd93d', '#4a9eff'];
-        
-        if (window.innerWidth > 768) {
-            document.addEventListener('mousemove', (e) => {
-                if (Math.random() > 0.75) {
-                    const sparkle = document.createElement('span');
-                    sparkle.textContent = sparkleChars[Math.floor(Math.random() * sparkleChars.length)];
-                    sparkle.style.position = 'fixed';
-                    sparkle.style.left = e.clientX + (Math.random() * 20 - 10) + 'px';
-                    sparkle.style.top = e.clientY + (Math.random() * 20 - 10) + 'px';
-                    sparkle.style.pointerEvents = 'none';
-                    sparkle.style.color = colors[Math.floor(Math.random() * colors.length)];
-                    sparkle.style.fontSize = Math.random() * 8 + 12 + 'px';
-                    sparkle.style.zIndex = '9999';
-                    sparkle.style.transition = 'all 1s ease-out';
-                    sparkle.style.opacity = '0.8';
-                    
-                    document.body.appendChild(sparkle);
-                    
-                    setTimeout(() => {
-                        sparkle.style.opacity = '0';
-                        sparkle.style.transform = `translateY(-${Math.random() * 30 + 20}px)`;
-                    }, 50);
-                    
-                    setTimeout(() => {
-                        sparkle.remove();
-                    }, 1100);
-                }
-            });
-        }
     </script>
 </body>
 </html>
