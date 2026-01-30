@@ -139,8 +139,8 @@
             top: 50%;
             left: 50%;
             transform: translate(-50%, -50%);
-            background: rgba(255, 182, 193, 0.95);
-            color: white;
+            background: rgba(255, 255, 255, 0.95);
+            color: #2c2c2c;
             padding: 8px 16px;
             border-radius: 20px;
             font-size: 16px;
@@ -261,6 +261,14 @@
             transform: rotate(-5deg);
         }
 
+        .book { 
+            width: 250px;
+            height: 320px;
+            top: 8%; 
+            left: 30%; 
+            transform: rotate(12deg);
+        }
+
         /* Item labels - DIRECTLY ON ITEMS */
         .item-label {
             position: absolute;
@@ -287,13 +295,13 @@
             opacity: 1;
         }
 
-        /* Popup heading - smaller for Spotify */
+        /* Popup heading - for Spotify */
         .popup-heading {
             position: fixed;
             top: 100px;
             left: 50%;
             transform: translateX(-50%);
-            font-size: 32px;
+            font-size: 35px;
             font-weight: 400;
             font-family: 'Brush Script MT', cursive;
             letter-spacing: 1px;
@@ -301,11 +309,15 @@
             z-index: 25010;
             text-align: center;
             animation: fadeIn 0.5s ease;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            padding: 15px 35px;
-            border-radius: 20px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .popup-heading .spotify-link {
+            display: block;
+            font-size: 14px;
+            font-family: 'Courier New', monospace;
+            color: white;
+            margin-top: 5px;
+            font-weight: normal;
         }
 
         .popup-heading.hidden {
@@ -469,7 +481,7 @@
 
         .song-card {
             position: absolute;
-            width: 180px;
+            width: 162px;
             background: white;
             border: 1px solid #e0e0e0;
             border-radius: 10px;
@@ -488,7 +500,7 @@
 
         .song-card img {
             width: 100%;
-            height: 160px;
+            height: 144px;
             object-fit: cover;
             border-radius: 6px;
             margin-bottom: 10px;
@@ -587,9 +599,13 @@
         .contact-card-mini {
             position: absolute;
             width: 240px;
-            transition: all 0.5s ease;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
             z-index: 25006;
+        }
+
+        .contact-card-mini:first-child {
+            width: 312px;
         }
 
         .contact-card-mini:hover {
@@ -597,6 +613,10 @@
             transform: translate(-50%, -50%) scale(1.8) !important;
             top: 50% !important;
             left: 50% !important;
+        }
+
+        .contact-card-mini:first-child:hover {
+            z-index: 25015 !important;
         }
 
         .contact-card-mini img {
@@ -677,6 +697,28 @@
             display: none;
         }
 
+        /* Notebook popup */
+        .notebook-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            display: none;
+            z-index: 25000;
+            pointer-events: none;
+        }
+
+        .notebook-popup.active {
+            display: block;
+            pointer-events: all;
+        }
+
+        .notebook-popup.active ~ .header {
+            display: none;
+        }
+
         .booking-popup.active {
             display: block;
         }
@@ -732,27 +774,6 @@
             display: none;
         }
 
-        .notebook-image {
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            z-index: 25001;
-            cursor: pointer;
-            filter: drop-shadow(0 20px 60px rgba(0,0,0,0.4));
-            transition: all 0.3s;
-        }
-
-        .notebook-image.index-page {
-            max-width: 70%;
-            max-height: 85%;
-        }
-
-        .notebook-image.inside-page {
-            max-width: 85%;
-            max-height: 95%;
-        }
-
         /* Art popup - REPOSITIONED with ART DECO FRAMES */
         .art-popup {
             position: fixed;
@@ -777,17 +798,18 @@
 
         .art-instagram {
             position: fixed;
-            left: 15%;
+            left: 19%;
             top: 50%;
             transform: translateY(-50%);
             width: 280px;
             z-index: 25001;
             cursor: pointer;
-            transition: transform 0.3s;
+            transition: all 0.3s;
         }
 
         .art-instagram:hover {
             transform: translateY(-50%) scale(1.05);
+            z-index: 25020 !important;
         }
 
         .art-gallery {
@@ -797,32 +819,42 @@
             transform: translateY(-50%);
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 60px;
+            gap: 40px;
             z-index: 25001;
         }
 
         .art-frame {
             position: relative;
-            width: 160px;
-            height: 160px;
             cursor: pointer;
             transition: all 0.3s;
+            filter: drop-shadow(0 8px 20px rgba(0,0,0,0.3));
         }
 
-        /* Art Deco Gold Frame */
+        /* Different rectangular frame sizes */
+        .art-frame:nth-child(1) { width: 180px; height: 220px; }
+        .art-frame:nth-child(2) { width: 200px; height: 160px; }
+        .art-frame:nth-child(3) { width: 170px; height: 200px; }
+        .art-frame:nth-child(4) { width: 190px; height: 180px; }
+        .art-frame:nth-child(5) { width: 180px; height: 190px; }
+        .art-frame:nth-child(6) { width: 200px; height: 170px; }
+        .art-frame:nth-child(7) { width: 185px; height: 210px; }
+        .art-frame:nth-child(8) { width: 190px; height: 165px; }
+        .art-frame:nth-child(9) { width: 175px; height: 200px; }
+
+        /* Elegant rectangular frames */
         .art-frame::before {
             content: '';
             position: absolute;
-            top: -18px;
-            left: -18px;
-            right: -18px;
-            bottom: -18px;
-            background: linear-gradient(135deg, #d4af37 0%, #f4e5b0 25%, #d4af37 50%, #8b7322 75%, #d4af37 100%);
-            border: 3px solid #8b7322;
+            top: -15px;
+            left: -15px;
+            right: -15px;
+            bottom: -15px;
+            background: linear-gradient(145deg, #f5f5f0 0%, #ffffff 50%, #f5f5f0 100%);
+            border: 1px solid #d4d4d0;
             box-shadow: 
-                inset 0 2px 4px rgba(255,255,255,0.4),
-                inset 0 -2px 4px rgba(0,0,0,0.3),
-                0 8px 20px rgba(0,0,0,0.4);
+                inset 0 2px 4px rgba(255,255,255,0.9),
+                inset 0 -2px 4px rgba(0,0,0,0.05),
+                0 8px 20px rgba(0,0,0,0.15);
             z-index: 1;
         }
 
@@ -830,18 +862,18 @@
         .art-frame::after {
             content: '';
             position: absolute;
-            top: -10px;
-            left: -10px;
-            right: -10px;
-            bottom: -10px;
-            border: 2px solid #8b7322;
+            top: -8px;
+            left: -8px;
+            right: -8px;
+            bottom: -8px;
+            border: 2px solid #e8e8e4;
             z-index: 2;
-            box-shadow: 0 0 0 1px #f4e5b0;
+            box-shadow: 0 0 0 1px rgba(255,255,255,0.8);
         }
 
         .art-frame:hover {
-            transform: scale(1.08);
-            filter: drop-shadow(0 12px 30px rgba(212, 175, 55, 0.5));
+            transform: translateY(-5px) scale(1.03);
+            filter: drop-shadow(0 12px 30px rgba(0,0,0,0.25));
         }
 
         .art-frame img {
@@ -852,27 +884,366 @@
             z-index: 3;
         }
 
-        .newspaper-popup {
-            width: 700px;
-            height: 600px;
-            bottom: 14%;
-            right: 12%;
+        /* Gallery popup - coming soon */
+        .gallery-popup {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 600px;
             background: white;
-            padding: 40px;
+            border-radius: 20px;
+            padding: 60px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+            z-index: 25000;
+            text-align: center;
+            display: none;
         }
 
-        .newspaper-content h2 {
-            font-size: 36px;
-            margin-bottom: 25px;
+        .gallery-popup.active {
+            display: block;
+        }
+
+        .gallery-popup h2 {
+            font-family: 'Brush Script MT', cursive;
+            font-size: 48px;
+            color: #6B7FFF;
+            margin-bottom: 20px;
+        }
+
+        .gallery-popup p {
+            font-family: 'Courier New', monospace;
+            font-size: 16px;
+            color: #2c2c2c;
+            line-height: 1.6;
+        }
+
+        /* Schemes popup */
+        .schemes-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: transparent;
+            display: none;
+            z-index: 25000;
+            pointer-events: none;
+        }
+
+        .schemes-popup.active {
+            display: block;
+            pointer-events: all;
+        }
+
+        .schemes-popup.active ~ .header {
+            display: none;
+        }
+
+        .schemes-image-container {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 90%;
+            max-height: 90%;
+            z-index: 25001;
+        }
+
+        .schemes-image-container img {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            filter: drop-shadow(0 20px 60px rgba(0,0,0,0.4));
+        }
+
+        .scheme-link {
+            position: absolute;
+            cursor: pointer;
+            transition: all 0.2s;
+            z-index: 25002;
+        }
+
+        .scheme-link:hover {
+            transform: scale(1.05);
+            filter: drop-shadow(0 4px 12px rgba(107, 127, 255, 0.5));
+        }
+
+        /* Notebook interactive styles - OPEN BOOK */
+        .notebook-interactive {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%) perspective(1500px);
+            width: 80vw;
+            max-width: 1200px;
+            height: 75vh;
+            max-height: 800px;
+            display: flex;
+            z-index: 25001;
+            filter: drop-shadow(0 30px 60px rgba(0,0,0,0.5));
+        }
+
+        /* Left page */
+        .notebook-interactive::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    transparent,
+                    transparent 30px,
+                    #cbd5e0 30px,
+                    #cbd5e0 31px
+                ),
+                linear-gradient(to right, #ff9999 0px, #ff9999 2px, transparent 2px, transparent 60px),
+                #fffef9;
+            transform: rotateY(-3deg);
+            transform-origin: right center;
+            border: 1px solid #d4d4d4;
+            border-right: none;
+            box-shadow: -5px 0 15px rgba(0,0,0,0.2);
+        }
+
+        /* Right page */
+        .notebook-interactive::after {
+            content: '';
+            position: absolute;
+            right: 0;
+            top: 0;
+            width: 50%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    transparent,
+                    transparent 30px,
+                    #cbd5e0 30px,
+                    #cbd5e0 31px
+                ),
+                #fffef9;
+            transform: rotateY(3deg);
+            transform-origin: left center;
+            border: 1px solid #d4d4d4;
+            border-left: none;
+            box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+        }
+
+        /* Spine */
+        .notebook-spine {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            transform: translateX(-50%);
+            width: 20px;
+            height: 100%;
+            background: linear-gradient(to right, #8b7355 0%, #6b5945 50%, #8b7355 100%);
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+            z-index: 10;
+        }
+
+        .notebook-content {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            z-index: 5;
+        }
+
+        .notebook-page {
+            display: none;
+            width: 50%;
+            padding: 60px 60px 60px 80px;
+            overflow-y: auto;
+        }
+
+        .notebook-page.active {
+            display: block;
+        }
+
+        .notebook-title {
+            font-family: 'MyFont', 'Brush Script MT', cursive;
+            font-size: 42px;
+            color: #2b4fd6;
+            margin-bottom: 40px;
+            text-align: left;
+            margin-left: 0;
+        }
+
+        .notebook-index-item {
+            font-family: 'MyFont', 'Brush Script MT', cursive;
+            font-size: 28px;
+            color: #2b4fd6;
+            margin: 30px 0;
+            cursor: pointer;
+            transition: all 0.2s;
+            padding: 5px 15px;
+            margin-left: 30px;
+            text-indent: -15px;
+        }
+
+        .notebook-index-item:hover {
+            background: rgba(43, 79, 214, 0.05);
+            transform: translateX(5px);
+        }
+
+        .notebook-article {
+            font-family: 'MyFont', 'Brush Script MT', cursive;
+            font-size: 20px;
+            color: #2b4fd6;
+            margin: 22px 0;
+            padding: 5px 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: block;
+            line-height: 30px;
+            margin-left: 30px;
+            text-indent: -15px;
+        }
+
+        .notebook-article::before {
+            content: '• ';
+            margin-right: 5px;
+        }
+
+        .notebook-article:hover {
+            background: rgba(43, 79, 214, 0.05);
+            transform: translateX(3px);
+        }
+
+        .notebook-back {
+            font-family: 'MyFont', 'Brush Script MT', cursive;
+            font-size: 16px;
+            color: #2b4fd6;
+            margin-top: 40px;
+            margin-left: 0;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            padding: 5px 10px;
+            transition: all 0.2s;
+        }
+
+        .notebook-back:hover {
+            background: rgba(43, 79, 214, 0.05);
+        }
+
+        /* Responsive scaling */
+        @media (max-width: 1400px) {
+            .header h1 { font-size: 60px; }
+            .desk-item { transform: scale(0.9); }
+            .art-gallery { gap: 35px; }
+            .art-frame:nth-child(1) { width: 160px; height: 200px; }
+            .art-frame:nth-child(2) { width: 180px; height: 140px; }
+            .art-frame:nth-child(3) { width: 150px; height: 180px; }
+            .art-frame:nth-child(4) { width: 170px; height: 160px; }
+            .art-frame:nth-child(5) { width: 160px; height: 170px; }
+            .art-frame:nth-child(6) { width: 180px; height: 150px; }
+            .art-frame:nth-child(7) { width: 165px; height: 190px; }
+            .art-frame:nth-child(8) { width: 170px; height: 145px; }
+            .art-frame:nth-child(9) { width: 155px; height: 180px; }
+        }
+
+        @media (max-width: 1200px) {
+            .header h1 { font-size: 48px; }
+            .desk-item { transform: scale(0.8); }
+            .art-gallery { gap: 30px; }
+            .art-frame:nth-child(1) { width: 140px; height: 170px; }
+            .art-frame:nth-child(2) { width: 160px; height: 120px; }
+            .art-frame:nth-child(3) { width: 130px; height: 150px; }
+            .art-frame:nth-child(4) { width: 150px; height: 140px; }
+            .art-frame:nth-child(5) { width: 140px; height: 150px; }
+            .art-frame:nth-child(6) { width: 160px; height: 130px; }
+            .art-frame:nth-child(7) { width: 145px; height: 160px; }
+            .art-frame:nth-child(8) { width: 150px; height: 125px; }
+            .art-frame:nth-child(9) { width: 135px; height: 150px; }
+            .notebook-interactive { width: 85vw; padding: 40px; }
+        }
+
+        @media (max-width: 900px) {
+            .header h1 { font-size: 36px; }
+            .desk-item { transform: scale(0.7); }
+            .art-gallery { grid-template-columns: repeat(2, 1fr); gap: 25px; }
+            .art-frame { width: 120px !important; height: 140px !important; }
+            .notebook-interactive { width: 95vw; padding: 30px; }
+        }
+
+        .newspaper-popup {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(10px);
+            display: none;
+            z-index: 25000;
+            pointer-events: none;
+        }
+
+        .newspaper-popup.active {
+            display: block;
+            pointer-events: all;
+        }
+
+        .newspaper-popup.active ~ .header {
+            display: none;
+        }
+
+        .newspaper-title {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 31px;
             font-family: 'Brush Script MT', cursive;
             color: #6B7FFF;
+            z-index: 25003;
+            text-align: center;
         }
 
-        .newspaper-content p {
-            font-size: 16px;
-            line-height: 1.8;
+        .news-stack {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 25001;
+        }
+
+        .news-image-container {
+            position: relative;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .news-image-container img {
+            max-width: 60vw;
+            max-height: 70vh;
+            object-fit: contain;
+            filter: drop-shadow(0 10px 30px rgba(0,0,0,0.7));
+            display: block;
+        }
+
+        .news-image-container:active {
+            transform: scale(0.98);
+        }
+
+        .news-counter {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(255, 255, 255, 0.95);
+            padding: 10px 25px;
+            border-radius: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
             color: #2c2c2c;
-            margin-bottom: 18px;
+            z-index: 25002;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
         }
 
         .hover-hint {
@@ -941,7 +1312,10 @@
 
     <!-- Headphones popup -->
     <div class="headphones-popup" id="headphonesPopup">
-        <div class="popup-heading">last 5 songs... linked to my spotify</div>
+        <div class="popup-heading">
+            last 5 songs
+            <span class="spotify-link">linked to my spotify</span>
+        </div>
         <div class="airpods-center"></div>
         <div class="songs-circle">
             <a href="https://open.spotify.com/track/4HjtHraeKy5wA4DA9o92HZ" target="_blank" class="song-card">
@@ -955,8 +1329,8 @@
                 <div class="song-artist">Labi Siffre</div>
             </a>
             <a href="https://open.spotify.com/track/3cVTB0mY8R5yjl47mgNCQq" target="_blank" class="song-card">
-                <img src="daily_lady.png" alt="Djo - Daily Lady">
-                <div class="song-title">Daily Lady</div>
+                <img src="daily_lady.png" alt="Djo - Daisy Lady">
+                <div class="song-title">Daisy Lady</div>
                 <div class="song-artist">Djo</div>
             </a>
             <a href="https://open.spotify.com/track/45Z3m6yazmAi4jZuW0tzW0" target="_blank" class="song-card">
@@ -975,7 +1349,7 @@
 
     <!-- Phone popup -->
     <div class="phone-popup" id="phonePopup">
-        <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); font-size: 42px; font-family: 'Brush Script MT', cursive; color: #6B7FFF; z-index: 25010;">contact me</div>
+        <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); font-size: 42px; font-family: 'Brush Script MT', cursive; color: #6B7FFF; z-index: 25005;">contact me</div>
         <div class="phone-center"></div>
         <div class="contacts-circle">
             <a href="/cdn-cgi/l/email-protection#422f232129272c382b27312a2330327702252f232b2e6c212d2f" target="_blank" class="contact-card-mini">
@@ -1003,15 +1377,9 @@
         <button class="close-popup" onclick="closePopup('phonePopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
     </div>
 
-    <!-- Notebook popup -->
-    <div class="notebook-popup" id="notebookPopup">
-        <img src="writing_index.png" alt="Writing Index" class="notebook-image index-page" id="notebookImage" onclick="nextNotebookPage()">
-        <button class="close-popup" onclick="closePopup('notebookPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
-    </div>
-
     <!-- Art popup -->
     <div class="art-popup" id="artPopup">
-        <a href="https://instagram.com/mackenziesharp" target="_blank" id="artInstagramLink">
+        <a href="https://instagram.com/mackartstuff" target="_blank" id="artInstagramLink">
             <img src="art_instagram.png" alt="Art Instagram" class="art-instagram">
         </a>
         <div class="art-gallery">
@@ -1047,19 +1415,98 @@
     </div>
 
     <!-- Newspaper popup -->
-    <div class="popup newspaper-popup" id="newspaperPopup">
-        <button class="close-popup" onclick="closePopup('newspaperPopup')">×</button>
-        <div class="newspaper-content">
-            <h2>Coming Soon</h2>
-            <p>This section is currently under construction. Check back soon for updates!</p>
+    <div class="newspaper-popup" id="newspaperPopup">
+        <div class="newspaper-title">as seen in...</div>
+        <div class="news-stack">
+            <div class="news-image-container" onclick="nextNewsImage()">
+                <img src="news01.png" alt="News" id="newsImage">
+            </div>
         </div>
+        <div class="news-counter" id="newsCounter">1 / 12</div>
+        <button class="close-popup" onclick="closePopup('newspaperPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Gallery popup -->
+    <div class="gallery-popup" id="galleryPopup">
+        <button class="close-popup" onclick="closePopup('galleryPopup')">×</button>
+        <h2>Coming Soon</h2>
+        <p>Photo gallery launching soon! Check back for updates.</p>
+    </div>
+
+    <!-- Schemes popup -->
+    <div class="schemes-popup" id="schemesPopup">
+        <div class="schemes-image-container">
+            <img src="schemes.png" alt="Schemes" id="schemesImage" usemap="#schemesMap">
+            <!-- Add your clickable areas using an image map -->
+            <!-- To find coordinates: open schemes.png in an image editor and note the pixel positions -->
+            <!-- Then calculate percentages: (x/imageWidth)*100 and (y/imageHeight)*100 -->
+            <!-- 
+            Example format:
+            <map name="schemesMap">
+                <area shape="rect" coords="x1,y1,x2,y2" href="URL" target="_blank" alt="Description">
+            </map>
+            
+            OR use the scheme-link divs below with percentage positioning:
+            -->
+            
+            <!-- Option 1: Use HTML image map (recommended) -->
+            <map name="schemesMap">
+                <!-- Add your areas here like: -->
+                <!-- <area shape="rect" coords="50,100,300,250" href="https://mackenziesharp.substack.com/p/sit-club" target="_blank" alt="Sit Club"> -->
+            </map>
+            
+            <!-- Option 2: Use positioned divs (if you prefer % positioning) -->
+            <!-- Uncomment and adjust these based on where items are in your schemes.png -->
+            <!-- <a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank" class="scheme-link" style="top: 20%; left: 10%; width: 30%; height: 15%;"></a> -->
+        </div>
+        <button class="close-popup" onclick="closePopup('schemesPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+    </div>
+
+    <!-- Notebook popup -->
+    <div class="notebook-popup" id="notebookPopup">
+        <div class="notebook-interactive">
+            <div class="notebook-spine"></div>
+            <div class="notebook-content">
+                <!-- Index page -->
+                <div class="notebook-page active" id="indexPage">
+                    <div class="notebook-title">Index</div>
+                    <div class="notebook-index-item" onclick="showNotebookSection('silly')">silly</div>
+                    <div class="notebook-index-item" onclick="showNotebookSection('serious')">serious</div>
+                    <div class="notebook-index-item" onclick="showNotebookSection('research')">research</div>
+                </div>
+
+                <!-- Silly page -->
+                <div class="notebook-page" id="sillyPage">
+                    <div class="notebook-title">Silly</div>
+                    <a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank" class="notebook-article">Sit Club</a>
+                    <div class="notebook-back" onclick="showNotebookSection('index')">← back to index</div>
+                </div>
+
+                <!-- Serious page -->
+                <div class="notebook-page" id="seriousPage">
+                    <div class="notebook-title">Serious</div>
+                    <p style="font-family: 'Brush Script MT', cursive; text-align: center; color: #1a1aff; font-size: 20px;">Coming soon...</p>
+                    <div class="notebook-back" onclick="showNotebookSection('index')">← back to index</div>
+                </div>
+
+                <!-- Research page -->
+                <div class="notebook-page" id="researchPage">
+                    <div class="notebook-title">Research</div>
+                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">Latent Knowledge in Language Models</a>
+                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">AI Sycophancy Research</a>
+                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">Brain-Computer Interface Studies</a>
+                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">Hospital Bed Forecasting Models</a>
+                    <div class="notebook-back" onclick="showNotebookSection('index')">← back to index</div>
+                </div>
+            </div>
+        </div>
+        <button class="close-popup" onclick="closePopup('notebookPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
     </div>
 
     <div class="desk-scene" id="deskScene">
         <div class="desk-item camera coming-soon" draggable="true">
             <img src="camera.png" alt="Camera">
             <div class="coming-soon-badge">coming soon</div>
-            <div class="item-label">gallery</div>
         </div>
 
         <div class="desk-item paints" draggable="true" onclick="showPopup('artPopup')">
@@ -1087,9 +1534,8 @@
             <div class="item-label">Contact</div>
         </div>
 
-        <div class="desk-item laptop coming-soon" draggable="true">
+        <div class="desk-item laptop" draggable="true" onclick="showPopup('schemesPopup')">
             <img src="laptop.png" alt="Laptop">
-            <div class="coming-soon-badge">coming soon</div>
             <div class="item-label">schemes and projects</div>
         </div>
 
@@ -1099,9 +1545,8 @@
             <div class="item-label">coming soon...</div>
         </div>
 
-        <div class="desk-item newspaper coming-soon" draggable="true">
+        <div class="desk-item newspaper" draggable="true" onclick="showPopup('newspaperPopup')">
             <img src="newspaper.png" alt="Newspaper">
-            <div class="coming-soon-badge">coming soon</div>
             <div class="item-label">as seen in</div>
         </div>
 
@@ -1109,18 +1554,26 @@
             <img src="notebook.png" alt="Notebook">
             <div class="item-label">writing</div>
         </div>
+
+        <div class="desk-item book coming-soon" draggable="true">
+            <img src="book.png" alt="Book">
+            <div class="coming-soon-badge">coming soon</div>
+            <div class="item-label">currently reading</div>
+        </div>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         const deskScene = document.getElementById('deskScene');
         let isDragging = false;
-        let notebookPage = 0;
+        let currentNotebookSection = 'index';
+        let currentNewsIndex = 1;
+        const totalNewsImages = 12;
 
         function showPopup(popupId) {
             if (isDragging) return;
             
             document.querySelectorAll('.popup').forEach(p => p.classList.remove('active'));
-            document.querySelectorAll('.headphones-popup, .phone-popup, .coffee-popup, .booking-popup, .notebook-popup, .art-popup').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.headphones-popup, .phone-popup, .coffee-popup, .booking-popup, .notebook-popup, .art-popup, .gallery-popup, .schemes-popup, .newspaper-popup').forEach(p => p.classList.remove('active'));
             
             deskScene.classList.add('blurred');
             
@@ -1131,14 +1584,18 @@
             }
             
             if (popupId === 'notebookPopup') {
-                notebookPage = 0;
-                const img = document.getElementById('notebookImage');
-                img.src = 'writing_index.png';
-                img.className = 'notebook-image index-page';
+                showNotebookSection('index');
                 document.querySelector('.header').style.display = 'none';
             }
             
-            if (popupId === 'artPopup' || popupId === 'phonePopup') {
+            if (popupId === 'newspaperPopup') {
+                currentNewsIndex = 1;
+                document.getElementById('newsImage').src = 'news01.png';
+                document.getElementById('newsCounter').textContent = '1 / 12';
+                document.querySelector('.header').style.display = 'none';
+            }
+            
+            if (popupId === 'artPopup' || popupId === 'phonePopup' || popupId === 'schemesPopup' || popupId === 'galleryPopup') {
                 document.querySelector('.header').style.display = 'none';
             }
             
@@ -1151,18 +1608,30 @@
             document.querySelector('.header').style.display = 'block';
         }
 
-        function nextNotebookPage() {
-            const img = document.getElementById('notebookImage');
-            if (notebookPage === 0) {
-                notebookPage = 1;
-                img.src = 'inside.png';
-                img.className = 'notebook-image inside-page';
-            } else {
-                // Loop back to start or go to next page if you add more
-                notebookPage = 0;
-                img.src = 'writing_index.png';
-                img.className = 'notebook-image index-page';
+        function nextNewsImage() {
+            currentNewsIndex++;
+            if (currentNewsIndex > totalNewsImages) {
+                currentNewsIndex = 1;
             }
+            const imageNum = currentNewsIndex.toString().padStart(2, '0');
+            document.getElementById('newsImage').src = `news${imageNum}.png`;
+            document.getElementById('newsCounter').textContent = `${currentNewsIndex} / ${totalNewsImages}`;
+        }
+
+        function showNotebookSection(section) {
+            document.querySelectorAll('.notebook-page').forEach(page => page.classList.remove('active'));
+            
+            if (section === 'index') {
+                document.getElementById('indexPage').classList.add('active');
+            } else if (section === 'silly') {
+                document.getElementById('sillyPage').classList.add('active');
+            } else if (section === 'serious') {
+                document.getElementById('seriousPage').classList.add('active');
+            } else if (section === 'research') {
+                document.getElementById('researchPage').classList.add('active');
+            }
+            
+            currentNotebookSection = section;
         }
 
         function updateCoffeeData() {
@@ -1177,7 +1646,7 @@
         document.addEventListener('keydown', (e) => {
             if (e.key === 'Escape') {
                 document.querySelectorAll('.popup').forEach(p => p.classList.remove('active'));
-                document.querySelectorAll('.headphones-popup, .phone-popup, .coffee-popup, .booking-popup, .notebook-popup, .art-popup').forEach(p => p.classList.remove('active'));
+                document.querySelectorAll('.headphones-popup, .phone-popup, .coffee-popup, .booking-popup, .notebook-popup, .art-popup, .gallery-popup, .schemes-popup, .newspaper-popup').forEach(p => p.classList.remove('active'));
                 deskScene.classList.remove('blurred');
                 document.querySelector('.header').style.display = 'block';
             }
@@ -1186,12 +1655,17 @@
         let draggedElement = null;
         let offsetX = 0;
         let offsetY = 0;
+        let maxZIndex = 100;
 
         document.querySelectorAll('.desk-item').forEach(item => {
             item.addEventListener('dragstart', (e) => {
                 isDragging = true;
                 draggedElement = item;
                 item.classList.add('dragging');
+                
+                // Bring to front
+                maxZIndex++;
+                item.style.zIndex = maxZIndex;
                 
                 const rect = item.getBoundingClientRect();
                 offsetX = e.clientX - rect.left;
