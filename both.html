@@ -44,7 +44,7 @@
 
         @media (max-width: 768px) {
             body {
-                padding: 30px 20px;
+                padding: 80px 20px 30px 20px;
                 font-size: 13px;
             }
         }
@@ -65,10 +65,13 @@
 
         @media (max-width: 768px) {
             .direction-indicator {
-                top: 30px;
-                right: 20px;
-                padding: 10px 15px;
-                font-size: 12px;
+                position: fixed;
+                top: 10px;
+                left: 20px;
+                right: auto;
+                padding: 8px 12px;
+                font-size: 11px;
+                z-index: 999;
             }
         }
 
@@ -362,11 +365,41 @@
         @media (max-width: 768px) {
             .nav-buttons {
                 position: fixed;
-                top: 80px;
-                right: 20px;
+                top: 10px;
+                right: 0;
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
                 z-index: 1000;
+                transition: transform 0.3s ease;
+            }
+
+            .nav-buttons.collapsed {
+                transform: translateX(calc(100% - 35px));
+            }
+
+            .nav-toggle {
+                display: block;
+                position: absolute;
+                left: -35px;
+                top: 0;
+                width: 35px;
+                height: 35px;
+                background: white;
+                border: 1px solid #e0e0e0;
+                border-right: none;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                font-size: 18px;
+                border-radius: 2px 0 0 2px;
+                box-shadow: -2px 0 4px rgba(0,0,0,0.1);
+            }
+        }
+
+        @media (min-width: 769px) {
+            .nav-toggle {
+                display: none;
             }
         }
 
@@ -386,8 +419,8 @@
 
         @media (max-width: 768px) {
             .nav-box {
-                padding: 8px 12px;
-                min-width: 80px;
+                padding: 6px 10px;
+                min-width: 70px;
             }
         }
 
@@ -422,7 +455,7 @@
 
         @media (max-width: 768px) {
             .nav-box strong {
-                font-size: 11px;
+                font-size: 10px;
                 margin-bottom: 2px;
             }
         }
@@ -434,7 +467,7 @@
 
         @media (max-width: 768px) {
             .nav-box p {
-                font-size: 9px;
+                font-size: 8px;
             }
         }
 
@@ -666,7 +699,8 @@
 
         <!-- Right Side -->
         <div class="right-side">
-            <div class="nav-buttons">
+            <div class="nav-buttons" id="navButtons">
+                <div class="nav-toggle" onclick="toggleNavButtons()">☰</div>
                 <a href="software.html" class="nav-box">
                     <strong>software</strong>
                     <p>technical</p>
@@ -719,6 +753,17 @@
     </div>
 
     <script>
+        // Toggle nav buttons on mobile
+        function toggleNavButtons() {
+            const navButtons = document.getElementById('navButtons');
+            navButtons.classList.toggle('collapsed');
+        }
+
+        // Auto-collapse on page load for mobile
+        if (window.innerWidth <= 768) {
+            document.getElementById('navButtons').classList.add('collapsed');
+        }
+
         // Smooth page transition
         document.addEventListener('DOMContentLoaded', () => {
             const transitionLinks = document.querySelectorAll('.smooth-transition');
