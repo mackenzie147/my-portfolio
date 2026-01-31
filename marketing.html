@@ -109,6 +109,10 @@
             cursor: pointer;
             transition: all 0.3s ease;
             user-select: none;
+            -webkit-user-select: none;
+            -moz-user-select: none;
+            -ms-user-select: none;
+            touch-action: none;
             z-index: 10;
             filter: drop-shadow(0 4px 12px rgba(0,0,0,0.2));
             animation: floatIn 1s ease forwards;
@@ -154,10 +158,6 @@
 
         .desk-item.coming-soon:hover .coming-soon-badge {
             opacity: 1;
-        }
-
-        .desk-item.coming-soon {
-            cursor: default;
         }
 
         .desk-item:nth-child(1) { animation-delay: 0.1s; }
@@ -212,6 +212,7 @@
             top: 24%; 
             left: 8%; 
             transform: rotate(-15deg);
+            z-index: 22;
         }
         
         .coffee { 
@@ -262,6 +263,7 @@
             bottom: 8%; 
             left: 8%; 
             transform: rotate(-5deg);
+            z-index: 22;
         }
 
         .book { 
@@ -1146,18 +1148,18 @@
 
         .notebook-title {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 50.6px; /* 46px * 1.1 */
+            font-size: 50.6px;
             color: #2b4fd6;
-            margin-bottom: 48.4px; /* 44px * 1.1 */
+            margin-bottom: 48.4px;
             text-align: left;
             margin-left: 0;
         }
 
         .notebook-index-item {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 34.1px; /* 31px * 1.1 */
+            font-size: 34.1px;
             color: #2b4fd6;
-            margin: 36.3px 0; /* 33px * 1.1 */
+            margin: 36.3px 0;
             cursor: pointer;
             transition: all 0.2s;
             padding: 5px 15px;
@@ -1172,15 +1174,15 @@
 
         .notebook-article {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 24.2px; /* 22px * 1.1 */
+            font-size: 20px;
             color: #2b4fd6;
-            margin: 26.4px 0; /* 24px * 1.1 */
+            margin: 18px 0;
             padding: 5px 10px;
             cursor: pointer;
             transition: all 0.2s;
             text-decoration: none;
             display: block;
-            line-height: 36.3px; /* 33px * 1.1 */
+            line-height: 30px;
             margin-left: 30px;
             text-indent: -15px;
         }
@@ -1197,9 +1199,9 @@
 
         .notebook-back {
             font-family: 'MyFont', 'Brush Script MT', cursive;
-            font-size: 19.8px; /* 18px * 1.1 */
+            font-size: 19.8px;
             color: #2b4fd6;
-            margin-top: 48.4px; /* 44px * 1.1 */
+            margin-top: 48.4px;
             margin-left: 0;
             cursor: pointer;
             text-decoration: none;
@@ -1480,9 +1482,9 @@
             }
 
             .notebook-article {
-                font-size: 18px;
-                margin: 18px 0;
-                line-height: 26px;
+                font-size: 16px;
+                margin: 14px 0;
+                line-height: 24px;
                 margin-left: 20px;
             }
 
@@ -1596,8 +1598,8 @@
             }
 
             .notebook-article {
-                font-size: 16px;
-                line-height: 22px;
+                font-size: 14px;
+                line-height: 20px;
             }
         }
 
@@ -1781,7 +1783,7 @@
         <div style="position: fixed; top: 80px; left: 50%; transform: translateX(-50%); font-size: 42px; font-family: 'Brush Script MT', cursive; color: #6B7FFF; z-index: 25005;">contact me</div>
         <div class="phone-center"></div>
         <div class="contacts-circle">
-            <a href="/cdn-cgi/l/email-protection#422f232129272c382b27312a2330327702252f232b2e6c212d2f" target="_blank" class="contact-card-mini">
+            <a href="mailto:mackenzie@hey.com" target="_blank" class="contact-card-mini">
                 <img src="contact_card.png" alt="Contact Card">
             </a>
             <a href="https://instagram.com/mackenziecsharp" target="_blank" class="contact-card-mini">
@@ -1866,27 +1868,8 @@
     <div class="schemes-popup" id="schemesPopup">
         <div class="schemes-image-container">
             <img src="schemes.png" alt="Schemes" id="schemesImage" usemap="#schemesMap">
-            <!-- Add your clickable areas using an image map -->
-            <!-- To find coordinates: open schemes.png in an image editor and note the pixel positions -->
-            <!-- Then calculate percentages: (x/imageWidth)*100 and (y/imageHeight)*100 -->
-            <!-- 
-            Example format:
             <map name="schemesMap">
-                <area shape="rect" coords="x1,y1,x2,y2" href="URL" target="_blank" alt="Description">
             </map>
-            
-            OR use the scheme-link divs below with percentage positioning:
-            -->
-            
-            <!-- Option 1: Use HTML image map (recommended) -->
-            <map name="schemesMap">
-                <!-- Add your areas here like: -->
-                <!-- <area shape="rect" coords="50,100,300,250" href="https://mackenziesharp.substack.com/p/sit-club" target="_blank" alt="Sit Club"> -->
-            </map>
-            
-            <!-- Option 2: Use positioned divs (if you prefer % positioning) -->
-            <!-- Uncomment and adjust these based on where items are in your schemes.png -->
-            <!-- <a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank" class="scheme-link" style="top: 20%; left: 10%; width: 30%; height: 15%;"></a> -->
         </div>
         <button class="close-popup" onclick="closePopup('schemesPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
     </div>
@@ -1910,23 +1893,52 @@
                 <div class="notebook-page" id="sillyPage">
                     <div class="notebook-title">Silly</div>
                     <a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank" class="notebook-article">Sit Club</a>
+                    <a href="https://mackenziesharp.substack.com/archive#:~:text=Learning%20to%20play%20the%20triangle%20%2B%20joining%20a%20band%20with%20it" target="_blank" class="notebook-article">Learning to play the triangle</a>
+                    <a href="https://mackenziesharp.substack.com/p/slab-city" target="_blank" class="notebook-article">Slab City</a>
+                    <a href="https://mackenziesharp.substack.com/p/the-white-elephant-move-out-party" target="_blank" class="notebook-article">The White Elephant Move-Out Party</a>
+                    <a href="https://mackenziesharp.substack.com/p/our-idiot-plots-an-archive" target="_blank" class="notebook-article">Our Idiot Plots: An Archive</a>
+                    <a href="https://mackenziesharp.substack.com/p/dropping-out-of-georgia-tech" target="_blank" class="notebook-article">Dropping Out of Georgia Tech</a>
+                    <a href="https://mackenziesharp.substack.com/p/molossia-my-trip-to-the-micronation" target="_blank" class="notebook-article">Molossia: My Trip to the Micronation</a>
+                    <a href="https://mackenziesharp.substack.com/p/starting-an-underground-podcast" target="_blank" class="notebook-article">Starting an Underground Podcast</a>
+                    <a href="https://mackenziesharp.substack.com/p/i-only-have-10-days-left-to-find" target="_blank" class="notebook-article">10 Days Left to Find a Husband</a>
+                    <a href="https://mackenziesharp.substack.com/p/the-survivor-party" target="_blank" class="notebook-article">The Survivor Party</a>
+                    <a href="https://mackenziesharp.substack.com/p/how-helpful-are-strangers-at-solving" target="_blank" class="notebook-article">How Helpful Are Strangers?</a>
+                    <a href="https://mackenziesharp.substack.com/p/pitch-night" target="_blank" class="notebook-article">Pitch Night</a>
+                    <a href="https://mackenziesharp.substack.com/archive#:~:text=Reading%20all%20the%20for%20dummies%20books%20to%20be%20at%20least%20adequate%20at%20all%20topics" target="_blank" class="notebook-article">Reading All the For Dummies Books</a>
+                    <a href="https://mackenziesharp.substack.com/p/strippers-for-charity" target="_blank" class="notebook-article">Strippers for Charity</a>
+                    <a href="https://mackenziesharp.substack.com/p/to-be-getting-laid-or-to-be-getting" target="_blank" class="notebook-article">To Be Getting Laid or Getting Paid</a>
+                    <a href="https://mackenziesharp.substack.com/p/my-michigan-commencement" target="_blank" class="notebook-article">My Michigan Commencement</a>
+                    <a href="https://mackenziesharp.substack.com/p/hot-crazy-a-scientific-document" target="_blank" class="notebook-article">Hot-Crazy: A Scientific Document</a>
+                    <a href="https://mackenziesharp.substack.com/p/the-time-we-accidentally-threw-a" target="_blank" class="notebook-article">We Accidentally Threw a Rager</a>
+                    <a href="https://mackenziesharp.substack.com/p/i-read-the-symposium-and-im-making" target="_blank" class="notebook-article">I Read The Symposium</a>
+                    <a href="https://mackenziesharp.substack.com/p/alextravaganza" target="_blank" class="notebook-article">Alextravaganza</a>
+                    <a href="https://mackenziesharp.substack.com/p/carlos-my-muse" target="_blank" class="notebook-article">Carlos, My Muse</a>
                     <div class="notebook-back" onclick="showNotebookSection('index')">← back to index</div>
                 </div>
 
                 <!-- Serious page -->
                 <div class="notebook-page" id="seriousPage">
                     <div class="notebook-title">Serious</div>
-                    <p style="font-family: 'Brush Script MT', cursive; text-align: center; color: #1a1aff; font-size: 20px;">Coming soon...</p>
+                    <a href="https://mackenziesharp.substack.com/p/in-defense-of-the-modern-shitposter" target="_blank" class="notebook-article">In Defense of the Modern Shitposter</a>
+                    <a href="https://mackenziesharp.substack.com/p/running-toward-nothing-in-particular" target="_blank" class="notebook-article">Running Toward Nothing in Particular</a>
+                    <a href="https://mackenziesharp.substack.com/p/i-gave-5-years-of-my-journals-to" target="_blank" class="notebook-article">I Gave 5 Years of Journals to Claude</a>
+                    <a href="https://mackenziesharp.substack.com/p/so-you-want-to-be-a-model-everything" target="_blank" class="notebook-article">So You Want to Be a Model</a>
+                    <a href="https://mackenziesharp.substack.com/p/my-manifesto-on-creation-and-actualization" target="_blank" class="notebook-article">My Manifesto on Creation</a>
                     <div class="notebook-back" onclick="showNotebookSection('index')">← back to index</div>
                 </div>
 
                 <!-- Research page -->
                 <div class="notebook-page" id="researchPage">
                     <div class="notebook-title">Research</div>
-                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">Latent Knowledge in Language Models</a>
-                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">AI Sycophancy Research</a>
-                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">Brain-Computer Interface Studies</a>
-                    <a href="https://researchandart.substack.com" target="_blank" class="notebook-article">Hospital Bed Forecasting Models</a>
+                    <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:u5HHmVD_uO8C" target="_blank" class="notebook-article">Latent Knowledge in Language Models</a>
+                    <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:d1gkVwhDpl0C" target="_blank" class="notebook-article">AI Sycophancy Research</a>
+                    <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:u-x6o8ySG0sC" target="_blank" class="notebook-article">Brain-Computer Interface Studies</a>
+                    <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:2osOgNQ5qMEC" target="_blank" class="notebook-article">Wheelchair Control via EEG</a>
+                    <a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:9yKSN-GCB0IC" target="_blank" class="notebook-article">Neuroscience & Motor Imagery</a>
+                    <a href="https://researchandart.substack.com/p/hospital-bed-forecasting-predicting" target="_blank" class="notebook-article">Hospital Bed Forecasting Models</a>
+                    <a href="https://researchandart.substack.com/p/teaching-llms-to-read-eight-years" target="_blank" class="notebook-article">Teaching LLMs to Read Journals</a>
+                    <a href="https://researchandart.substack.com/p/biggest-surf-in-the-world-forecasting" target="_blank" class="notebook-article">Biggest Surf Forecasting</a>
+                    <a href="https://researchandart.substack.com/p/moving-without-moving-building-a" target="_blank" class="notebook-article">Moving Without Moving: BCI</a>
                     <div class="notebook-back" onclick="showNotebookSection('index')">← back to index</div>
                 </div>
             </div>
@@ -1935,67 +1947,68 @@
     </div>
 
     <div class="desk-scene" id="deskScene">
-        <div class="desk-item camera coming-soon" draggable="true">
+        <div class="desk-item camera coming-soon">
             <img src="camera.png" alt="Camera">
             <div class="coming-soon-badge">coming soon</div>
         </div>
 
-        <div class="desk-item paints" draggable="true" onclick="showPopup('artPopup')">
+        <div class="desk-item paints" onclick="showPopup('artPopup')">
             <img src="paints.png" alt="Paints">
             <div class="item-label">art stuff</div>
         </div>
 
-        <div class="desk-item planner" draggable="true" onclick="showPopup('bookingPopup')">
+        <div class="desk-item planner" onclick="showPopup('bookingPopup')">
             <img src="planner.png" alt="Planner">
             <div class="item-label">calendar</div>
         </div>
 
-        <div class="desk-item airpods" draggable="true" onclick="showPopup('headphonesPopup')">
+        <div class="desk-item airpods" onclick="showPopup('headphonesPopup')">
             <img src="airpods.png" alt="AirPods">
             <div class="item-label">Music</div>
         </div>
 
-        <div class="desk-item coffee" draggable="true" onclick="showPopup('coffeePopup')">
+        <div class="desk-item coffee" onclick="showPopup('coffeePopup')">
             <img src="coffee.png" alt="Coffee">
             <div class="item-label">Coffee Tracker</div>
         </div>
 
-        <div class="desk-item phone" draggable="true" onclick="showPopup('phonePopup')">
+        <div class="desk-item phone" onclick="showPopup('phonePopup')">
             <img src="phone.png" alt="Phone">
             <div class="item-label">Contact</div>
         </div>
 
-        <div class="desk-item laptop" draggable="true" onclick="showPopup('schemesPopup')">
+        <div class="desk-item laptop" onclick="showPopup('schemesPopup')">
             <img src="laptop.png" alt="Laptop">
             <div class="item-label">schemes and projects</div>
         </div>
 
-        <div class="desk-item ipad coming-soon" draggable="true">
+        <div class="desk-item ipad coming-soon">
             <img src="ipad.png" alt="iPad">
             <div class="coming-soon-badge">coming soon</div>
             <div class="item-label">coming soon...</div>
         </div>
 
-        <div class="desk-item newspaper" draggable="true" onclick="showPopup('newspaperPopup')">
+        <div class="desk-item newspaper" onclick="showPopup('newspaperPopup')">
             <img src="newspaper.png" alt="Newspaper">
             <div class="item-label">as seen in</div>
         </div>
 
-        <div class="desk-item notebook" draggable="true" onclick="showPopup('notebookPopup')">
+        <div class="desk-item notebook" onclick="showPopup('notebookPopup')">
             <img src="notebook.png" alt="Notebook">
             <div class="item-label">writing</div>
         </div>
 
-        <div class="desk-item book coming-soon" draggable="true">
+        <div class="desk-item book coming-soon">
             <img src="book.png" alt="Book">
             <div class="coming-soon-badge">coming soon</div>
             <div class="item-label">currently reading</div>
         </div>
     </div>
 
-    <script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+    <script>
         const deskScene = document.getElementById('deskScene');
         let isDragging = false;
+        let dragTimeout = null;
         let currentNotebookSection = 'index';
         let currentNewsIndex = 1;
         const totalNewsImages = 12;
@@ -2083,53 +2096,116 @@
             }
         });
 
+        // SIMPLE DRAG FUNCTIONALITY - WORKS ON MOBILE AND DESKTOP
         let draggedElement = null;
         let offsetX = 0;
         let offsetY = 0;
         let maxZIndex = 100;
+        let startX = 0;
+        let startY = 0;
+        let hasMoved = false;
 
         document.querySelectorAll('.desk-item').forEach(item => {
-            item.addEventListener('dragstart', (e) => {
-                isDragging = true;
-                draggedElement = item;
-                item.classList.add('dragging');
-                
-                // Bring to front
-                maxZIndex++;
-                item.style.zIndex = maxZIndex;
-                
+            // MOUSE EVENTS (Desktop)
+            item.addEventListener('mousedown', startDrag);
+            
+            // TOUCH EVENTS (Mobile)
+            item.addEventListener('touchstart', startDrag, { passive: false });
+        });
+
+        function startDrag(e) {
+            const item = e.currentTarget;
+            
+            isDragging = false;
+            hasMoved = false;
+            draggedElement = item;
+            
+            // Get starting position
+            if (e.type === 'touchstart') {
+                const touch = e.touches[0];
+                startX = touch.clientX;
+                startY = touch.clientY;
+                const rect = item.getBoundingClientRect();
+                offsetX = touch.clientX - rect.left;
+                offsetY = touch.clientY - rect.top;
+            } else {
+                startX = e.clientX;
+                startY = e.clientY;
                 const rect = item.getBoundingClientRect();
                 offsetX = e.clientX - rect.left;
                 offsetY = e.clientY - rect.top;
-                
-                e.dataTransfer.effectAllowed = 'move';
-            });
-
-            item.addEventListener('dragend', (e) => {
-                item.classList.remove('dragging');
-                draggedElement = null;
-                setTimeout(() => { isDragging = false; }, 100);
-            });
-        });
-
-        document.querySelector('.desk-scene').addEventListener('dragover', (e) => {
+            }
+            
+            maxZIndex++;
+            item.style.zIndex = maxZIndex;
+            
             e.preventDefault();
-            e.dataTransfer.dropEffect = 'move';
-        });
+        }
 
-        document.querySelector('.desk-scene').addEventListener('drop', (e) => {
-            e.preventDefault();
-            if (draggedElement) {
-                const deskRect = document.querySelector('.desk-scene').getBoundingClientRect();
-                const newX = e.clientX - deskRect.left - offsetX;
-                const newY = e.clientY - deskRect.top - offsetY;
+        // MOVE EVENTS
+        document.addEventListener('mousemove', handleMove);
+        document.addEventListener('touchmove', handleMove, { passive: false });
+
+        function handleMove(e) {
+            if (!draggedElement) return;
+            
+            let clientX, clientY;
+            if (e.type === 'touchmove') {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            const moveX = Math.abs(clientX - startX);
+            const moveY = Math.abs(clientY - startY);
+            
+            if (moveX > 5 || moveY > 5) {
+                isDragging = true;
+                hasMoved = true;
+                draggedElement.classList.add('dragging');
+            }
+            
+            if (isDragging) {
+                const deskRect = deskScene.getBoundingClientRect();
+                const newX = clientX - deskRect.left - offsetX;
+                const newY = clientY - deskRect.top - offsetY;
                 
                 draggedElement.style.left = newX + 'px';
                 draggedElement.style.top = newY + 'px';
                 draggedElement.style.bottom = 'auto';
                 draggedElement.style.right = 'auto';
             }
-        });
+            
+            if (e.type === 'touchmove') {
+                e.preventDefault();
+            }
+        }
+
+        // END EVENTS
+        document.addEventListener('mouseup', endDrag);
+        document.addEventListener('touchend', endDrag);
+
+        function endDrag(e) {
+            if (draggedElement) {
+                draggedElement.classList.remove('dragging');
+                
+                // Only trigger popup if we didn't drag
+                if (!hasMoved) {
+                    const itemOnClick = draggedElement.getAttribute('onclick');
+                    if (itemOnClick) {
+                        eval(itemOnClick);
+                    }
+                }
+                
+                draggedElement = null;
+                setTimeout(() => { 
+                    isDragging = false;
+                    hasMoved = false;
+                }, 100);
+            }
+        }
     </script>
 </body>
 </html>
