@@ -424,6 +424,19 @@
             transform: rotate(90deg);
         }
 
+        @media (max-width: 768px) {
+            .close-popup {
+                width: 50px;
+                height: 50px;
+                font-size: 28px;
+                top: 20px;
+                right: 20px;
+                background: rgba(255,255,255,0.95);
+                color: #2c2c2c;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            }
+        }
+
         /* Headphones popup */
         .headphones-popup {
             position: fixed;
@@ -750,6 +763,7 @@
             font-weight: normal;
             margin-top: 15px;
             transition: all 0.2s;
+            word-break: break-all;
         }
 
         .booking-popup a:hover {
@@ -1289,6 +1303,12 @@
                 font-size: 18px;
             }
 
+            .booking-popup a {
+                font-size: 11px;
+                padding: 10px 15px;
+                word-break: break-all;
+            }
+
             .coffee-popup {
                 width: 320px;
                 height: 320px;
@@ -1403,11 +1423,16 @@
             }
 
             /* Art popup - mobile */
+            .art-popup {
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
             .art-instagram {
                 position: static;
                 transform: none;
                 width: 200px;
-                margin: 80px auto 30px;
+                margin: 100px auto 40px;
                 display: block;
             }
 
@@ -1416,7 +1441,7 @@
                 transform: none;
                 grid-template-columns: repeat(2, 1fr);
                 gap: 20px;
-                padding: 20px;
+                padding: 20px 20px 100px 20px;
                 max-width: 90vw;
                 margin: 0 auto;
             }
@@ -1449,8 +1474,8 @@
 
             /* Notebook popup - mobile */
             .notebook-interactive {
-                width: 95vw;
-                height: 85vh;
+                width: 100vw;
+                height: 100vh;
                 max-width: none;
                 max-height: none;
             }
@@ -1467,30 +1492,31 @@
             }
 
             .notebook-page {
-                padding: 40px 30px 30px 40px;
+                padding: 50px 20px 80px 30px;
+                font-size: 14px;
             }
 
             .notebook-title {
-                font-size: 36px;
-                margin-bottom: 30px;
+                font-size: 32px;
+                margin-bottom: 25px;
             }
 
             .notebook-index-item {
-                font-size: 24px;
-                margin: 24px 0;
-                margin-left: 20px;
+                font-size: 22px;
+                margin: 20px 0;
+                margin-left: 15px;
             }
 
             .notebook-article {
-                font-size: 16px;
-                margin: 14px 0;
-                line-height: 24px;
-                margin-left: 20px;
+                font-size: 15px;
+                margin: 12px 0;
+                line-height: 22px;
+                margin-left: 15px;
             }
 
             .notebook-back {
-                font-size: 16px;
-                margin-top: 30px;
+                font-size: 15px;
+                margin-top: 25px;
             }
 
             /* Gallery popup - mobile */
@@ -1775,7 +1801,7 @@
                 <div class="song-artist">Cage The Elephant</div>
             </a>
         </div>
-        <button class="close-popup" onclick="closePopup('headphonesPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+        <button class="close-popup" onclick="closePopup('headphonesPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9); z-index: 25020;">×</button>
     </div>
 
     <!-- Phone popup -->
@@ -1805,7 +1831,7 @@
                 <img src="linkedin.png" alt="LinkedIn">
             </a>
         </div>
-        <button class="close-popup" onclick="closePopup('phonePopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+        <button class="close-popup" onclick="closePopup('phonePopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9); z-index: 25020;">×</button>
     </div>
 
     <!-- Art popup -->
@@ -1842,7 +1868,7 @@
                 <img src="photo09.png" alt="Art 9">
             </div>
         </div>
-        <button class="close-popup" onclick="closePopup('artPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+        <button class="close-popup" onclick="closePopup('artPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9); z-index: 25020;">×</button>
     </div>
 
     <!-- Newspaper popup -->
@@ -1943,7 +1969,7 @@
                 </div>
             </div>
         </div>
-        <button class="close-popup" onclick="closePopup('notebookPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9);">×</button>
+        <button class="close-popup" onclick="closePopup('notebookPopup')" style="position: fixed; top: 30px; right: 30px; background: rgba(255,255,255,0.9); z-index: 25020;">×</button>
     </div>
 
     <div class="desk-scene" id="deskScene">
