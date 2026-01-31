@@ -20,6 +20,25 @@
             font-size: 14px;
             max-width: 1400px;
             margin: 0 auto;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        body.fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
         }
 
         @media (max-width: 768px) {
@@ -358,7 +377,7 @@
             text-decoration: none;
             color: #2c2c2c;
             background: white;
-            transition: all 0.2s;
+            transition: all 0.3s ease;
             display: block;
             border-radius: 2px;
             cursor: pointer;
@@ -381,6 +400,10 @@
             background: #2c2c2c;
             color: white;
             border-color: #2c2c2c;
+        }
+
+        .nav-box.active:hover {
+            transform: scale(1.05);
         }
 
         .nav-box.active strong,
@@ -653,7 +676,7 @@
                     <p>viral growth</p>
                 </a>
 
-                <a href="both.html" class="nav-box active">
+                <a href="index.html" class="nav-box active smooth-transition">
                     <strong>both</strong>
                     <p>everything</p>
                 </a>
@@ -695,6 +718,24 @@
     </div>
 
     <script>
+        // Smooth page transition
+        document.addEventListener('DOMContentLoaded', () => {
+            const transitionLinks = document.querySelectorAll('.smooth-transition');
+            
+            transitionLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetUrl = link.getAttribute('href');
+                    
+                    document.body.classList.add('fade-out');
+                    
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 300);
+                });
+            });
+        });
+
         // Mouse trail sparkles
         const sparkleChars = ['✦', '✧', '⋆', '·', '˚', '✵', '∗'];
         const colors = ['#a8c5e0', '#b4d3b2', '#f4dc9a', '#ffb3c1', '#d4c5f9'];

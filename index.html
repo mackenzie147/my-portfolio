@@ -20,11 +20,30 @@
             font-size: 14px;
             max-width: 1400px;
             margin: 0 auto;
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+            }
+        }
+
+        body.fade-out {
+            animation: fadeOut 0.3s ease-out forwards;
+        }
+
+        @keyframes fadeOut {
+            to {
+                opacity: 0;
+                transform: scale(0.98);
+            }
         }
 
         @media (max-width: 768px) {
             body {
-                padding: 30px 20px;
+                padding: 80px 20px 30px 20px;
                 font-size: 13px;
             }
         }
@@ -45,10 +64,13 @@
 
         @media (max-width: 768px) {
             .direction-indicator {
-                top: 30px;
-                right: 20px;
-                padding: 10px 15px;
-                font-size: 12px;
+                position: fixed;
+                top: 10px;
+                left: 20px;
+                right: auto;
+                padding: 8px 12px;
+                font-size: 11px;
+                z-index: 999;
             }
         }
 
@@ -335,10 +357,10 @@
         @media (max-width: 768px) {
             .nav-buttons {
                 position: fixed;
-                top: 80px;
+                top: 10px;
                 right: 20px;
                 flex-direction: column;
-                gap: 8px;
+                gap: 6px;
                 z-index: 1000;
             }
         }
@@ -359,8 +381,8 @@
 
         @media (max-width: 768px) {
             .nav-box {
-                padding: 8px 12px;
-                min-width: 80px;
+                padding: 6px 10px;
+                min-width: 70px;
             }
         }
 
@@ -380,7 +402,7 @@
 
         @media (max-width: 768px) {
             .nav-box strong {
-                font-size: 11px;
+                font-size: 10px;
                 margin-bottom: 2px;
             }
         }
@@ -392,7 +414,7 @@
 
         @media (max-width: 768px) {
             .nav-box p {
-                font-size: 9px;
+                font-size: 8px;
             }
         }
 
@@ -600,7 +622,7 @@
                     <p>viral growth</p>
                 </a>
 
-                <a href="both.html" class="nav-box">
+                <a href="both.html" class="nav-box smooth-transition">
                     <strong>both</strong>
                     <p>everything</p>
                 </a>
@@ -609,11 +631,11 @@
             <div class="causes-box">
                 <h3>causes to check out!</h3>
                 <ul>
-                    <li><a href="https://www.openai.com/" target="_blank">TIAT San Francisco</a></li>
+                    <li><a href="https://www.tiat.place/" target="_blank">TIAT San Francisco</a></li>
                     <li><a href="https://www.coralgardeners.org/" target="_blank">Coral Gardeners</a></li>
                     <li><a href="https://theoceancleanup.com/" target="_blank">The Ocean Cleanup Project</a></li>
                     <li><a href="https://archive.org/" target="_blank">The Internet Archive</a></li>
-                    <li><a href="https://thenooksf.com/" target="_blank">The Nook</a></li>
+                    <li><a href="https://www.thesfnook.com/" target="_blank">The Nook</a></li>
                     <li><a href="https://en.wikipedia.org/wiki/Love" target="_blank">Love</a></li>
                 </ul>
             </div>
@@ -642,6 +664,24 @@
     </div>
 
     <script>
+        // Smooth page transition
+        document.addEventListener('DOMContentLoaded', () => {
+            const transitionLinks = document.querySelectorAll('.smooth-transition');
+            
+            transitionLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetUrl = link.getAttribute('href');
+                    
+                    document.body.classList.add('fade-out');
+                    
+                    setTimeout(() => {
+                        window.location.href = targetUrl;
+                    }, 300);
+                });
+            });
+        });
+
         // Toggle expand/collapse for sections
         function toggleExpand(id) {
             const element = document.getElementById(id);
