@@ -242,6 +242,26 @@
             text-decoration: none;
         }
 
+        /* Expandable sections */
+        .etc-link {
+            cursor: pointer;
+            color: #666;
+            text-decoration: none;
+            font-style: italic;
+        }
+
+        .etc-link:hover {
+            text-decoration: underline;
+        }
+
+        .expandable-content {
+            display: none;
+        }
+
+        .expandable-content.expanded {
+            display: block;
+        }
+
         /* Professional section */
         .professional-section {
             margin-top: 25px;
@@ -314,7 +334,12 @@
 
         @media (max-width: 768px) {
             .nav-buttons {
+                position: fixed;
+                top: 80px;
+                right: 20px;
                 flex-direction: column;
+                gap: 8px;
+                z-index: 1000;
             }
         }
 
@@ -332,6 +357,13 @@
             cursor: pointer;
         }
 
+        @media (max-width: 768px) {
+            .nav-box {
+                padding: 8px 12px;
+                min-width: 80px;
+            }
+        }
+
         .nav-box:hover {
             background: #f5f5f5;
             transform: translateY(-2px);
@@ -346,9 +378,22 @@
             color: #2c2c2c;
         }
 
+        @media (max-width: 768px) {
+            .nav-box strong {
+                font-size: 11px;
+                margin-bottom: 2px;
+            }
+        }
+
         .nav-box p {
             font-size: 11px;
             color: #999;
+        }
+
+        @media (max-width: 768px) {
+            .nav-box p {
+                font-size: 9px;
+            }
         }
 
         /* Causes section */
@@ -442,7 +487,11 @@
                 <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:9yKSN-GCB0IC" target="_blank">Profiling BMPR2-Derived Endothelial Circular RNAs in Pulmonary Arterial Hypertension</a></li>
                 <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:d1gkVwhDpl0C" target="_blank">ViPRE: an open-source software implementation for end-to-end analysis of mass spectrometry data</a></li>
                 <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:u-x6o8ySG0sC" target="_blank">Standardized nomenclature for legal prompting in generative language models</a></li>
-                <li>etc</li>
+                <li><span class="etc-link" onclick="toggleExpand('research-expand')">etc</span></li>
+            </ul>
+            <ul class="expandable-content" id="research-expand">
+                <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:u5HHmVD_uO8C" target="_blank">Circular RNA profiling identifies circ5078 as a BMPR2-derived regulator</a></li>
+                <li><a href="https://scholar.google.com/citations?view_op=view_citation&hl=en&user=haISHYAAAAAJ&citation_for_view=haISHYAAAAAJ:2osOgNQ5qMEC" target="_blank">Profiling Circular RNA Expression and the Impact of BMPR2 Loss</a></li>
             </ul>
 
             <!-- Projects Section -->
@@ -456,7 +505,12 @@
                 <li><a href="https://researchandart.substack.com/p/moving-without-moving-building-a" target="_blank">BCI Wheelchair Navigation System</a></li>
                 <li><a href="https://researchandart.substack.com/p/biggest-surf-in-the-world-forecasting" target="_blank">Global Swell Intelligence Tracker</a></li>
                 <li><a href="https://researchandart.substack.com/p/hospital-bed-forecasting-predicting" target="_blank">Hospital Bed Forecasting</a></li>
-                <li>etc</li>
+                <li><span class="etc-link" onclick="toggleExpand('projects-expand')">etc</span></li>
+            </ul>
+            <ul class="expandable-content" id="projects-expand">
+                <li><a href="https://researchandart.substack.com/p/teaching-llms-to-read-eight-years" target="_blank">Teaching LLMs to Read Eight Years of Journals</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/how-helpful-are-strangers-at-solving" target="_blank">How Helpful Are Strangers at Solving Puzzles?</a></li>
+                <li><a href="https://mackenziesharp.substack.com/p/hot-crazy-a-scientific-document" target="_blank">Hot-Crazy: A Scientific Document</a></li>
             </ul>
 
             <!-- Writing Section -->
@@ -473,14 +527,38 @@
                         <li><a href="https://mackenziesharp.substack.com/p/sit-club" target="_blank">Sit Club</a></li>
                         <li><a href="https://mackenziesharp.substack.com/p/the-white-elephant-move-out-party" target="_blank">The White Elephant Move Out Party</a></li>
                         <li><a href="https://mackenziesharp.substack.com/p/reading-all-the-for-dummies-books" target="_blank">Reading All the For Dummies Books</a></li>
-                        <li>etc</li>
+                        <li><span class="etc-link" onclick="toggleExpand('silly-expand')">etc</span></li>
+                    </ul>
+                    <ul class="expandable-content" id="silly-expand">
+                        <li><a href="https://mackenziesharp.substack.com/p/learning-to-play-the-triangle-joining" target="_blank">Learning to Play the Triangle</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/slab-city" target="_blank">Slab City</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/our-idiot-plots-an-archive" target="_blank">Our Idiot Plots: An Archive</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/dropping-out-of-georgia-tech" target="_blank">Dropping Out of Georgia Tech</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/molossia-my-trip-to-the-micronation" target="_blank">Molossia: My Trip to the Micronation</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/starting-an-underground-podcast" target="_blank">Starting an Underground Podcast</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/i-only-have-10-days-left-to-find" target="_blank">I Only Have 10 Days Left to Find a Roommate</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/the-survivor-party" target="_blank">The Survivor Party</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/pitch-night" target="_blank">Pitch Night</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/strippers-for-charity" target="_blank">Strippers for Charity</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/to-be-getting-laid-or-to-be-getting" target="_blank">To Be Getting Laid or To Be Getting Paid</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/my-michigan-commencement" target="_blank">My Michigan Commencement</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/the-time-we-accidentally-threw-a" target="_blank">The Time We Accidentally Threw a Rager</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/i-read-the-symposium-and-im-making" target="_blank">I Read The Symposium</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/alextravaganza" target="_blank">Alextravaganza</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/carlos-my-muse" target="_blank">Carlos: My Muse</a></li>
                     </ul>
                 </div>
                 <div style="flex: 1;">
                     <h3 style="font-size: 16px; font-weight: 600; margin-bottom: 10px; color: #b4d3b2;">serious</h3>
                     <ul>
                         <li><a href="https://mackenziesharp.substack.com/p/my-manifesto-on-creation-and-actualization" target="_blank">My Manifesto on Creation and Actualization</a></li>
-                        <li>etc</li>
+                        <li><span class="etc-link" onclick="toggleExpand('serious-expand')">etc</span></li>
+                    </ul>
+                    <ul class="expandable-content" id="serious-expand">
+                        <li><a href="https://mackenziesharp.substack.com/p/in-defense-of-the-modern-shitposter" target="_blank">In Defense of the Modern Shitposter</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/running-toward-nothing-in-particular" target="_blank">Running Toward Nothing in Particular</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/i-gave-5-years-of-my-journals-to" target="_blank">I Gave 5 Years of My Journals to an AI</a></li>
+                        <li><a href="https://mackenziesharp.substack.com/p/so-you-want-to-be-a-model-everything" target="_blank">So You Want to Be a Model</a></li>
                     </ul>
                 </div>
             </div>
@@ -522,10 +600,10 @@
                     <p>viral growth</p>
                 </a>
 
-                <div class="nav-box" onclick="alert('coming soon!')">
+                <a href="both.html" class="nav-box">
                     <strong>both</strong>
                     <p>everything</p>
-                </div>
+                </a>
             </div>
 
             <div class="causes-box">
@@ -564,6 +642,16 @@
     </div>
 
     <script>
+        // Toggle expand/collapse for sections
+        function toggleExpand(id) {
+            const element = document.getElementById(id);
+            if (element.classList.contains('expanded')) {
+                element.classList.remove('expanded');
+            } else {
+                element.classList.add('expanded');
+            }
+        }
+
         // Mouse trail sparkles
         const sparkleChars = ['✦', '✧', '⋆', '·', '˚', '✵', '∗'];
         const colors = ['#a8c5e0', '#b4d3b2', '#f4dc9a', '#ffb3c1', '#d4c5f9'];
