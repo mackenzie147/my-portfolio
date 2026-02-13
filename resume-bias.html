@@ -614,6 +614,89 @@ function App() {
         </div>
       )}
 
+      {/* WHAT CAN YOU DO */}
+      <section style={{ maxWidth:"900px", margin:"50px auto 0", padding:"0 20px" }}>
+        <div style={{ background:"white", borderRadius:"20px", padding:"40px", boxShadow:"0 4px 24px rgba(30,80,120,0.08)" }}>
+          <div style={{ textAlign:"center", marginBottom:"28px" }}>
+            <div style={{ fontSize:"32px", marginBottom:"6px" }}>✊</div>
+            <h2 style={{ fontSize:"28px", fontWeight:700, color:"#0D2137", marginBottom:"8px" }}>What can you do about it?</h2>
+            <p style={{ fontSize:"15px", color:"#5B7F95", lineHeight:1.6, maxWidth:"600px", margin:"0 auto" }}>
+              The regulation gap is real — but it's closing. Here's how to push it further.
+            </p>
+          </div>
+
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit, minmax(240px, 1fr))", gap:"16px" }}>
+
+            <div style={{ padding:"20px", background:"#F0F5FA", borderRadius:"14px", borderLeft:"4px solid #2E86C1" }}>
+              <div style={{ fontSize:"18px", marginBottom:"6px" }}>📣</div>
+              <div style={{ fontWeight:700, fontSize:"15px", color:"#0D2137", marginBottom:"6px" }}>Demand transparency from employers</div>
+              <p style={{ fontSize:"13px", color:"#5B7F95", lineHeight:1.6 }}>
+                Ask any company you apply to: "Do you use automated screening tools? Have they been audited for bias?" Under NYC Local Law 144, they're required to tell you. Everywhere else, the question alone creates pressure.
+              </p>
+            </div>
+
+            <div style={{ padding:"20px", background:"#F0F5FA", borderRadius:"14px", borderLeft:"4px solid #48C9B0" }}>
+              <div style={{ fontSize:"18px", marginBottom:"6px" }}>⚖️</div>
+              <div style={{ fontWeight:700, fontSize:"15px", color:"#0D2137", marginBottom:"6px" }}>File complaints with the EEOC</div>
+              <p style={{ fontSize:"13px", color:"#5B7F95", lineHeight:1.6 }}>
+                If you suspect AI-driven hiring discrimination, you can file a charge with the EEOC. They settled their first AI discrimination case in 2023 for $365,000 and have launched a dedicated AI fairness initiative. Existing civil rights laws already apply to automated tools.
+              </p>
+              <a href="https://www.eeoc.gov/filing-charge-discrimination" target="_blank" rel="noopener" style={{ display:"inline-block", marginTop:"8px", fontSize:"12px", fontWeight:600, color:"#2E86C1", textDecoration:"none", borderBottom:"1px solid #2E86C1" }}>File a charge → eeoc.gov</a>
+            </div>
+
+            <div style={{ padding:"20px", background:"#F0F5FA", borderRadius:"14px", borderLeft:"4px solid #F5A623" }}>
+              <div style={{ fontSize:"18px", marginBottom:"6px" }}>🏛️</div>
+              <div style={{ fontWeight:700, fontSize:"15px", color:"#0D2137", marginBottom:"6px" }}>Support state & federal legislation</div>
+              <p style={{ fontSize:"13px", color:"#5B7F95", lineHeight:1.6 }}>
+                Multiple bills are in progress. California's CRC regulations took effect October 2025 requiring algorithmic accountability. Colorado's AI Act (delayed to June 2026) requires transparency and appeal rights. The federal Algorithmic Accountability Act would mandate impact assessments. Contact your representatives.
+              </p>
+              <a href="https://www.congress.gov/members/find-your-member" target="_blank" rel="noopener" style={{ display:"inline-block", marginTop:"8px", fontSize:"12px", fontWeight:600, color:"#2E86C1", textDecoration:"none", borderBottom:"1px solid #2E86C1" }}>Find your representative → congress.gov</a>
+            </div>
+
+            <div style={{ padding:"20px", background:"#F0F5FA", borderRadius:"14px", borderLeft:"4px solid #D4A5FF" }}>
+              <div style={{ fontSize:"18px", marginBottom:"6px" }}>🔍</div>
+              <div style={{ fontWeight:700, fontSize:"15px", color:"#0D2137", marginBottom:"6px" }}>Request your data</div>
+              <p style={{ fontSize:"13px", color:"#5B7F95", lineHeight:1.6 }}>
+                Under NYC law, candidates can request an alternative selection process. Even outside NYC, many companies will disclose what data their AI tools collect if asked. GDPR (EU) and CCPA (California) grant additional rights to know how your data is used in automated decisions.
+              </p>
+            </div>
+
+            <div style={{ padding:"20px", background:"#F0F5FA", borderRadius:"14px", borderLeft:"4px solid #FF7A8A" }}>
+              <div style={{ fontSize:"18px", marginBottom:"6px" }}>⚡</div>
+              <div style={{ fontWeight:700, fontSize:"15px", color:"#0D2137", marginBottom:"6px" }}>Join or support advocacy organizations</div>
+              <p style={{ fontSize:"13px", color:"#5B7F95", lineHeight:1.6 }}>
+                Organizations actively working on algorithmic accountability include the <strong>Algorithmic Justice League</strong>, the <strong>AI Now Institute</strong>, the <strong>Center for AI Safety</strong>, the <strong>ACLU</strong>, and the <strong>Electronic Frontier Foundation</strong>. They conduct research, lobby legislators, and bring legal challenges.
+              </p>
+            </div>
+
+            <div style={{ padding:"20px", background:"#F0F5FA", borderRadius:"14px", borderLeft:"4px solid #1ABC9C" }}>
+              <div style={{ fontSize:"18px", marginBottom:"6px" }}>📢</div>
+              <div style={{ fontWeight:700, fontSize:"15px", color:"#0D2137", marginBottom:"6px" }}>Share the research</div>
+              <p style={{ fontSize:"13px", color:"#5B7F95", lineHeight:1.6 }}>
+                Most people don't know this is happening. Share this tool. Share the studies. The Workday class action (Mobley v. Workday) could affect over a billion screened applicants. Public awareness is what got NYC's law passed — and what will push other cities and states to follow.
+              </p>
+            </div>
+
+          </div>
+
+          <div style={{ marginTop:"24px", padding:"18px 22px", background:"linear-gradient(135deg,#1B6CA8,#2E86C1)", borderRadius:"14px", color:"white", textAlign:"center" }}>
+            <div style={{ fontWeight:700, fontSize:"16px", marginBottom:"6px" }}>The Workday class action may cover 1 billion+ screened applicants.</div>
+            <div style={{ fontSize:"13px", opacity:0.9, lineHeight:1.55 }}>
+              If you've applied to a job through an automated system in the past 5 years, this affects you. The legal landscape is shifting — but it needs public pressure to move faster than the technology.
+            </div>
+          </div>
+
+          <div style={{ marginTop:"18px", display:"flex", flexWrap:"wrap", justifyContent:"center", gap:"8px" }}>
+            <a href="https://www.eeoc.gov/artificial-intelligence-and-algorithmic-fairness-initiative" target="_blank" rel="noopener" style={{ display:"inline-flex", alignItems:"center", gap:"4px", padding:"8px 16px", borderRadius:"100px", background:"#D6EAF8", color:"#1B6CA8", fontSize:"12px", fontWeight:600, textDecoration:"none" }}>EEOC AI Initiative</a>
+            <a href="https://www.ajl.org" target="_blank" rel="noopener" style={{ display:"inline-flex", alignItems:"center", gap:"4px", padding:"8px 16px", borderRadius:"100px", background:"#D4EFDF", color:"#1E8449", fontSize:"12px", fontWeight:600, textDecoration:"none" }}>Algorithmic Justice League</a>
+            <a href="https://ainowinstitute.org" target="_blank" rel="noopener" style={{ display:"inline-flex", alignItems:"center", gap:"4px", padding:"8px 16px", borderRadius:"100px", background:"#FDEBD0", color:"#CA6F1E", fontSize:"12px", fontWeight:600, textDecoration:"none" }}>AI Now Institute</a>
+            <a href="https://www.congress.gov/members/find-your-member" target="_blank" rel="noopener" style={{ display:"inline-flex", alignItems:"center", gap:"4px", padding:"8px 16px", borderRadius:"100px", background:"#E8DAEF", color:"#7D3C98", fontSize:"12px", fontWeight:600, textDecoration:"none" }}>Find Your Representative</a>
+            <a href="https://www.change.org/topic/artificial-intelligence-en-us" target="_blank" rel="noopener" style={{ display:"inline-flex", alignItems:"center", gap:"4px", padding:"8px 16px", borderRadius:"100px", background:"#FADBD8", color:"#C0392B", fontSize:"12px", fontWeight:600, textDecoration:"none" }}>AI Petitions on Change.org</a>
+          </div>
+
+        </div>
+      </section>
+
       <footer style={{ maxWidth:"780px", margin:"44px auto 0", padding:"24px 20px 40px", textAlign:"center" }}>
         <div style={{ fontWeight:700, fontSize:"15px", color:"#A3C1D4", marginBottom:"8px" }}>📚 Research & Sources</div>
         <div style={{ fontSize:"11px", color:"#B8CDD9", lineHeight:1.8 }}>
