@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Resume Bias Analyzer — Interactive Research Tool</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js" defer></script>
+<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #F0F5FA; }
+  ::selection { background: #93C9F2; color: #1B2A3A; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+// ─── SWAPPABLE SECTION VARIANTS ──────────────────────────────────────────────
+// Each section has variants the user can toggle. Each variant has a bias impact score
+// relative to a "neutral" baseline. Negative = penalized, positive = advantaged.
+
+const SECTION_VARIANTS = {
+  name: {
+    label: "Name",
+    icon: "👤",
+    biasType: "Name & Perceived Race",
+    color: "#FF7A8A",
+    annotation: {hover: "👆 The name is the single biggest variable. Identical resumes received callback rates from 5.8%–10.0% based solely on perceived race and gender of the name.", source: "Bertrand & Mullainathan, 2003; UW iSchool, 2024"},
+    variants: [
+      { id: "white-m", label: "Greg Baker", desc: "White male", impact: 0, color: "#3498DB" },
+      { id: "white-f", label: "Emily Walsh", desc: "White female", impact: -3.5, color: "#5DADE2" },
+      { id: "asian-m", label: "Raj Patel", desc: "Asian male", impact: -16, color: "#1ABC9C" },
+      { id: "asian-f", label: "Wei Zhang", desc: "Asian female", impact: -19, color: "#48C9B0" },
+      { id: "hispanic-m", label: "José Rodriguez", desc: "Hispanic male", impact: -25, color: "#E8971E" },
+      { id: "hispanic-f", label: "María García", desc: "Hispanic female", impact: -28, color: "#F5A623" },
+      { id: "black-f", label: "Lakisha Washington", desc: "Black female", impact: -35.5, color: "#FF7A8A" },
+      { id: "black-m", label: "Jamal Jones", desc: "Black male", impact: -42, color: "#FF6B7A" },
+    ]
+  },
+  contact: {
+    label: "Contact & Location",
+    icon: "📍",
+    biasType: "Address & Zip Code",
+    color: "#C4B5FF",
+    annotation: {hover: "📍 Your address functions as a demographic proxy. ZIP codes correlate with race and income. Some ATS systems filter by commute distance, creating de facto geographic discrimination before qualifications are reviewed.", source: "EEOC Guidance, 2023"},
+    variants: [
+      { id: "affluent", label: "Pacific Heights, SF", desc: "Affluent neighborhood", impact: 0, color: "#3498DB" },
+      { id: "suburban", label: "Daly City, CA", desc: "Suburban middle-class", impact: -3, color: "#5DADE2" },
+      { id: "urban-diverse", label: "Bayview, SF", desc: "Diverse urban neighborhood", impact: -8, color: "#F5A623" },
+      { id: "rural", label: "Rural Fresno, CA", desc: "Rural / low-income zip", impact: -12, color: "#FF7A8A" },
+      { id: "no-address", label: "No address listed", desc: "Omit location entirely", impact: -2, color: "#48C9B0" },
+    ]
+  },
+  summary: {
+    label: "Summary / Objective",
+    icon: "💬",
+    biasType: "Sociolinguistic Patterns",
+    color: "#93D1FF",
+    annotation: {hover: "🤖 Keyword extraction starts here. 'Cross-functional' and 'scalable' register as matches. 'Passionate' and 'mission-driven' are invisible to a parser. Writing style also carries sociolinguistic signals correlated with race and class.", source: "Deshpande et al., UMAP 2020"},
+    variants: [
+      { id: "corporate", label: "Corporate-optimized", desc: '"Results-driven engineer…scalable systems"', impact: 0, color: "#3498DB" },
+      { id: "casual", label: "Conversational tone", desc: '"I love building things that help people"', impact: -10, color: "#F5A623" },
+      { id: "mission", label: "Mission-driven", desc: '"Passionate about leveraging tech for equity"', impact: -15, color: "#FF7A8A" },
+      { id: "minimal", label: "No summary", desc: "Skip section entirely", impact: -5, color: "#8EAFC0" },
+    ]
+  },
+  experience: {
+    label: "Experience",
+    icon: "💼",
+    biasType: "Employment Gaps & Signals",
+    color: "#93FFCD",
+    annotation: {hover: "📊 Quantified metrics parse well — '73% reduction' registers. But improved credentials boosted white callbacks 30% while having statistically insignificant effects for Black applicants. Gaps >6 months are auto-flagged.", source: "Bertrand & Mullainathan, 2003; HBS, 2021"},
+    variants: [
+      { id: "continuous", label: "Continuous employment", desc: "No gaps, 5+ years, brand-name companies", impact: 0, color: "#3498DB" },
+      { id: "small-gap", label: "6-month gap", desc: "Short career break mid-resume", impact: -8, color: "#F5A623" },
+      { id: "long-gap", label: "2-year gap", desc: "Extended leave (caregiving, health, etc.)", impact: -22, color: "#FF7A8A" },
+      { id: "freelance", label: "Freelance / contract", desc: "Self-employed or contract work", impact: -12, color: "#E8971E" },
+      { id: "nonprofit", label: "Nonprofit sector", desc: "Community org / social enterprise", impact: -10, color: "#48C9B0" },
+    ]
+  },
+  education: {
+    label: "Education",
+    icon: "🎓",
+    biasType: "Institution Tier & Age",
+    color: "#93D1FF",
+    annotation: {hover: "🎓 ATS systems maintain internal tier lists of universities. Identical degrees from different schools receive different scores. Graduation dates also reveal approximate age — older workers are systematically downranked.", source: "O'Neil; AARP/ProPublica"},
+    variants: [
+      { id: "elite", label: "Stanford CS, 2019", desc: "Elite institution, recent grad", impact: +8, color: "#3498DB" },
+      { id: "good-state", label: "UC Berkeley CS, 2019", desc: "Top public university", impact: +3, color: "#5DADE2" },
+      { id: "state", label: "State University CS, 2019", desc: "Mid-tier state school", impact: 0, color: "#48C9B0" },
+      { id: "hbcu", label: "Howard University CS, 2019", desc: "HBCU — excellence + identity signal", impact: -6, color: "#F5A623" },
+      { id: "cc-transfer", label: "Community College → State U", desc: "Transfer path, class signal", impact: -10, color: "#E8971E" },
+      { id: "older", label: "State University CS, 2005", desc: "Same school, graduated 14 years earlier", impact: -15, color: "#FF7A8A" },
+      { id: "bootcamp", label: "Coding bootcamp, 2019", desc: "Non-traditional path", impact: -12, color: "#FF6B7A" },
+    ]
+  },
+  skills: {
+    label: "Skills & Affiliations",
+    icon: "🤝",
+    biasType: "Keywords & Identity Signals",
+    color: "#D4A5FF",
+    annotation: {hover: "🔑 Keywords are matched verbatim — 'teamwork' ≠ 'collaboration' to a parser. Identity-adjacent affiliations like 'Women in STEM' or 'Black Engineers Society' trigger measurable bias in both AI and human screening.", source: "Bloomberg GPT Study, 2024"},
+    variants: [
+      { id: "neutral", label: "Technical skills only", desc: "React, Python, AWS, Docker…", impact: 0, color: "#3498DB" },
+      { id: "gender-org", label: "+ Women in Computing", desc: "Gender-based affinity group", impact: -7, color: "#D4A5FF" },
+      { id: "race-org", label: "+ Black Engineers Society", desc: "Race-based affinity group", impact: -12, color: "#FF7A8A" },
+      { id: "lgbtq", label: "+ Out in Tech, Pride Alliance", desc: "LGBTQ+ affiliations", impact: -9, color: "#F5A623" },
+      { id: "dei-work", label: "+ DEI Committee Lead", desc: "Diversity & inclusion work", impact: -11, color: "#E8971E" },
+      { id: "veteran", label: "+ US Army Veteran", desc: "Military service", impact: +3, color: "#48C9B0" },
+    ]
+  }
+};
+
+const FUNFACTS = [
+  { emoji:"🤖", text:"99% of Fortune 500 companies use automated resume screening", source:"Jobscan" },
+  { emoji:"🗑️", text:"75% of resumes are rejected before a human ever sees them", source:"Harvard Business School" },
+  { emoji:"⏱️", text:"Recruiters spend an average of 7.4 seconds reviewing a resume", source:"Ladders Inc." },
+  { emoji:"📝", text:"A white-sounding name yields as many callbacks as 8 extra years of experience", source:"Bertrand & Mullainathan, 2003" },
+  { emoji:"🏙️", text:"New York City is the only US jurisdiction that mandates bias audits of hiring AI", source:"Local Law 144" },
+  { emoji:"0️⃣", text:"In 0% of tests did LLMs favor Black male names over white male names", source:"UW iSchool, 2024" },
+  { emoji:"📬", text:"Black applicants must submit 50% more applications for the same callback rate", source:"NBER, 2003" },
+  { emoji:"🎓", text:"Credential improvements boosted white callbacks 30% — the effect for Black applicants was statistically insignificant", source:"NBER, 2003" },
+  { emoji:"💰", text:"NYC imposes fines of $500–$1,500 per day for deploying unaudited AI hiring tools", source:"DCWP" },
+  { emoji:"🔍", text:"AI resume screeners preferred white-associated names in 85% of evaluations", source:"UW iSchool, 2024" },
+];
+
+const SAMPLE_RESUME = `JORDAN TAYLOR
+jordan.taylor@email.com · (555) 867-5309 · linkedin.com/in/jordantaylor · San Francisco, CA
+
+SUMMARY
+Results-driven software engineer with 5+ years of experience building scalable web applications and distributed systems. Strong background in cross-functional collaboration, mentoring junior engineers, and shipping user-facing products in fast-paced environments.
+
+EXPERIENCE
+
+Software Engineer II — CloudScale Technologies
+January 2022 – Present
+• Led migration of monolithic application to microservices architecture, reducing deployment time by 73%
+• Built real-time analytics dashboard using React, D3.js, and PostgreSQL serving 50,000+ daily active users
+• Mentored 3 junior engineers through structured code reviews and weekly pair programming sessions
+• Implemented automated testing pipeline achieving 94% code coverage across 12 services
+
+Junior Software Engineer — DataFlow Inc.
+June 2019 – December 2021
+• Developed RESTful APIs using Python and Flask, processing 2M+ requests daily with 99.9% uptime
+• Implemented CI/CD pipeline with Docker and GitHub Actions, reducing release cycles by 40%
+• Collaborated with product team to ship 12 features across 4 quarterly releases
+• Received "Rising Star" award for contributions to the data pipeline redesign project
+
+EDUCATION
+
+B.S. Computer Science — State University, 2019
+Dean's List · Women in Computing Society · Hackathon Winner 2018
+
+SKILLS
+JavaScript, Python, React, Node.js, TypeScript, PostgreSQL, MongoDB, AWS, Docker, Kubernetes, GraphQL, REST APIs, CI/CD, Agile/Scrum, Git`;
+
+const ATS_KEYWORDS = ["python","java","javascript","typescript","react","node","sql","postgresql","mongodb","aws","docker","kubernetes","ci/cd","git","agile","scrum","rest","api","graphql","machine learning","data","analytics","engineering","microservices","devops","leadership","management","communication","collaboration","testing","deployment"];
+const IDENTITY_KEYWORDS = ["women in","black","african american","hispanic","latino","latina","lgbtq","pride","diversity","inclusion","equity","dei","first generation","first-generation","minority","scholarship","community organizing","activism","immigrant","disability","accessible","neurodivergent","veteran"];
+
+function parseResume(text) {
+  const lower = text.toLowerCase();
+  const lines = text.split("\n").filter(l => l.trim());
+  let name = "Unknown";
+  for (let i = 0; i < Math.min(lines.length, 5); i++) {
+    const l = lines[i].trim();
+    if (l.length > 40) continue;
+    if (/@/.test(l) || /\d{3}[\s.-]?\d{3}/.test(l) || /linkedin|github|http/i.test(l)) continue;
+    if (/^(summary|experience|education|skills|objective|profile)/i.test(l)) continue;
+    if (l.includes("·") || l.includes("|") || l.includes(",")) continue;
+    name = l; break;
+  }
+  if (name === "Unknown" && lines[0]) name = lines[0].trim().slice(0, 40);
+  const wordCount = text.split(/\s+/).length;
+  const foundATS = ATS_KEYWORDS.filter(k => lower.includes(k));
+  const foundIdentity = IDENTITY_KEYWORDS.filter(k => lower.includes(k));
+  const hasEmail = /[\w.-]+@[\w.-]+\.\w+/.test(text);
+  const hasPhone = /[\d()\-+\s]{10,}/.test(text);
+  const hasLinkedin = lower.includes("linkedin");
+  const sections = ["summary","experience","education","skills","projects","certifications","awards","objective"];
+  const foundSections = sections.filter(s => lower.includes(s));
+  const keywordScore = Math.min(100, Math.round((foundATS.length / 10) * 100));
+  const formatScore = Math.round(((hasEmail?20:0)+(hasPhone?20:0)+(hasLinkedin?10:0)+(foundSections.length/sections.length)*50));
+  const atsScore = Math.round(keywordScore*0.55 + formatScore*0.3 + Math.min(100, wordCount/5)*0.15);
+  return { name, wordCount, foundATS, foundIdentity, foundSections, hasEmail, hasPhone, hasLinkedin, keywordScore, formatScore, atsScore };
+}
+
+async function extractPdfText(file) {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdfjsLib = window.pdfjsLib;
+  pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+  let fullText = "";
+  for (let i = 1; i <= pdf.numPages; i++) {
+    const page = await pdf.getPage(i);
+    const content = await page.getTextContent();
+    const items = content.items;
+    if (items.length === 0) continue;
+    let lastY = null; let line = "";
+    for (const item of items) {
+      const y = Math.round(item.transform[5]);
+      if (lastY !== null && Math.abs(y - lastY) > 5) { fullText += line.trim() + "\n"; line = ""; }
+      line += item.str + " "; lastY = y;
+    }
+    if (line.trim()) fullText += line.trim() + "\n";
+    fullText += "\n";
+  }
+  return fullText;
+}
+
+// ─── COMPONENTS ──────────────────────────────────────────────────────────────
+
+function FactCarousel({ facts }) {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => { const t = setInterval(() => setIdx(i => (i+1) % facts.length), 5000); return () => clearInterval(t); }, [facts.length]);
+  const f = facts[idx];
+  return (
+    <div style={{ background:"#EBF5FB", border:"2px dashed #93C9F2", borderRadius:"16px", padding:"18px 20px", textAlign:"center", minHeight:"115px", display:"flex", flexDirection:"column", justifyContent:"center" }}>
+      <div style={{ fontSize:"26px", marginBottom:"5px" }}>{f.emoji}</div>
+      <div style={{ fontWeight:700, fontSize:"15px", color:"#1B4F72", lineHeight:1.45 }}>{f.text}</div>
+      <div style={{ fontSize:"11px", color:"#7FB3D8", marginTop:"4px" }}>— {f.source}</div>
+      <div style={{ display:"flex", justifyContent:"center", gap:"5px", marginTop:"8px" }}>
+        {facts.map((_,i) => <div key={i} onClick={() => setIdx(i)} style={{ width:i===idx?"18px":"6px", height:"6px", borderRadius:"3px", background:i===idx?"#2E86C1":"#C5DFF0", cursor:"pointer", transition:"all 0.3s" }} />)}
+      </div>
+    </div>
+  );
+}
+
+// Bias impact meter — shows how a variant shifts callback probability
+function ImpactMeter({ impact, color }) {
+  const pct = Math.abs(impact);
+  const isNeg = impact < 0;
+  const isPosi = impact > 0;
+  const label = impact === 0 ? "baseline" : (isNeg ? "" : "+") + impact + "%";
+  const labelColor = impact === 0 ? "#8EAFC0" : isNeg ? "#FF6B7A" : "#1E8449";
+  return (
+    <div style={{ display:"flex", alignItems:"center", gap:"6px", marginTop:"2px" }}>
+      <div style={{ flex:1, height:"5px", background:"#E0EAF0", borderRadius:"3px", overflow:"hidden", position:"relative" }}>
+        <div style={{ position:"absolute", left:"50%", top:0, bottom:0, width:"1px", background:"#B8CDD9" }} />
+        {isNeg && <div style={{ position:"absolute", right:"50%", top:0, bottom:0, width:(Math.min(pct, 50) + "%"), background:color||"#FF7A8A", borderRadius:"3px", transition:"width 0.5s ease" }} />}
+        {isPosi && <div style={{ position:"absolute", left:"50%", top:0, bottom:0, width:(Math.min(pct, 50) + "%"), background:color||"#48C9B0", borderRadius:"3px", transition:"width 0.5s ease" }} />}
+      </div>
+      <span style={{ fontSize:"12px", fontWeight:700, color:labelColor, minWidth:"40px", textAlign:"right" }}>
+        {label}
+      </span>
+    </div>
+  );
+}
+
+// Section swap panel — for each resume section
+function SectionSwapPanel({ sectionKey, selections, onSelect }) {
+  const sec = SECTION_VARIANTS[sectionKey];
+  const selected = selections[sectionKey];
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div style={{ background:"white", borderRadius:"14px", padding:"16px", boxShadow:"0 2px 10px rgba(30,80,120,0.05)", marginBottom:"10px" }}>
+      <div onClick={() => setExpanded(!expanded)} style={{ display:"flex", alignItems:"center", gap:"8px", cursor:"pointer", userSelect:"none" }}>
+        <span style={{ fontSize:"18px" }}>{sec.icon}</span>
+        <span style={{ fontWeight:700, fontSize:"14px", color:"#0D2137", flex:1 }}>{sec.label}</span>
+        <span style={{ fontSize:"10px", padding:"2px 8px", borderRadius:"100px", background:`${sec.color}25`, color:sec.color, fontWeight:700 }}>{sec.biasType}</span>
+        <span style={{ fontSize:"13px", color:"#A3C1D4", transition:"transform 0.2s", transform:expanded?"rotate(180deg)":"rotate(0)" }}>▼</span>
+      </div>
+      {selected && !expanded && (
+        <div style={{ marginTop:"6px", fontSize:"12px", color:"#5B7F95" }}>
+          Active: <strong style={{ color: sec.variants.find(v=>v.id===selected)?.color }}>{sec.variants.find(v=>v.id===selected)?.label}</strong>
+          <ImpactMeter impact={sec.variants.find(v=>v.id===selected)?.impact || 0} color={sec.variants.find(v=>v.id===selected)?.color} />
+        </div>
+      )}
+      {expanded && (
+        <div style={{ marginTop:"10px", display:"flex", flexDirection:"column", gap:"5px", animation:"popIn 0.2s ease both" }}>
+          {sec.variants.map(v => {
+            const isActive = selected === v.id;
+            return (
+              <div key={v.id} onClick={() => onSelect(sectionKey, isActive ? null : v.id)} style={{
+                padding:"10px 12px", borderRadius:"10px", cursor:"pointer", transition:"all 0.2s",
+                background: isActive ? `${v.color}15` : "#F8FAFB",
+                border: `2px solid ${isActive ? v.color : "transparent"}`,
+              }}>
+                <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                  <span style={{ fontWeight:600, fontSize:"13px", color: isActive ? v.color : "#1B2A3A" }}>{v.label}</span>
+                </div>
+                <div style={{ fontSize:"11px", color:"#8EAFC0", marginTop:"2px" }}>{v.desc}</div>
+                <ImpactMeter impact={v.impact} color={v.color} />
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Hoverable resume section with annotation
+function ResumeSection({ children, sectionKey, isActive, annotation }) {
+  const [hovered, setHovered] = useState(false);
+  const sec = SECTION_VARIANTS[sectionKey];
+  const color = sec?.color || "#93C9F2";
+  const showAnnot = hovered && annotation;
+  return (
+    <div style={{ position:"relative" }} onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
+      <div style={{
+        background: (isActive || hovered) ? `${color}12` : "transparent",
+        border: `2px ${(isActive || hovered) ? "dashed" : "solid"} ${(isActive || hovered) ? `${color}66` : "transparent"}`,
+        borderRadius:"8px", padding:"8px 12px", transition:"all 0.2s", cursor:"default",
+      }}>
+        {children}
+      </div>
+      {showAnnot && (
+        <div style={{
+          position:"absolute", left:"calc(100% + 14px)", top:"50%", transform:"translateY(-50%)",
+          background: color, borderRadius:"12px", padding:"14px 16px", width:"240px",
+          fontSize:"13px", lineHeight:1.55, color:"#1B2A3A", fontWeight:600,
+          boxShadow:"4px 4px 0px rgba(0,0,0,0.06)", zIndex:50,
+          animation:"popIn 0.2s cubic-bezier(0.34,1.56,0.64,1) both",
+        }}>
+          <div style={{ position:"absolute", left:"-7px", top:"50%", transform:"translateY(-50%)", width:0, height:0, borderTop:"7px solid transparent", borderBottom:"7px solid transparent", borderRight:`7px solid ${color}` }} />
+          {annotation.hover}
+          <div style={{ fontSize:"10px", color:"rgba(0,0,0,0.4)", marginTop:"6px" }}>Source: {annotation.source}</div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Composite bias score display
+function CompositeBiasScore({ selections }) {
+  let total = 0;
+  let count = 0;
+  Object.entries(selections).forEach(([key, variantId]) => {
+    if (variantId) {
+      const sec = SECTION_VARIANTS[key];
+      const v = sec.variants.find(x => x.id === variantId);
+      if (v) { total += v.impact; count++; }
+    }
+  });
+  const baseCallback = 10.0;
+  const adjusted = Math.max(1, baseCallback + (total / 100) * baseCallback * 5);
+  const resumesNeeded = Math.round(100 / adjusted);
+  const isDisadvantaged = total < -20;
+  const totalLabel = (total > 0 ? "+" : "") + total + "%";
+  const descText = count === 0
+    ? "Select variants in the panels above to see how different signals compound."
+    : total === 0
+    ? "Baseline profile — this is the reference point. No penalty, no advantage."
+    : isDisadvantaged
+    ? "This combination of signals would significantly reduce callback rates. An estimated ~" + resumesNeeded + " applications per callback."
+    : total < 0
+    ? "This profile faces a moderate callback penalty. Estimated ~" + resumesNeeded + " applications per callback vs ~10 for baseline."
+    : "This profile has a slight advantage over baseline. Estimated ~" + resumesNeeded + " applications per callback.";
+  return (
+    <div style={{
+      background: isDisadvantaged ? "linear-gradient(135deg,#FF7A8A,#FF6B7A)" : total < 0 ? "linear-gradient(135deg,#F5A623,#E8971E)" : "linear-gradient(135deg,#1B6CA8,#2E86C1)",
+      borderRadius:"16px", padding:"22px", color:"white",
+    }}>
+      <div style={{ fontSize:"12px", fontWeight:600, opacity:0.8, marginBottom:"4px" }}>COMPOSITE BIAS IMPACT</div>
+      <div style={{ fontSize:"36px", fontWeight:700, lineHeight:1 }}>{totalLabel}</div>
+      <div style={{ fontSize:"13px", opacity:0.9, marginTop:"6px", lineHeight:1.5 }}>{descText}</div>
+      {count > 0 && (
+        <div style={{ marginTop:"10px", display:"flex", flexWrap:"wrap", gap:"4px" }}>
+          {Object.entries(selections).map(([key, vid]) => {
+            if (!vid) return null;
+            const sec = SECTION_VARIANTS[key];
+            const v = sec.variants.find(x => x.id === vid);
+            const chipLabel = sec.icon + " " + (v.impact > 0 ? "+" : "") + v.impact + "%";
+            return v ? (
+              <span key={key} style={{ display:"inline-block", padding:"3px 10px", borderRadius:"100px", background:"rgba(255,255,255,0.2)", fontSize:"11px", fontWeight:600 }}>
+                {chipLabel}
+              </span>
+            ) : null;
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── MAIN APP ────────────────────────────────────────────────────────────────
+
+function App() {
+  const [mode, setMode] = useState("sample");
+  const [uploadText, setUploadText] = useState("");
+  const [selections, setSelections] = useState({name:null,contact:null,summary:null,experience:null,education:null,skills:null});
+  const [showNYC, setShowNYC] = useState(false);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const fileRef = useRef(null);
+
+  const handleSelect = (section, variantId) => setSelections(s => ({...s, [section]: variantId}));
+
+  const handleFile = async (file) => {
+    if (!file) return;
+    if (file.type === "application/pdf" || file.name.toLowerCase().endsWith(".pdf")) {
+      setPdfLoading(true);
+      try { const text = await extractPdfText(file); setUploadText(text); setMode("upload"); }
+      catch(e) { alert("Could not read PDF. Try pasting your resume text instead."); }
+      setPdfLoading(false);
+    } else {
+      const reader = new FileReader();
+      reader.onload = e => { setUploadText(e.target.result); setMode("upload"); };
+      reader.readAsText(file);
+    }
+  };
+
+  const resumeText = mode === "upload" ? uploadText : SAMPLE_RESUME;
+  const parsed = resumeText.trim() ? parseResume(resumeText) : null;
+  const resumeLines = resumeText.split("\n");
+
+  // Determine display name from selection
+  const nameVariant = selections.name ? SECTION_VARIANTS.name.variants.find(v => v.id === selections.name) : null;
+  const displayName = nameVariant ? nameVariant.label : (parsed?.name || "Jordan Taylor");
+  const nameColor = nameVariant?.color || "#0D2137";
+
+  const getSection = (text) => {
+    const l = text.toLowerCase().trim();
+    if (l.includes("summary")||l.includes("objective")||l.includes("profile")) return "summary";
+    if (l.includes("experience")||l.includes("employment")||l.includes("work history")) return "experience";
+    if (l.includes("education")) return "education";
+    if (l.includes("skills")||l.includes("technologies")||l.includes("competencies")||l.includes("affiliations")) return "skills";
+    return null;
+  };
+
+  const F = "'DM Sans','Helvetica Neue',Arial,sans-serif";
+
+  // Build grouped resume sections for rendering
+  const buildResumeSections = () => {
+    let currentSection = null;
+    let lineIdx = 0;
+    const groups = []; // {sectionKey, lines: [{trimmed, isHeader, isFirst, isBullet, isContact}]}
+    let currentGroup = {sectionKey: "name", lines: []};
+
+    for (let i = 0; i < resumeLines.length; i++) {
+      const trimmed = resumeLines[i].trim();
+      if (!trimmed) { currentGroup.lines.push({trimmed:"", empty:true}); continue; }
+      const sec = getSection(trimmed);
+      if (sec && sec !== currentSection) {
+        if (currentGroup.lines.length > 0) groups.push(currentGroup);
+        currentSection = sec;
+        currentGroup = {sectionKey: sec, lines: []};
+      }
+      lineIdx++;
+      const isFirst = lineIdx === 1;
+      const isContact = lineIdx === 2 && (trimmed.includes("@") || trimmed.includes("linkedin") || trimmed.includes("·"));
+      if (isFirst) {
+        if (currentGroup.lines.length > 0) groups.push(currentGroup);
+        currentGroup = {sectionKey:"name", lines:[{trimmed, isFirst:true}]};
+        groups.push(currentGroup);
+        currentGroup = {sectionKey:"contact", lines:[]};
+        continue;
+      }
+      if (isContact) {
+        currentGroup.lines.push({trimmed, isContact:true});
+        groups.push(currentGroup);
+        currentGroup = {sectionKey: currentSection || "other", lines:[]};
+        continue;
+      }
+      const isHeader = sec && trimmed.toUpperCase() === trimmed && trimmed.length < 30;
+      const isBullet = trimmed.startsWith("•")||trimmed.startsWith("-")||trimmed.startsWith("–");
+      currentGroup.lines.push({trimmed, isHeader, isBullet});
+    }
+    if (currentGroup.lines.filter(l=>l.trimmed).length > 0) groups.push(currentGroup);
+    return groups;
+  };
+
+  return (
+    <div style={{ minHeight:"100vh", background:"#F0F5FA", fontFamily:F, color:"#1B2A3A" }}>
+      <style>{`
+        @keyframes popIn { from{opacity:0;transform:scale(0.88) translateY(6px)} to{opacity:1;transform:scale(1) translateY(0)} }
+        @keyframes float { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-5px)} }
+        @keyframes pulse { 0%,100%{opacity:.5} 50%{opacity:1} }
+        .doodle-underline { background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='12'%3E%3Cpath d='M2 8Q50 2 100 8T198 6' stroke='%232E86C1' stroke-width='3' fill='none' stroke-linecap='round'/%3E%3C/svg%3E"); background-position:bottom; background-repeat:repeat-x; background-size:200px 12px; padding-bottom:8px; }
+        .sticker { display:inline-flex;align-items:center;gap:4px;padding:5px 12px;border-radius:100px;font-weight:600;font-size:12px;white-space:nowrap; }
+        button { font-family:'DM Sans','Helvetica Neue',Arial,sans-serif; }
+        textarea:focus,button:focus-visible { outline:2px solid #2E86C1; outline-offset:2px; }
+      `}</style>
+
+      {/* HEADER */}
+      <header style={{ textAlign:"center", padding:"44px 20px 10px", maxWidth:"820px", margin:"0 auto" }}>
+        <div style={{ display:"inline-block", background:"#2E86C1", color:"white", fontWeight:700, fontSize:"13px", padding:"5px 16px", borderRadius:"100px", marginBottom:"16px", animation:"float 3s ease infinite" }}>🔬 Interactive Research Tool</div>
+        <h1 style={{ fontSize:"clamp(32px,5.5vw,56px)", fontWeight:700, lineHeight:1.15, marginBottom:"14px", letterSpacing:"-0.5px", color:"#0D2137" }}>
+          Automated hiring tools are <span className="doodle-underline">discriminating at scale</span>
+        </h1>
+        <p style={{ fontSize:"16px", color:"#5B7F95", lineHeight:1.65, maxWidth:"600px", margin:"0 auto 16px" }}>
+          Every section of a resume carries demographic signals. Swap any section below to see how identical qualifications receive different outcomes based on perceived identity.
+        </p>
+        <div style={{ display:"flex", justifyContent:"center", gap:"8px", flexWrap:"wrap", marginBottom:"20px" }}>
+          <span className="sticker" style={{ background:"#D4EFDF", color:"#1E8449" }}>📄 Bertrand & Mullainathan, 2003</span>
+          <span className="sticker" style={{ background:"#D6EAF8", color:"#1B6CA8" }}>🤖 UW iSchool, 2024</span>
+          <span className="sticker" style={{ background:"#FDEBD0", color:"#CA6F1E" }}>🏙️ NYC Local Law 144</span>
+        </div>
+        <div style={{ display:"flex", justifyContent:"center", gap:"8px", marginBottom:"8px" }}>
+          {["sample","upload"].map(m => (
+            <button key={m} onClick={() => setMode(m)} style={{ padding:"10px 24px", borderRadius:"100px", background:mode===m?"#1B6CA8":"white", color:mode===m?"white":"#1B6CA8", border:"2px solid #1B6CA8", fontWeight:600, fontSize:"13px", cursor:"pointer", transition:"all 0.2s" }}>
+              {m==="sample"?"📋 Sample Resume":"📤 Your Resume"}
+            </button>
+          ))}
+        </div>
+        {mode === "upload" && (
+          <div style={{ maxWidth:"600px", margin:"12px auto 0", animation:"popIn 0.3s ease both" }}>
+            <div onClick={() => fileRef.current?.click()} onDragOver={e => e.preventDefault()} onDrop={e => { e.preventDefault(); handleFile(e.dataTransfer.files[0]); }}
+              style={{ border:"2px dashed #C5DFF0", borderRadius:"14px", padding:"24px", textAlign:"center", cursor:"pointer", marginBottom:"10px", background:"white" }}>
+              <input ref={fileRef} type="file" accept=".txt,.md,.pdf" style={{ display:"none" }} onChange={e => handleFile(e.target.files[0])} />
+              {pdfLoading
+                ? <div style={{ fontWeight:600, fontSize:"14px", color:"#2E86C1", animation:"pulse 1s ease infinite" }}>📄 Extracting text from PDF...</div>
+                : <><div style={{ fontWeight:600, fontSize:"14px", color:"#5B7F95" }}>📎 Drop a file here or click to upload</div><div style={{ fontSize:"12px", color:"#A3C1D4", marginTop:"4px" }}>Supports .pdf, .txt, and .md files</div></>
+              }
+            </div>
+            <textarea value={uploadText} onChange={e => setUploadText(e.target.value)} placeholder="Or paste your resume text here..."
+              style={{ width:"100%", minHeight:"140px", padding:"16px", background:"white", border:"2px solid #D6E4EF", borderRadius:"14px", fontSize:"13px", fontFamily:F, color:"#1B2A3A", lineHeight:1.6, resize:"vertical" }} />
+            <div style={{ fontSize:"11px", color:"#A3C1D4", marginTop:"6px", textAlign:"center" }}>All processing runs locally in your browser. No data is sent anywhere.</div>
+          </div>
+        )}
+      </header>
+
+      {/* THREE COLUMN LAYOUT */}
+      {parsed && (
+        <div style={{ maxWidth:"1340px", margin:"30px auto", padding:"0 16px", display:"grid", gridTemplateColumns:"300px 1fr 300px", gap:"20px", alignItems:"start" }}>
+
+          {/* LEFT — Section Swap Panels */}
+          <div style={{ display:"flex", flexDirection:"column", gap:"0px", paddingTop:"8px" }}>
+            <div style={{ fontSize:"18px", fontWeight:700, color:"#0D2137", marginBottom:"10px", paddingLeft:"4px" }}>🔄 Swap any section</div>
+            <p style={{ fontSize:"12px", color:"#8EAFC0", lineHeight:1.5, marginBottom:"14px", paddingLeft:"4px" }}>Click to expand. Select a variant to see the resume change and bias impact shift in real time.</p>
+            {Object.keys(SECTION_VARIANTS).map(key => (
+              <SectionSwapPanel key={key} sectionKey={key} selections={selections} onSelect={handleSelect} />
+            ))}
+          </div>
+
+          {/* CENTER — Resume */}
+          <div>
+            <div style={{ background:"white", borderRadius:"8px", padding:"40px 36px", boxShadow:"0 1px 3px rgba(30,80,120,0.04), 0 4px 12px rgba(30,80,120,0.06), 0 12px 40px rgba(30,80,120,0.06)", position:"relative" }}>
+              <div style={{ position:"absolute", top:"-10px", left:"50%", transform:"translateX(-50%) rotate(-2deg)", width:"65px", height:"22px", background:"rgba(147,201,242,0.5)", borderRadius:"2px" }} />
+
+              {(() => {
+                const groups = buildResumeSections();
+                return groups.map((group, gi) => {
+                  const secData = SECTION_VARIANTS[group.sectionKey];
+                  const isActive = selections[group.sectionKey] !== null && selections[group.sectionKey] !== undefined;
+                  const annotation = secData?.annotation || null;
+
+                  return (
+                    <ResumeSection key={gi} sectionKey={group.sectionKey} isActive={isActive} annotation={annotation}>
+                      {group.lines.map((line, li) => {
+                        if (line.empty) return <div key={li} style={{ height:"6px" }} />;
+                        if (line.isFirst) return <h2 key={li} style={{ fontSize:"21px", fontWeight:700, letterSpacing:"-0.3px", color:nameColor, transition:"color 0.3s" }}>{displayName.toUpperCase()}</h2>;
+                        if (line.isContact) return <div key={li} style={{ fontSize:"12px", color:"#8EAFC0" }}>{line.trimmed}</div>;
+                        if (line.isHeader) return <div key={li} style={{ fontWeight:700, fontSize:"11px", textTransform:"uppercase", letterSpacing:"1.5px", color:"#A3C1D4", marginTop:"4px" }}>{line.trimmed}</div>;
+                        if (line.isBullet) return <div key={li} style={{ fontSize:"13px", color:"#3E5E73", lineHeight:1.65, paddingLeft:"4px" }}>{line.trimmed}</div>;
+                        return <div key={li} style={{ fontSize:"13.5px", color:"#2C4A5E", lineHeight:1.65 }}>{line.trimmed}</div>;
+                      })}
+                    </ResumeSection>
+                  );
+                });
+              })()}
+
+              <div style={{ position:"absolute", bottom:"14px", right:"16px", fontSize:"12px", color:"#C5DFF0", fontStyle:"italic" }}>hover any section for research context →</div>
+            </div>
+            <div style={{ textAlign:"center", marginTop:"10px", fontWeight:600, fontSize:"13px", color:"#A3C1D4" }}>☝️ same qualifications · different signals · different outcomes</div>
+          </div>
+
+          {/* RIGHT — Score + Facts + NYC */}
+          <div style={{ display:"flex", flexDirection:"column", gap:"14px", paddingTop:"8px" }}>
+            <CompositeBiasScore selections={selections} />
+            <FactCarousel facts={FUNFACTS.slice(0,5)} />
+
+            {/* ATS Score */}
+            <div style={{ background:"white", borderRadius:"16px", padding:"20px", boxShadow:"0 2px 12px rgba(30,80,120,0.06)" }}>
+              <div style={{ fontSize:"17px", fontWeight:700, marginBottom:"10px", color:"#0D2137" }}>📊 ATS Compatibility</div>
+              {[{label:"Keyword Match",val:parsed.keywordScore,desc:`${parsed.foundATS.length} keywords detected`},{label:"Formatting",val:parsed.formatScore,desc:`${parsed.foundSections.length} sections found`},{label:"Overall Score",val:parsed.atsScore,desc:"Likelihood of passing initial screen"}].map((s,i) => (
+                <div key={i} style={{ marginBottom:"12px" }}>
+                  <div style={{ display:"flex", justifyContent:"space-between", fontSize:"12px", fontWeight:600, marginBottom:"4px" }}>
+                    <span style={{ color:"#5B7F95" }}>{s.label}</span>
+                    <span style={{ color:s.val>70?"#1E8449":s.val>40?"#CA6F1E":"#D32F2F", fontWeight:700, fontSize:"15px" }}>{s.val}%</span>
+                  </div>
+                  <div style={{ height:"7px", background:"#E0EAF0", borderRadius:"4px", overflow:"hidden" }}>
+                    <div style={{ height:"100%", borderRadius:"4px", width:`${s.val}%`, background:s.val>70?"#48C9B0":s.val>40?"#F5A623":"#FF7A8A", transition:"width 1s ease" }} />
+                  </div>
+                  <div style={{ fontSize:"11px", color:"#A3C1D4", marginTop:"2px" }}>{s.desc}</div>
+                </div>
+              ))}
+              {parsed.foundIdentity.length > 0 && (
+                <div style={{ padding:"10px 12px", background:"#FEF5E7", borderRadius:"10px", fontSize:"12px", lineHeight:1.5, marginTop:"8px" }}>
+                  <strong style={{ color:"#CA6F1E" }}>⚠ Identity-adjacent terms detected:</strong>{" "}
+                  {parsed.foundIdentity.map((k,i) => <span key={i} style={{ display:"inline-block", padding:"2px 8px", margin:"2px", background:"#FDEBD0", borderRadius:"100px", fontSize:"11px", fontWeight:600, color:"#8A5A1E" }}>{k}</span>)}
+                  <div style={{ color:"#B8A088", marginTop:"4px", fontSize:"11px" }}>Research shows these trigger measurable bias in both AI and human screening.</div>
+                </div>
+              )}
+            </div>
+
+            <FactCarousel facts={FUNFACTS.slice(5)} />
+
+            {/* NYC Law */}
+            <div style={{ background:"white", borderRadius:"16px", padding:"20px", boxShadow:"0 2px 12px rgba(30,80,120,0.06)", border:"2px solid #D6E4EF" }}>
+              <div style={{ fontSize:"17px", fontWeight:700, marginBottom:"4px", color:"#0D2137" }}>🏙️ The regulation gap</div>
+              <p style={{ fontSize:"12.5px", color:"#5B7F95", lineHeight:1.55, marginBottom:"12px" }}>NYC Local Law 144 remains the only enforceable US regulation requiring bias audits of automated hiring tools.</p>
+              {[{icon:"✅",text:"Annual independent bias audits",bg:"#D4EFDF"},{icon:"✅",text:"Public disclosure of audit results",bg:"#D4EFDF"},{icon:"✅",text:"10-day advance candidate notice",bg:"#D4EFDF"},{icon:"✅",text:"Right to request alternatives",bg:"#D4EFDF"},{icon:"💰",text:"$500–$1,500 fines per violation per day",bg:"#FEF5E7"}].map((r,i) => (
+                <div key={i} style={{ display:"flex", alignItems:"center", gap:"8px", padding:"7px 11px", background:r.bg, borderRadius:"10px", fontSize:"12px", fontWeight:500, marginBottom:"5px", color:"#1B2A3A" }}><span>{r.icon}</span>{r.text}</div>
+              ))}
+              <div style={{ marginTop:"8px", padding:"10px", background:"#FEF5E7", borderRadius:"12px", fontWeight:700, fontSize:"14px", color:"#CA6F1E", textAlign:"center" }}>Everyone else? No audits. No transparency. No recourse. 🦗</div>
+              <button onClick={() => setShowNYC(!showNYC)} style={{ width:"100%", marginTop:"8px", padding:"10px", background:"#1B6CA8", color:"white", border:"none", borderRadius:"12px", fontWeight:600, fontSize:"12px", cursor:"pointer" }}>{showNYC?"Collapse ↑":"Full LL144 breakdown ↓"}</button>
+              {showNYC && (
+                <div style={{ marginTop:"8px", padding:"14px", background:"#F0F5FA", borderRadius:"12px", fontSize:"12px", color:"#3E5E73", lineHeight:1.65, animation:"popIn 0.25s ease both" }}>
+                  <p style={{marginBottom:"7px"}}><strong>Local Law 144 of 2021</strong> applies to any employer using an "automated employment decision tool" (AEDT) for hiring or promotion within NYC.</p>
+                  <p style={{marginBottom:"6px"}}>🔍 Tools must be independently audited for disparate impact across race, ethnicity, and sex — annually.</p>
+                  <p style={{marginBottom:"6px"}}>📋 A summary of audit results must be published on the employer's website.</p>
+                  <p style={{marginBottom:"6px"}}>📬 Candidates must receive notice at least 10 business days before an AEDT is used, including what data is collected.</p>
+                  <p style={{marginBottom:"6px"}}>⚖️ Enforcement began July 5, 2023. The NYC Department of Consumer and Worker Protection oversees compliance.</p>
+                  <p style={{marginTop:"8px"}}>The EU AI Act classifies employment AI as "high-risk." Colorado, Illinois, and California have proposed legislation. The federal "No Robot Bosses Act" has been introduced. As of today, <strong>none have reached the enforcement stage that NYC's law has achieved.</strong></p>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <footer style={{ maxWidth:"780px", margin:"44px auto 0", padding:"24px 20px 40px", textAlign:"center" }}>
+        <div style={{ fontWeight:700, fontSize:"15px", color:"#A3C1D4", marginBottom:"8px" }}>📚 Research & Sources</div>
+        <div style={{ fontSize:"11px", color:"#B8CDD9", lineHeight:1.8 }}>
+          Bertrand & Mullainathan, "Are Emily and Greg More Employable Than Lakisha and Jamal?" (NBER Working Paper 9873, 2003) · Wilson & Caliskan, "Gender, Race, and Intersectional Bias in Resume Screening via LLM Retrieval" (AAAI/ACM AIES, 2024) · Kline, Rose & Walters, "A Discrimination Report Card" (UC Berkeley / UChicago, 2024) · Bloomberg, "OpenAI GPT Sorts Resumes With Racial Bias" (2024) · NYC Local Law 144 of 2021 · DCWP AEDT FAQ & Enforcement Records · Deshpande et al., "Mitigating Demographic Bias in AI-based Resume Filtering" (UMAP, 2020) · O'Neil, "Weapons of Math Destruction" (2016) · Harvard Business School, "Hidden Workers" (2021) · AARP/ProPublica, Age Discrimination Investigation
+        </div>
+        <div style={{ marginTop:"8px", fontSize:"11px", color:"#C5DFF0", lineHeight:1.6 }}>Rejection rate estimates are illustrative, derived from published callback differentials — not outputs of an actual ATS system. All processing occurs locally in the browser. No resume data is collected, stored, or transmitted.</div>
+        <div style={{ marginTop:"14px", fontSize:"13px", color:"#C5DFF0", fontStyle:"italic" }}>Commentary on the automation of employment discrimination ✌️</div>
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>
