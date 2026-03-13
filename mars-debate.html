@@ -1,0 +1,1184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>RED PLANET / BLUE MARBLE — Debate Installation</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Orbitron:wght@400;600;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --mars:#C0392B;--mars-l:#E74C3C;--mars-g:#FF7F5C;--mars-dim:rgba(192,57,43,0.15);
+  --earth:#0D4F6B;--earth-l:#2E86C1;--earth-g:#5DADE2;--earth-dim:rgba(13,79,107,0.15);
+  --gold:#F0C040;--gold-dim:rgba(240,192,64,0.15);
+  --bg:#06060E;--text:#F0EDE8;--muted:rgba(240,237,232,0.45);
+  --border:rgba(255,255,255,0.07);--border-m:rgba(255,255,255,0.14);
+  --mono:'Space Mono',monospace;--disp:'Orbitron',sans-serif;--hero:'Bebas Neue',sans-serif;
+}
+
+html,body{width:100%;height:100%;overflow:hidden;font-family:var(--mono);background:var(--bg);color:var(--text)}
+
+/* ═══════════════════════════════════
+   LANDING — MODE SELECT
+═══════════════════════════════════ */
+#landing {
+  position:fixed;inset:0;z-index:200;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:var(--bg);
+}
+#landing .stars-bg{position:absolute;inset:0;overflow:hidden;}
+#landing .stars-bg::before,#landing .stars-bg::after{
+  content:'';position:absolute;inset:0;
+  background-image:radial-gradient(circle,rgba(255,255,255,.75) 1px,transparent 1px),
+                   radial-gradient(circle,rgba(255,255,255,.4) 1px,transparent 1px);
+  background-size:220px 220px,150px 150px;
+  background-position:0 0,70px 60px;
+}
+#landing .stars-bg::after{background-size:300px 300px,180px 180px;background-position:110px 30px,20px 100px;opacity:.4;}
+
+#landing .land-inner{position:relative;z-index:1;text-align:center;max-width:700px;padding:2rem;}
+#landing .eyebrow{font-size:10px;letter-spacing:.4em;color:var(--muted);margin-bottom:1.5rem;font-family:var(--disp);}
+#landing h1{font-family:var(--hero);font-size:clamp(4rem,12vw,8rem);line-height:.9;letter-spacing:.02em;margin-bottom:.5rem;}
+#landing h1 .r{color:var(--mars-g);}#landing h1 .b{color:var(--earth-g);}
+#landing .tagline{font-size:11px;letter-spacing:.25em;color:var(--muted);margin-bottom:3.5rem;}
+
+.planets-row{display:flex;align-items:center;justify-content:center;gap:2rem;margin-bottom:3rem;}
+.p-wrap{display:flex;flex-direction:column;align-items:center;gap:.75rem;}
+.p-wrap .p-label{font-family:var(--disp);font-size:9px;letter-spacing:.25em;font-weight:600;}
+.p-wrap .p-label.rc{color:var(--mars-g);}.p-wrap .p-label.bc{color:var(--earth-g);}
+.planet{border-radius:50%;position:relative;flex-shrink:0;}
+.planet.mars{width:80px;height:80px;background:radial-gradient(circle at 38% 32%,#F08060,#7A1500);box-shadow:0 0 40px rgba(192,57,43,.5),inset -12px -12px 20px rgba(0,0,0,.5);animation:pfloat 4s ease-in-out infinite;}
+.planet.earth{width:80px;height:80px;background:radial-gradient(circle at 35% 30%,#5DADE2,#0A3550);box-shadow:0 0 40px rgba(46,134,193,.5),inset -12px -12px 20px rgba(0,0,0,.5);animation:pfloat 4.5s ease-in-out infinite 1s;}
+.planet.earth::before{content:'';position:absolute;top:28%;left:18%;width:55%;height:38%;background:rgba(46,180,60,.45);border-radius:40% 60% 50% 50%;transform:rotate(-18deg);}
+.vs{font-family:var(--hero);font-size:3.5rem;color:rgba(255,255,255,.15);}
+@keyframes pfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;width:100%;max-width:640px;margin:0 auto;}
+.mode-card{
+  padding:20px 16px;border-radius:4px;border:1px solid var(--border);
+  cursor:pointer;text-align:center;transition:all .25s;background:rgba(255,255,255,.02);
+  display:flex;flex-direction:column;gap:8px;
+}
+.mode-card:hover{transform:translateY(-3px);}
+.mode-card.mars-mode{border-color:rgba(192,57,43,.35);}
+.mode-card.mars-mode:hover{background:rgba(192,57,43,.12);border-color:var(--mars-g);box-shadow:0 0 30px rgba(192,57,43,.25);}
+.mode-card.earth-mode{border-color:rgba(46,134,193,.35);}
+.mode-card.earth-mode:hover{background:rgba(46,134,193,.12);border-color:var(--earth-g);box-shadow:0 0 30px rgba(46,134,193,.25);}
+.mode-card.wild-mode{border-color:rgba(240,192,64,.35);}
+.mode-card.wild-mode:hover{background:rgba(240,192,64,.1);border-color:var(--gold);box-shadow:0 0 30px rgba(240,192,64,.2);}
+.mode-icon{font-size:2rem;line-height:1;}
+.mode-name{font-family:var(--disp);font-size:10px;font-weight:600;letter-spacing:.2em;}
+.mode-name.rc{color:var(--mars-g);}.mode-name.bc{color:var(--earth-g);}.mode-name.gc{color:var(--gold);}
+.mode-sub{font-size:9px;color:var(--muted);letter-spacing:.05em;line-height:1.5;}
+
+/* ═══════════════════════════════════
+   MAIN DEBATE VIEW
+═══════════════════════════════════ */
+#app{position:fixed;inset:0;display:none;overflow:hidden;}
+#app.active{display:flex;flex-direction:column;}
+
+/* ANIMATED BACKGROUND */
+.bg-layer{position:absolute;inset:0;z-index:0;overflow:hidden;}
+
+/* Mars bg — red dust, craters, horizon */
+.bg-mars{
+  background:
+    radial-gradient(ellipse 60% 35% at 50% 100%,rgba(180,60,20,.6) 0%,transparent 70%),
+    radial-gradient(ellipse 100% 60% at 50% 100%,#2A0A00 0%,transparent 100%),
+    radial-gradient(ellipse 120% 50% at 50% 85%,#8B2500 0%,#1A0500 60%,transparent 100%),
+    linear-gradient(to bottom,#0A0206 0%,#150803 40%,#3D1208 70%,#6B2010 85%,#8B3015 100%);
+}
+.bg-mars::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='600' height='400'%3E%3Cellipse cx='80' cy='340' rx='60' ry='18' fill='none' stroke='rgba(160,60,20,0.25)' stroke-width='2'/%3E%3Cellipse cx='80' cy='340' rx='45' ry='12' fill='none' stroke='rgba(160,60,20,0.15)' stroke-width='1'/%3E%3Cellipse cx='480' cy='360' rx='90' ry='22' fill='none' stroke='rgba(160,60,20,0.2)' stroke-width='2'/%3E%3Cellipse cx='480' cy='360' rx='65' ry='14' fill='none' stroke='rgba(160,60,20,0.12)' stroke-width='1'/%3E%3Cellipse cx='300' cy='380' rx='40' ry='10' fill='none' stroke='rgba(160,60,20,0.18)' stroke-width='1.5'/%3E%3C/svg%3E") repeat-x bottom;
+  opacity:.7;
+}
+.bg-mars::after{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Ccircle cx='50' cy='50' r='2' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='150' cy='30' r='1.5' fill='rgba(255,255,255,0.5)'/%3E%3Ccircle cx='250' cy='70' r='1' fill='rgba(255,255,255,0.4)'/%3E%3Ccircle cx='350' cy='20' r='2' fill='rgba(255,255,255,0.7)'/%3E%3Ccircle cx='100' cy='120' r='1' fill='rgba(255,255,255,0.3)'/%3E%3Ccircle cx='300' cy='100' r='1.5' fill='rgba(255,255,255,0.5)'/%3E%3C/svg%3E") repeat;
+  opacity:.6;
+}
+.dust-particle{position:absolute;width:2px;height:2px;background:rgba(200,100,50,.4);border-radius:50%;animation:drift linear infinite;}
+@keyframes drift{0%{transform:translate(0,0);opacity:0}20%{opacity:1}80%{opacity:.5}100%{transform:translate(var(--dx),var(--dy));opacity:0}}
+
+/* Earth bg — space, blue glow, clouds */
+.bg-earth{
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 110%,rgba(13,79,107,.8) 0%,transparent 70%),
+    radial-gradient(ellipse 60% 40% at 30% 80%,rgba(93,173,226,.12) 0%,transparent 60%),
+    radial-gradient(ellipse 40% 30% at 70% 90%,rgba(46,134,193,.1) 0%,transparent 50%),
+    linear-gradient(to bottom,#02040F 0%,#04091A 50%,#071525 80%,#0A1E35 100%);
+}
+.bg-earth::before{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='500' height='500'%3E%3Ccircle cx='60' cy='80' r='1.5' fill='rgba(255,255,255,0.8)'/%3E%3Ccircle cx='200' cy='40' r='1' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='350' cy='90' r='2' fill='rgba(255,255,255,0.9)'/%3E%3Ccircle cx='450' cy='30' r='1' fill='rgba(255,255,255,0.5)'/%3E%3Ccircle cx='120' cy='200' r='1.5' fill='rgba(255,255,255,0.4)'/%3E%3Ccircle cx='280' cy='160' r='1' fill='rgba(255,255,255,0.7)'/%3E%3Ccircle cx='400' cy='180' r='1.5' fill='rgba(255,255,255,0.6)'/%3E%3Ccircle cx='80' cy='300' r='1' fill='rgba(255,255,255,0.5)'/%3E%3Ccircle cx='480' cy='250' r='2' fill='rgba(255,255,255,0.8)'/%3E%3C/svg%3E") repeat;
+}
+.bg-earth::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;height:45%;
+  background:radial-gradient(ellipse 120% 80% at 50% 100%,rgba(9,56,100,.95) 0%,rgba(5,30,60,.7) 40%,transparent 80%);
+}
+.earth-glow{position:absolute;bottom:-10%;left:50%;transform:translateX(-50%);width:110%;height:70%;
+  background:radial-gradient(ellipse 100% 60% at 50% 80%,rgba(93,173,226,.18) 0%,transparent 70%);
+  border-radius:50% 50% 0 0;animation:eglw 6s ease-in-out infinite;}
+@keyframes eglw{0%,100%{opacity:.7}50%{opacity:1}}
+.star-twinkle{position:absolute;width:2px;height:2px;border-radius:50%;background:white;animation:twinkle linear infinite;}
+@keyframes twinkle{0%,100%{opacity:.2;transform:scale(1)}50%{opacity:1;transform:scale(1.4)}}
+
+/* NEUTRAL / WILD bg */
+.bg-wild{
+  background:linear-gradient(135deg,#0A0206 0%,#06060E 50%,#02040F 100%);
+}
+
+/* ═══════════════════════════════════
+   DEBATE UI LAYER
+═══════════════════════════════════ */
+.ui-layer{position:relative;z-index:1;display:flex;flex-direction:column;height:100%;padding:0;}
+
+/* TOP BAR */
+.topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 20px 10px;
+  border-bottom:1px solid var(--border);
+  backdrop-filter:blur(12px);
+  background:rgba(6,6,14,.5);
+  flex-shrink:0;
+}
+.tb-faction{font-family:var(--disp);font-size:12px;font-weight:600;letter-spacing:.2em;}
+.tb-faction.rc{color:var(--mars-g);}.tb-faction.bc{color:var(--earth-g);}.tb-faction.gc{color:var(--gold);}
+.tb-mid{text-align:center;}
+.tb-title{font-family:var(--hero);font-size:18px;letter-spacing:.1em;line-height:1;}
+.tb-room{font-size:9px;color:var(--muted);letter-spacing:.3em;margin-top:2px;}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.timer{font-family:var(--disp);font-size:20px;font-weight:600;}
+.timer.rc{color:var(--mars-g);}.timer.bc{color:var(--earth-g);}.timer.gc{color:var(--gold);}
+.timer.urgent{animation:blink .5s ease-in-out infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.35}}
+.conn-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;}
+.conn-dot.live{background:#2ECC71;box-shadow:0 0 8px #2ECC71;animation:cdot 2s ease-in-out infinite;}
+.conn-dot.wait{background:var(--gold);animation:blink 1s ease-in-out infinite;}
+.conn-dot.dead{background:var(--mars-l);}
+@keyframes cdot{0%,100%{opacity:1}50%{opacity:.5}}
+.rec-btn{
+  display:flex;align-items:center;gap:5px;padding:5px 10px;font-size:9px;font-family:var(--mono);
+  letter-spacing:.15em;border:1px solid rgba(231,76,60,.4);background:rgba(231,76,60,.06);
+  color:#E74C3C;border-radius:2px;cursor:pointer;transition:all .15s;
+}
+.rec-btn:hover,.rec-btn.on{background:rgba(231,76,60,.18);border-color:#E74C3C;}
+.rec-dot{width:6px;height:6px;border-radius:50%;background:#E74C3C;flex-shrink:0;}
+.rec-dot.pulsing{animation:blink .8s ease-in-out infinite;}
+
+/* MAIN CONTENT */
+.content{flex:1;display:flex;flex-direction:column;padding:12px 16px 8px;min-height:0;gap:10px;}
+
+/* STATUS BAR */
+.status-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 14px;border:1px solid var(--border);border-radius:3px;
+  backdrop-filter:blur(8px);background:rgba(6,6,14,.4);font-size:10px;
+  flex-shrink:0;
+}
+.sb-left{display:flex;align-items:center;gap:8px;color:var(--muted);}
+.sb-badge{padding:3px 9px;border-radius:2px;font-family:var(--disp);font-size:8px;font-weight:600;letter-spacing:.2em;}
+.sb-badge.mars-badge{background:rgba(192,57,43,.2);color:var(--mars-g);border:1px solid rgba(192,57,43,.3);}
+.sb-badge.earth-badge{background:rgba(46,134,193,.2);color:var(--earth-g);border:1px solid rgba(46,134,193,.3);}
+.sb-badge.wild-badge{background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.3);}
+
+/* MESSAGES */
+.msgs{
+  flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:8px;
+  padding:12px;border:1px solid var(--border);border-radius:4px;
+  backdrop-filter:blur(10px);background:rgba(6,6,14,.45);min-height:0;
+}
+.msgs::-webkit-scrollbar{width:3px;}.msgs::-webkit-scrollbar-thumb{background:var(--border-m);}
+
+.msg{max-width:80%;padding:9px 13px;border-radius:3px;font-size:12px;line-height:1.65;animation:msgin .22s ease-out;}
+@keyframes msgin{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+.msg.mine{align-self:flex-end;}
+.msg.theirs{align-self:flex-start;}
+.msg.mars-msg{background:rgba(192,57,43,.14);border:1px solid rgba(192,57,43,.28);border-left-width:3px;border-left-color:var(--mars-g);}
+.msg.earth-msg{background:rgba(13,79,107,.18);border:1px solid rgba(46,134,193,.28);border-left-width:3px;border-left-color:var(--earth-g);}
+.msg.wild-msg{background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.25);}
+.msg.sys{align-self:center;max-width:95%;text-align:center;font-size:10px;letter-spacing:.1em;
+  color:var(--gold);background:rgba(240,192,64,.06);border:1px solid rgba(240,192,64,.18);padding:7px 16px;}
+.msg-who{font-size:9px;letter-spacing:.18em;font-weight:700;margin-bottom:4px;}
+.msg-who.rc{color:var(--mars-g);}.msg-who.bc{color:var(--earth-g);}.msg-who.gc{color:var(--gold);}
+.typing-ind{align-self:flex-start;font-size:9px;color:var(--muted);letter-spacing:.12em;
+  padding:5px 10px;border:1px solid var(--border);border-radius:3px;
+  background:rgba(255,255,255,.03);display:none;}
+.typing-ind.show{display:block;animation:msgin .2s ease-out;}
+
+/* CHIPS */
+.chips-row{display:flex;gap:6px;flex-wrap:wrap;flex-shrink:0;}
+.chip{font-size:9px;font-family:var(--mono);padding:4px 10px;border-radius:2px;border:1px solid;
+  cursor:pointer;transition:all .15s;letter-spacing:.06em;white-space:nowrap;}
+.chip.mc{border-color:rgba(192,57,43,.35);color:var(--mars-g);}
+.chip.mc:hover{background:rgba(192,57,43,.18);}
+.chip.ec{border-color:rgba(46,134,193,.35);color:var(--earth-g);}
+.chip.ec:hover{background:rgba(46,134,193,.18);}
+.chip.gc{border-color:rgba(240,192,64,.35);color:var(--gold);}
+.chip.gc:hover{background:rgba(240,192,64,.12);}
+
+/* INPUT */
+.input-row{display:flex;gap:8px;align-items:flex-end;flex-shrink:0;}
+.msg-input{
+  flex:1;background:rgba(6,6,14,.6);border:1px solid var(--border-m);
+  color:var(--text);font-family:var(--mono);font-size:12px;padding:10px 13px;
+  border-radius:3px;resize:none;outline:none;min-height:44px;
+  transition:border-color .2s;backdrop-filter:blur(8px);
+}
+.msg-input:focus{border-color:rgba(255,255,255,.25);}
+.msg-input::placeholder{color:var(--muted);}
+.send-btn{
+  padding:10px 18px;font-family:var(--disp);font-size:10px;font-weight:600;
+  letter-spacing:.15em;border:none;border-radius:3px;cursor:pointer;transition:all .2s;
+  min-height:44px;align-self:stretch;
+}
+.send-btn.ms{background:var(--mars);color:white;}
+.send-btn.ms:hover{background:var(--mars-l);box-shadow:0 0 20px rgba(192,57,43,.4);}
+.send-btn.es{background:var(--earth);color:white;}
+.send-btn.es:hover{background:var(--earth-l);box-shadow:0 0 20px rgba(46,134,193,.4);}
+.send-btn.gs{background:linear-gradient(135deg,var(--mars),var(--earth));color:white;}
+.send-btn.gs:hover{opacity:.85;}
+
+/* VOTE BAR */
+.vote-strip{
+  flex-shrink:0;padding:8px 14px;border:1px solid var(--border);border-radius:3px;
+  backdrop-filter:blur(8px);background:rgba(6,6,14,.4);
+}
+.vl{font-size:8px;letter-spacing:.25em;color:var(--muted);text-transform:uppercase;margin-bottom:5px;}
+.vtrack{height:5px;border-radius:3px;background:rgba(255,255,255,.06);overflow:hidden;display:flex;margin-bottom:4px;}
+.vf{transition:width .5s ease;}
+.vf.mv{background:var(--mars);}
+.vf.ev{background:var(--earth-l);}
+.vmeta{display:flex;justify-content:space-between;font-size:9px;letter-spacing:.1em;margin-bottom:5px;}
+.vmeta .rc{color:var(--mars-g);}.vmeta .bc{color:var(--earth-g);}
+.vbtns{display:flex;gap:6px;}
+.vbtn{flex:1;padding:5px 8px;font-family:var(--disp);font-size:8px;font-weight:600;
+  letter-spacing:.12em;border-radius:2px;cursor:pointer;border:1px solid;transition:all .15s;}
+.vbtn.mv{border-color:rgba(192,57,43,.4);color:var(--mars-g);background:rgba(192,57,43,.06);}
+.vbtn.mv:hover{background:rgba(192,57,43,.2);}
+.vbtn.ev{border-color:rgba(46,134,193,.4);color:var(--earth-g);background:rgba(46,134,193,.06);}
+.vbtn.ev:hover{background:rgba(46,134,193,.2);}
+
+/* NEWS TICKER */
+.ticker{
+  position:absolute;bottom:0;left:0;right:0;z-index:10;
+  background:rgba(0,0,0,.75);border-top:1px solid var(--border);
+  padding:5px 0;overflow:hidden;backdrop-filter:blur(4px);
+}
+.ticker-inner{display:flex;animation:tick 55s linear infinite;white-space:nowrap;}
+.ticker-item{padding:0 2.5rem;font-size:9px;color:var(--muted);letter-spacing:.08em;}
+.ticker-item em{font-style:normal;}
+.ticker-item em.rc{color:var(--mars-g);}.ticker-item em.bc{color:var(--earth-g);}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+
+/* ═══════════════════════════════════
+   POPUPS / MODALS
+═══════════════════════════════════ */
+.overlay{
+  position:fixed;inset:0;z-index:300;display:flex;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.7);backdrop-filter:blur(6px);
+  opacity:0;pointer-events:none;transition:opacity .3s;
+}
+.overlay.open{opacity:1;pointer-events:all;}
+
+.popup{
+  position:relative;max-width:500px;width:90%;border-radius:5px;
+  border:1px solid var(--border-m);padding:2rem;
+  background:rgba(8,8,18,.95);
+  transform:translateY(20px) scale(.97);transition:transform .3s;
+}
+.overlay.open .popup{transform:translateY(0) scale(1);}
+
+.popup-close{
+  position:absolute;top:14px;right:16px;font-size:18px;cursor:pointer;
+  color:var(--muted);background:none;border:none;line-height:1;transition:color .15s;
+}
+.popup-close:hover{color:var(--text);}
+
+/* Dossier popup */
+.dossier-popup{}
+.dp-header{margin-bottom:1.25rem;}
+.dp-eyebrow{font-size:9px;letter-spacing:.3em;margin-bottom:.4rem;}
+.dp-eyebrow.rc{color:var(--mars-g);}.dp-eyebrow.bc{color:var(--earth-g);}
+.dp-title{font-family:var(--hero);font-size:2rem;line-height:1;}
+.dp-title.rc{color:var(--mars-g);}.dp-title.bc{color:var(--earth-g);}
+.dp-sub{font-size:11px;color:var(--muted);margin-top:.3rem;line-height:1.6;}
+.arg-item{padding:10px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;}
+.arg-item:last-child{border-bottom:none;}
+.arg-n{font-family:var(--disp);font-size:9px;font-weight:600;flex-shrink:0;margin-top:3px;letter-spacing:.1em;}
+.arg-n.rc{color:var(--mars-g);}.arg-n.bc{color:var(--earth-g);}
+.arg-body{font-size:11px;line-height:1.65;}
+.arg-body strong{font-size:10px;letter-spacing:.1em;}
+
+/* Twist popup */
+.twist-popup{}
+.twist-header{text-align:center;margin-bottom:1.5rem;}
+.twist-emoji{font-size:3rem;display:block;margin-bottom:.75rem;}
+.twist-label{font-family:var(--disp);font-size:9px;letter-spacing:.3em;color:var(--gold);margin-bottom:.5rem;}
+.twist-title{font-family:var(--hero);font-size:2rem;color:var(--gold);}
+.twist-body{font-size:13px;line-height:1.7;color:var(--text);text-align:center;margin-bottom:1.5rem;padding:0 .5rem;}
+.twist-prompt{font-size:11px;color:var(--muted);text-align:center;font-style:italic;}
+.popup-btn{
+  display:block;width:100%;padding:12px;font-family:var(--disp);font-size:10px;font-weight:600;
+  letter-spacing:.2em;border:none;border-radius:3px;cursor:pointer;transition:all .2s;margin-top:1rem;
+}
+.popup-btn.mars-btn{background:var(--mars);color:white;}
+.popup-btn.mars-btn:hover{background:var(--mars-l);}
+.popup-btn.earth-btn{background:var(--earth-l);color:white;}
+.popup-btn.earth-btn:hover{background:var(--earth-g);}
+.popup-btn.gold-btn{background:rgba(240,192,64,.15);color:var(--gold);border:1px solid rgba(240,192,64,.4);}
+.popup-btn.gold-btn:hover{background:rgba(240,192,64,.25);}
+
+/* Reveal popup (wild/phone) */
+.reveal-popup{text-align:center;}
+.reveal-big{font-family:var(--hero);font-size:clamp(3rem,10vw,5.5rem);line-height:.95;margin:1rem 0;}
+.reveal-big.rc{color:var(--mars-g);text-shadow:0 0 40px rgba(255,127,92,.4);}
+.reveal-big.bc{color:var(--earth-g);text-shadow:0 0 40px rgba(93,173,226,.4);}
+.reveal-big.gc{color:var(--gold);text-shadow:0 0 40px rgba(240,192,64,.4);}
+
+/* End popup */
+.end-planet-wrap{display:flex;justify-content:center;margin:1rem 0;}
+.end-planet{width:100px;height:100px;border-radius:50%;animation:pfloat 3s ease-in-out infinite;}
+.end-planet.mars-ep{background:radial-gradient(circle at 38% 32%,#F08060,#7A1500);box-shadow:0 0 60px rgba(192,57,43,.6);}
+.end-planet.earth-ep{background:radial-gradient(circle at 35% 30%,#5DADE2,#0A3550);box-shadow:0 0 60px rgba(46,134,193,.6);}
+.end-planet.tie-ep{background:linear-gradient(135deg,#7A1500 50%,#0A3550 50%);box-shadow:0 0 60px rgba(255,255,255,.25);}
+.end-result{font-family:var(--hero);font-size:clamp(2rem,7vw,3.5rem);line-height:1;text-align:center;margin-bottom:.5rem;}
+.end-sub{font-size:12px;line-height:1.75;color:var(--muted);text-align:center;margin-bottom:1.5rem;}
+.end-btns{display:flex;gap:8px;}
+.ghost-btn{flex:1;padding:10px;font-family:var(--mono);font-size:10px;letter-spacing:.15em;
+  border:1px solid var(--border-m);border-radius:3px;cursor:pointer;background:transparent;
+  color:var(--muted);transition:all .2s;}
+.ghost-btn:hover{border-color:rgba(255,255,255,.25);color:var(--text);}
+
+/* DOSSIER TOGGLE BTN */
+.dossier-btn{
+  padding:5px 12px;font-size:9px;font-family:var(--mono);letter-spacing:.15em;
+  border-radius:2px;cursor:pointer;transition:all .15s;white-space:nowrap;
+}
+.dossier-btn.mars-d{border:1px solid rgba(192,57,43,.4);background:rgba(192,57,43,.08);color:var(--mars-g);}
+.dossier-btn.earth-d{border:1px solid rgba(46,134,193,.4);background:rgba(46,134,193,.08);color:var(--earth-g);}
+.dossier-btn.wild-d{border:1px solid rgba(240,192,64,.4);background:rgba(240,192,64,.08);color:var(--gold);}
+
+/* WAITING state inside debate */
+.wait-overlay{
+  position:absolute;inset:0;z-index:5;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  background:rgba(6,6,14,.8);backdrop-filter:blur(8px);
+  text-align:center;padding:2rem;
+}
+.wait-title{font-family:var(--hero);font-size:3rem;margin-bottom:.5rem;}
+.wait-title.rc{color:var(--mars-g);}.wait-title.bc{color:var(--earth-g);}
+.wait-room{font-family:var(--disp);font-size:1.8rem;font-weight:900;letter-spacing:.4em;
+  padding:12px 28px;border:2px solid;border-radius:4px;margin:1rem 0;}
+.wait-room.rc{color:var(--mars-g);border-color:rgba(192,57,43,.5);background:rgba(192,57,43,.08);}
+.wait-room.bc{color:var(--earth-g);border-color:rgba(46,134,193,.5);background:rgba(46,134,193,.08);}
+.wait-sub{font-size:11px;color:var(--muted);letter-spacing:.15em;margin-bottom:1.5rem;}
+.wait-pulse{
+  width:12px;height:12px;border-radius:50%;background:var(--gold);
+  animation:blink 1s ease-in-out infinite;margin:0 auto 1rem;
+}
+.wait-study{font-size:10px;color:var(--muted);letter-spacing:.2em;margin-top:1.5rem;cursor:pointer;text-decoration:underline;}
+
+/* WILDCARD badge */
+.wild-badge-strip{
+  padding:6px 14px;background:rgba(240,192,64,.08);border:1px solid rgba(240,192,64,.25);
+  border-radius:2px;font-size:9px;letter-spacing:.2em;color:var(--gold);
+  text-align:center;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════
+     LANDING / MODE SELECT
+════════════════════════════════════════ -->
+<div id="landing">
+  <div class="stars-bg"></div>
+  <div class="land-inner">
+    <div class="eyebrow">● LIVE EXHIBIT INSTALLATION — EARTH / MARS DEBATE CHAMBER</div>
+    <h1 class="title"><span class="r">RED</span> PLANET<br><span class="b">BLUE</span> MARBLE</h1>
+    <p class="tagline">// should humanity colonize mars? //</p>
+
+    <div class="planets-row">
+      <div class="p-wrap">
+        <div class="planet mars"></div>
+        <div class="p-label rc">MARS 2047</div>
+      </div>
+      <div class="vs">VS</div>
+      <div class="p-wrap">
+        <div class="planet earth"></div>
+        <div class="p-label bc">EARTH NOW</div>
+      </div>
+    </div>
+
+    <div class="mode-grid">
+      <div class="mode-card mars-mode" onclick="initBooth('mars')">
+        <div class="mode-icon">🔴</div>
+        <div class="mode-name rc">COLONY BOOTH</div>
+        <div class="mode-sub">Fixed Mars advocate station. Laptop stays on this side.</div>
+      </div>
+      <div class="mode-card earth-mode" onclick="initBooth('earth')">
+        <div class="mode-icon">🔵</div>
+        <div class="mode-name bc">EARTH BOOTH</div>
+        <div class="mode-sub">Fixed Earth defender station. Laptop stays on this side.</div>
+      </div>
+      <div class="mode-card wild-mode" onclick="initWild()">
+        <div class="mode-icon">⚡</div>
+        <div class="mode-name gc">VISITOR / PHONE</div>
+        <div class="mode-sub">Random faction. Enter room code to join a live debate.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════
+     MAIN APP (debate view)
+════════════════════════════════════════ -->
+<div id="app">
+  <!-- Background layers -->
+  <div class="bg-layer bg-mars" id="bgMars" style="display:none"></div>
+  <div class="bg-layer bg-earth" id="bgEarth" style="display:none">
+    <div class="earth-glow"></div>
+  </div>
+  <div class="bg-layer bg-wild" id="bgWild" style="display:none"></div>
+
+  <!-- WAITING overlay (before opponent joins) -->
+  <div class="wait-overlay" id="waitOverlay" style="display:none">
+    <div class="wait-title" id="waitTitle"></div>
+    <div class="wait-sub">AWAITING OPPONENT — SHARE YOUR ROOM CODE</div>
+    <div class="wait-room" id="waitRoom"></div>
+    <div class="wait-pulse"></div>
+    <div class="wait-sub" id="waitConnSub">Listening for connection...</div>
+    <div class="wait-study" onclick="openDossier()">📋 Study your arguments while you wait →</div>
+  </div>
+
+  <!-- DEBATE UI -->
+  <div class="ui-layer">
+    <!-- TOP BAR -->
+    <div class="topbar">
+      <div class="tb-faction" id="tbFaction">COLONY ADVOCATE</div>
+      <div class="tb-mid">
+        <div class="tb-title">SHOULD HUMANITY COLONIZE MARS?</div>
+        <div class="tb-room" id="tbRoom">ROOM: ——</div>
+      </div>
+      <div class="tb-right">
+        <button class="dossier-btn" id="dossierToggle" onclick="openDossier()">📋 DOSSIER</button>
+        <button class="rec-btn" id="recBtn" onclick="toggleRec()">
+          <div class="rec-dot" id="recDot"></div>
+          <span id="recLabel">REC</span>
+        </button>
+        <div class="conn-dot wait" id="connDot"></div>
+        <div class="timer" id="timerDisp">05:00</div>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+      <!-- STATUS -->
+      <div class="status-bar">
+        <div class="sb-left">
+          <div class="sb-badge" id="myBadge">COLONY ADVOCATE</div>
+          <span style="color:var(--border-m)">vs</span>
+          <div class="sb-badge" id="oppBadge" style="opacity:.4">WAITING...</div>
+        </div>
+        <div style="font-size:9px;color:var(--muted);letter-spacing:.15em;" id="statusText">WAITING FOR OPPONENT</div>
+      </div>
+
+      <!-- WILDCARD STRIP -->
+      <div class="wild-badge-strip" id="wildcardStrip" style="display:none">
+        ★ WILDCARD AGENT — You may argue either side. Create chaos. Switch at will.
+      </div>
+
+      <!-- MESSAGES -->
+      <div class="msgs" id="msgs">
+        <div class="typing-ind" id="typingInd">opponent is composing a transmission...</div>
+      </div>
+
+      <!-- CHIPS -->
+      <div class="chips-row" id="chipsRow"></div>
+
+      <!-- INPUT -->
+      <div class="input-row">
+        <textarea class="msg-input" id="msgInput" placeholder="State your argument..." rows="2"
+          onkeydown="handleKey(event)" oninput="onTyping()"></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMsg()">TRANSMIT</button>
+      </div>
+
+      <!-- VOTE -->
+      <div class="vote-strip">
+        <div class="vl">AUDIENCE VOTE — WHO IS WINNING?</div>
+        <div class="vtrack">
+          <div class="vf mv" id="marsVBar" style="width:50%"></div>
+          <div class="vf ev" id="earthVBar" style="width:50%"></div>
+        </div>
+        <div class="vmeta">
+          <span class="rc" id="marsVC">0 — Colony</span>
+          <span class="bc" id="earthVC">Earth — 0</span>
+        </div>
+        <div class="vbtns">
+          <button class="vbtn mv" onclick="castVote('mars')">⬤ COLONY WINNING</button>
+          <button class="vbtn ev" onclick="castVote('earth')">EARTH WINNING ⬤</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- NEWS TICKER -->
+  <div class="ticker"><div class="ticker-inner" id="tickerInner"></div></div>
+</div>
+
+<!-- ════════════════════════════════════════
+     POPUPS
+════════════════════════════════════════ -->
+
+<!-- DOSSIER POPUP -->
+<div class="overlay" id="dossierOverlay">
+  <div class="popup dossier-popup">
+    <button class="popup-close" onclick="closeOverlay('dossierOverlay')">✕</button>
+    <div class="dp-header">
+      <div class="dp-eyebrow" id="dpEyebrow">// CLASSIFIED — DO NOT SHOW OPPONENT //</div>
+      <div class="dp-title" id="dpTitle">COLONY DOSSIER</div>
+      <div class="dp-sub" id="dpSub">Your 5 strongest arguments. Use them strategically.</div>
+    </div>
+    <div id="argsList"></div>
+  </div>
+</div>
+
+<!-- TWIST POPUP -->
+<div class="overlay" id="twistOverlay">
+  <div class="popup twist-popup">
+    <div class="twist-header">
+      <span class="twist-emoji" id="twistEmoji">⚡</span>
+      <div class="twist-label">SCENARIO INJECTION</div>
+      <div class="twist-title" id="twistTitle">EVENT HORIZON</div>
+    </div>
+    <div class="twist-body" id="twistBody"></div>
+    <div class="twist-prompt">Both debaters must now respond to this development.</div>
+    <button class="popup-btn gold-btn" onclick="closeOverlay('twistOverlay')">ACKNOWLEDGED — CONTINUE DEBATE</button>
+  </div>
+</div>
+
+<!-- WILD REVEAL POPUP -->
+<div class="overlay" id="revealOverlay">
+  <div class="popup reveal-popup">
+    <div style="font-size:9px;letter-spacing:.3em;color:var(--muted);margin-bottom:.5rem;">FACTION ASSIGNED</div>
+    <div style="font-size:11px;letter-spacing:.2em;color:var(--muted);">YOU ARE A</div>
+    <div class="reveal-big" id="revealName"></div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:1.5rem;" id="revealSub"></div>
+    <button class="popup-btn" id="revealBtn" onclick="closeReveal()">ACCEPT YOUR FATE →</button>
+  </div>
+</div>
+
+<!-- WILD JOIN POPUP -->
+<div class="overlay" id="joinOverlay">
+  <div class="popup" style="text-align:center;">
+    <button class="popup-close" onclick="closeOverlay('joinOverlay')">✕</button>
+    <div style="font-family:var(--hero);font-size:2rem;margin-bottom:1rem;color:var(--gold);">JOIN A DEBATE</div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:.15em;margin-bottom:1.25rem;line-height:1.8;">
+      Get the room code from the debate booths.<br>You'll be randomly assigned a faction.
+    </div>
+    <input id="roomJoinInput" placeholder="ENTER ROOM CODE" maxlength="12"
+      style="width:100%;padding:12px 16px;background:rgba(255,255,255,.04);border:1px solid var(--border-m);
+      color:var(--text);font-family:var(--disp);font-size:1.4rem;border-radius:3px;outline:none;
+      text-align:center;letter-spacing:.4em;text-transform:uppercase;margin-bottom:1rem;">
+    <button class="popup-btn gold-btn" onclick="joinWild()" style="font-size:11px;">ENTER THE CHAMBER →</button>
+  </div>
+</div>
+
+<!-- END POPUP -->
+<div class="overlay" id="endOverlay">
+  <div class="popup">
+    <div class="end-planet-wrap"><div class="end-planet" id="endPlanet"></div></div>
+    <div class="end-result" id="endResult"></div>
+    <div class="end-sub" id="endSub"></div>
+    <div class="end-btns">
+      <button class="ghost-btn" onclick="copyTranscript()">COPY TRANSCRIPT</button>
+      <button class="ghost-btn" onclick="resetAll()">NEW DEBATE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ════════════════════════════════════════
+// DATA
+// ════════════════════════════════════════
+const MARS_ARGS = [
+  {short:"Survival backup",    text:"Earth faces asteroid impacts, pandemics, and nuclear war. Mars is humanity's backup drive — a multi-planetary species cannot be wiped out by a single catastrophe on one world."},
+  {short:"Ancient life clues", text:"Mars holds 4.5 billion years of geological history. Microbial life potentially frozen beneath its surface would be the greatest scientific discovery in human history — worth every dollar."},
+  {short:"Resource pressure",  text:"Mars has vast iron, magnesium, CO₂, and water ice. A colony wouldn't strip Earth — it would build entirely new resource chains, relieving pressure on our exhausted home planet."},
+  {short:"Human nature",       text:"Exploration is what we are. The Apollo program produced memory foam, water filters, and insulin pumps as byproducts. The Mars mission will create technologies we cannot yet imagine."},
+  {short:"Climate escape",     text:"Earth is warming irreversibly. Mars can be engineered over centuries. In 500 years, which sounds more feasible: stabilizing Earth's climate, or terraforming an empty world?"},
+];
+const EARTH_ARGS = [
+  {short:"Wrong priorities",   text:"A Mars mission costs $500 billion. That same money could end malaria, fund 50 years of ocean cleanup, or feed 800 million people for a decade. Who authorized this expenditure?"},
+  {short:"Biology says no",    text:"No magnetosphere. Constant radiation. No pressure — blood boils in an instant. Chronic low-gravity causes organ failure. We are not built for this planet and no amount of engineering changes human DNA."},
+  {short:"Fix home first",     text:"The Amazon is burning. Oceans are acidifying. Topsoil is vanishing. We are fleeing a house fire we started instead of grabbing the extinguisher two feet from our hands."},
+  {short:"Contamination trap", text:"Sending humans to Mars destroys it scientifically. We contaminate it with Earth bacteria and never know if life existed there — we will have already killed the evidence of the greatest discovery."},
+  {short:"Who really goes?",   text:"Mars will be a corporate colony owned by billionaires. The same people who poisoned Earth get to start fresh while the rest of us inherit the damage. This is escape for the elite, not exploration for humanity."},
+];
+const TWISTS = [
+  {emoji:"☄️", title:"ASTEROID ALERT",   body:"A 400-meter asteroid has a confirmed 12% chance of striking Earth in 2089. Emergency planetary defense council convenes in 48 hours. Does this change your position on where humanity's resources should go?"},
+  {emoji:"🧬", title:"LIFE CONFIRMED",   body:"NASA confirms fossilized microbial life in a Martian rock sample — brought back by the last rover. Any human landing will now contaminate the remaining sites. The discovery of the millennium vs. the dream of colonization."},
+  {emoji:"💰", title:"COLONY CORP",      body:"Breaking: MegaCorp has purchased exclusive colony rights from the UN for $2 trillion. The first 10,000 Mars settlers will be employees on 10-year contracts. Is this still exploration?"},
+  {emoji:"⚡", title:"FUSION ACHIEVED",  body:"Cold fusion is confirmed operational in Geneva. Unlimited clean energy available within 20 years. Earth's primary resource crisis may be solved without leaving the planet. Recalibrate your argument."},
+  {emoji:"🧠", title:"MEDICAL CRISIS",   body:"New study: 18 months in Martian gravity permanently reduces bone density by 40% and causes irreversible cognitive decline. Colonists cannot return to Earth. Is permanent exile still worth calling it 'exploration'?"},
+];
+const TICKER_ITEMS = [
+  {text:"🌊 PACIFIC OCEAN ACIDIFICATION AT CRITICAL THRESHOLD — CORAL REEFS 78% GONE",type:"bc"},
+  {text:"📡 PERSEVERANCE XII: SUBSURFACE LIQUID WATER CONFIRMED — LIFE SEARCH CONTINUES",type:"rc"},
+  {text:"🔥 AMAZON RAINFOREST AT 63% OF ORIGINAL COVERAGE — TIPPING POINT IMMINENT",type:"bc"},
+  {text:"🚀 COLONY CORP HABITAT MODULES: PRODUCTION BEGINS Q3 2047",type:"rc"},
+  {text:"🌡️ 2046 CONFIRMED AS HOTTEST YEAR IN RECORDED HISTORY — 10TH CONSECUTIVE RECORD",type:"bc"},
+  {text:"☄️ ASTEROID 2041-XB: 0.3% IMPACT PROBABILITY CONFIRMED BY THREE OBSERVATORIES",type:"rc"},
+  {text:"💧 2.3 BILLION PEOPLE LACK ACCESS TO CLEAN DRINKING WATER AS OF 2047",type:"bc"},
+  {text:"🛸 MARS COLONY ALPHA SITE SELECTED — HELLAS PLANITIA BASIN CHOSEN FOR PRESSURE",type:"rc"},
+];
+
+// ════════════════════════════════════════
+// STATE
+// ════════════════════════════════════════
+let faction=null, roomCode=null, myName=null;
+let isWild=false, isBooth=false;
+let marsVotes=0, earthVotes=0;
+let timeLeft=300, timerInt=null;
+let isRec=false, mediaRec=null, audioChunks=[];
+let transcript=[], lastMsgIdx=0, pollInt=null;
+let lastTypingSent=0, typingHideTimer=null;
+let twistShown=false;
+let connected=false;
+const ROOM_KEY = ()=>'room:'+roomCode;
+
+// ════════════════════════════════════════
+// STORAGE HELPERS
+// ════════════════════════════════════════
+async function sget(key){
+  try{const r=await window.storage.get(key,true);return r?JSON.parse(r.value):null;}catch(e){return null;}
+}
+async function sset(key,val){
+  try{await window.storage.set(key,JSON.stringify(val),true);}catch(e){}
+}
+
+// ════════════════════════════════════════
+// BACKGROUND & DUST
+// ════════════════════════════════════════
+function setBg(f){
+  document.getElementById('bgMars').style.display = f==='mars'?'block':'none';
+  document.getElementById('bgEarth').style.display = f==='earth'?'block':'none';
+  document.getElementById('bgWild').style.display = (f==='wildcard'||f==='wild')?'block':'none';
+  if(f==='mars') spawnDust();
+  if(f==='earth') spawnStars();
+}
+function spawnDust(){
+  const bg=document.getElementById('bgMars');
+  for(let i=0;i<18;i++){
+    const d=document.createElement('div');
+    d.className='dust-particle';
+    d.style.cssText=`left:${Math.random()*100}%;top:${30+Math.random()*60}%;
+      --dx:${(Math.random()-0.5)*200}px;--dy:${-50-Math.random()*150}px;
+      animation-duration:${4+Math.random()*8}s;animation-delay:${Math.random()*5}s;
+      opacity:${0.3+Math.random()*0.5};width:${1+Math.random()*3}px;height:${1+Math.random()*3}px;`;
+    bg.appendChild(d);
+  }
+}
+function spawnStars(){
+  const bg=document.getElementById('bgEarth');
+  for(let i=0;i<40;i++){
+    const s=document.createElement('div');
+    s.className='star-twinkle';
+    s.style.cssText=`left:${Math.random()*100}%;top:${Math.random()*55}%;
+      animation-duration:${2+Math.random()*5}s;animation-delay:${Math.random()*4}s;
+      opacity:${0.3+Math.random()*0.5};width:${1+Math.random()*2}px;height:${1+Math.random()*2}px;`;
+    bg.appendChild(s);
+  }
+}
+
+// ════════════════════════════════════════
+// BOOTH MODE (fixed faction, auto room)
+// ════════════════════════════════════════
+function initBooth(f){
+  faction=f; isBooth=true; isWild=false;
+  myName=f==='mars'?'COLONY ADVOCATE':'EARTH DEFENDER';
+  roomCode='EXHIBIT01'; // fixed shared room for booths — change if needed
+
+  applyFactionUI(f);
+  showApp();
+  setBg(f);
+  buildChips();
+  buildDossier();
+  initTicker();
+
+  // Show wait overlay
+  const wo=document.getElementById('waitOverlay');
+  wo.style.display='flex';
+  const wt=document.getElementById('waitTitle');
+  wt.textContent=f==='mars'?'COLONY ADVOCATE':'EARTH DEFENDER';
+  wt.className='wait-title '+(f==='mars'?'rc':'bc');
+  const wr=document.getElementById('waitRoom');
+  wr.textContent=roomCode;
+  wr.className='wait-room '+(f==='mars'?'rc':'bc');
+
+  joinRoom();
+}
+
+// ════════════════════════════════════════
+// WILD / PHONE MODE
+// ════════════════════════════════════════
+function initWild(){
+  isWild=true; isBooth=false;
+  openOverlay('joinOverlay');
+}
+
+async function joinWild(){
+  const code=document.getElementById('roomJoinInput').value.trim().toUpperCase().replace(/[^A-Z0-9]/g,'');
+  if(code.length<3){alert('Enter a valid room code!');return;}
+  roomCode=code;
+  closeOverlay('joinOverlay');
+
+  // Check what factions are taken
+  const r=await sget(ROOM_KEY());
+  let avail=[];
+  if(!r||!r.players){avail=['mars','earth'];}
+  else{
+    if(!r.players.mars) avail.push('mars');
+    if(!r.players.earth) avail.push('earth');
+  }
+  if(avail.length===0){
+    // Both taken — spectator/wildcard
+    faction='wildcard';
+    myName='WILDCARD';
+  } else {
+    faction=avail[Math.floor(Math.random()*avail.length)];
+    myName=faction==='mars'?'COLONY ADVOCATE':'EARTH DEFENDER';
+  }
+
+  // Reveal animation
+  const rn=document.getElementById('revealName');
+  const rs=document.getElementById('revealSub');
+  const rb=document.getElementById('revealBtn');
+
+  if(faction==='mars'){
+    rn.textContent='COLONY ADVOCATE'; rn.className='reveal-big rc';
+    rs.textContent='Humanity must colonize Mars. The survival of the species depends on it. Defend this position with everything you have.';
+    rb.className='popup-btn mars-btn';
+  } else if(faction==='earth'){
+    rn.textContent='EARTH DEFENDER'; rn.className='reveal-big bc';
+    rs.textContent='Earth is our only home. Abandoning it is cowardice dressed as ambition. Defend this ground.';
+    rb.className='popup-btn earth-btn';
+  } else {
+    rn.textContent='WILDCARD AGENT'; rn.className='reveal-big gc';
+    rs.textContent='You may argue either side. Switch allegiances. Introduce chaos. Your only loyalty is to the debate itself.';
+    rb.className='popup-btn gold-btn';
+  }
+  openOverlay('revealOverlay');
+}
+
+function closeReveal(){
+  closeOverlay('revealOverlay');
+  applyFactionUI(faction);
+  showApp();
+  setBg(faction);
+  buildChips();
+  buildDossier();
+  initTicker();
+  if(faction==='wildcard'){
+    document.getElementById('wildcardStrip').style.display='block';
+  }
+  joinRoom();
+}
+
+// ════════════════════════════════════════
+// APPLY FACTION UI COLORS
+// ════════════════════════════════════════
+function applyFactionUI(f){
+  const isMars=f==='mars', isEarth=f==='earth', isWC=f==='wildcard';
+  const tbf=document.getElementById('tbFaction');
+  const timer=document.getElementById('timerDisp');
+  const sendBtn=document.getElementById('sendBtn');
+  const myBadge=document.getElementById('myBadge');
+  const oppBadge=document.getElementById('oppBadge');
+  const dt=document.getElementById('dossierToggle');
+
+  if(isMars){
+    tbf.textContent='COLONY ADVOCATE'; tbf.className='tb-faction rc';
+    timer.className='timer rc';
+    sendBtn.className='send-btn ms';
+    myBadge.textContent='COLONY ADVOCATE'; myBadge.className='sb-badge mars-badge';
+    oppBadge.textContent='EARTH DEFENDER'; oppBadge.className='sb-badge earth-badge';
+    dt.className='dossier-btn mars-d';
+  } else if(isEarth){
+    tbf.textContent='EARTH DEFENDER'; tbf.className='tb-faction bc';
+    timer.className='timer bc';
+    sendBtn.className='send-btn es';
+    myBadge.textContent='EARTH DEFENDER'; myBadge.className='sb-badge earth-badge';
+    oppBadge.textContent='COLONY ADVOCATE'; oppBadge.className='sb-badge mars-badge';
+    dt.className='dossier-btn earth-d';
+  } else {
+    tbf.textContent='WILDCARD AGENT'; tbf.className='tb-faction gc';
+    timer.className='timer gc';
+    sendBtn.className='send-btn gs';
+    myBadge.textContent='WILDCARD'; myBadge.className='sb-badge wild-badge';
+    oppBadge.textContent='OPEN'; oppBadge.className='sb-badge wild-badge';
+    dt.className='dossier-btn wild-d';
+  }
+}
+
+// ════════════════════════════════════════
+// ROOM JOIN & POLLING
+// ════════════════════════════════════════
+async function joinRoom(){
+  document.getElementById('tbRoom').textContent='ROOM: '+roomCode;
+
+  const r=await sget(ROOM_KEY())||{players:{},messages:[],votes:{mars:0,earth:0},typing:{}};
+  if(faction!=='wildcard'){
+    r.players[faction]={name:myName,joined:Date.now()};
+    await sset(ROOM_KEY(),r);
+  }
+
+  // Start polling
+  pollInt=setInterval(pollRoom,1200);
+}
+
+async function pollRoom(){
+  const r=await sget(ROOM_KEY());
+  if(!r) return;
+
+  // Connection state
+  const opp=faction==='mars'?'earth':faction==='earth'?'mars':null;
+  const oppConnected=opp&&r.players&&r.players[opp];
+
+  if(!connected && oppConnected){
+    connected=true;
+    document.getElementById('waitOverlay').style.display='none';
+    document.getElementById('connDot').className='conn-dot live';
+    document.getElementById('oppBadge').style.opacity='1';
+    document.getElementById('statusText').textContent='LIVE — OPPONENT CONNECTED';
+    addSysMsg('⬤ BOTH DEBATERS CONNECTED — DEBATE IS LIVE ⬤');
+    addSysMsg('State your opening argument. The audience is watching.');
+    startTimer();
+  } else if(connected && !oppConnected){
+    document.getElementById('connDot').className='conn-dot dead';
+    document.getElementById('statusText').textContent='CONNECTION LOST';
+  }
+
+  // New messages
+  const msgs=r.messages||[];
+  while(lastMsgIdx<msgs.length){
+    const m=msgs[lastMsgIdx];
+    if(m.faction!==faction) renderMsg(m,false);
+    else if(lastMsgIdx===msgs.length-1 && m.faction===faction){/* own msg already rendered */}
+    lastMsgIdx++;
+  }
+
+  // Votes
+  marsVotes=r.votes?.mars||0; earthVotes=r.votes?.earth||0;
+  updateVoteUI();
+
+  // Typing
+  const oppTyping=opp&&r.typing?.[opp];
+  const ti=document.getElementById('typingInd');
+  if(oppTyping&&Date.now()-oppTyping<3000) ti.classList.add('show');
+  else ti.classList.remove('show');
+
+  // Twist
+  if(!twistShown && msgs.filter(m=>m.faction!=='system').length>=5){
+    const hasTwist=msgs.some(m=>m.faction==='system'&&m.twist);
+    if(!hasTwist){
+      twistShown=true;
+      const t=TWISTS[Math.floor(Math.random()*TWISTS.length)];
+      r.messages.push({faction:'system',twist:true,text:`⚡ SCENARIO: ${t.title} — ${t.body}`,ts:Date.now()});
+      await sset(ROOM_KEY(),r);
+      showTwist(t);
+    }
+  }
+}
+
+// ════════════════════════════════════════
+// MESSAGING
+// ════════════════════════════════════════
+async function sendMsg(){
+  const inp=document.getElementById('msgInput');
+  const text=inp.value.trim();
+  if(!text||!connected&&!isWild) return;
+  inp.value='';
+
+  const msg={faction,name:myName,text,ts:Date.now()};
+  const r=await sget(ROOM_KEY())||{players:{},messages:[],votes:{mars:0,earth:0},typing:{}};
+  r.messages=r.messages||[];
+  r.messages.push(msg);
+  lastMsgIdx=r.messages.length; // skip re-rendering our own
+  await sset(ROOM_KEY(),r);
+  renderMsg(msg,true);
+  transcript.push({sender:myName,text});
+}
+
+function renderMsg(msg,mine){
+  const box=document.getElementById('msgs');
+  const ti=document.getElementById('typingInd');
+  const div=document.createElement('div');
+
+  if(msg.faction==='system'){
+    div.className='msg sys';
+    div.textContent=msg.text;
+  } else {
+    const cls=msg.faction==='mars'?'mars-msg':msg.faction==='earth'?'earth-msg':'wild-msg';
+    const wc=msg.faction==='mars'?'rc':msg.faction==='earth'?'bc':'gc';
+    div.className=`msg ${cls} ${mine?'mine':'theirs'}`;
+    div.innerHTML=`<div class="msg-who ${wc}">${msg.name}</div>${msg.text}`;
+  }
+  box.insertBefore(div,ti);
+  box.scrollTop=box.scrollHeight;
+}
+
+function addSysMsg(text){
+  const box=document.getElementById('msgs');
+  const ti=document.getElementById('typingInd');
+  const div=document.createElement('div');
+  div.className='msg sys'; div.textContent=text;
+  box.insertBefore(div,ti);
+  box.scrollTop=box.scrollHeight;
+}
+
+function handleKey(e){if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();sendMsg();}}
+
+async function onTyping(){
+  const now=Date.now();
+  if(now-lastTypingSent<2000) return;
+  lastTypingSent=now;
+  const r=await sget(ROOM_KEY());
+  if(!r) return;
+  r.typing=r.typing||{};
+  r.typing[faction]=Date.now();
+  await sset(ROOM_KEY(),r);
+}
+
+// ════════════════════════════════════════
+// CHIPS
+// ════════════════════════════════════════
+function buildChips(){
+  const args=faction==='earth'?EARTH_ARGS:MARS_ARGS;
+  const cls=faction==='earth'?'ec':faction==='wildcard'?'gc':'mc';
+  document.getElementById('chipsRow').innerHTML=
+    args.map(a=>`<button class="chip ${cls}" onclick="insertChip('${a.short}')">${a.short}</button>`).join('')+
+    (faction==='wildcard'?EARTH_ARGS.map(a=>`<button class="chip ec" onclick="insertChip2('${a.short}')">${a.short}</button>`).join(''):'');
+}
+function insertChip(name){
+  const args=faction==='earth'?EARTH_ARGS:MARS_ARGS;
+  const a=args.find(x=>x.short===name);
+  if(a){document.getElementById('msgInput').value=a.text;document.getElementById('msgInput').focus();}
+}
+function insertChip2(name){ // wildcard earth chips
+  const a=EARTH_ARGS.find(x=>x.short===name);
+  if(a){document.getElementById('msgInput').value=a.text;document.getElementById('msgInput').focus();}
+}
+
+// ════════════════════════════════════════
+// DOSSIER POPUP
+// ════════════════════════════════════════
+function buildDossier(){
+  const isMars=faction==='mars'||faction==='wildcard';
+  const args=faction==='earth'?EARTH_ARGS:MARS_ARGS;
+  const extra=faction==='wildcard'?EARTH_ARGS:[];
+  const eyebrow=document.getElementById('dpEyebrow');
+  const title=document.getElementById('dpTitle');
+  const sub=document.getElementById('dpSub');
+  const list=document.getElementById('argsList');
+
+  if(faction==='mars'){
+    eyebrow.className='dp-eyebrow rc'; title.className='dp-title rc';
+    eyebrow.textContent='// CLASSIFIED — DO NOT SHOW OPPONENT //';
+    title.textContent='COLONY DOSSIER';
+    sub.textContent='Your 5 strongest arguments for Mars colonization. Use them strategically.';
+  } else if(faction==='earth'){
+    eyebrow.className='dp-eyebrow bc'; title.className='dp-title bc';
+    eyebrow.textContent='// CLASSIFIED — DO NOT SHOW OPPONENT //';
+    title.textContent='EARTH DOSSIER';
+    sub.textContent='Your 5 strongest arguments against Mars colonization. Guard them.';
+  } else {
+    eyebrow.className='dp-eyebrow'; eyebrow.style.color='var(--gold)';
+    title.className='dp-title'; title.style.color='var(--gold)';
+    title.textContent='WILDCARD DOSSIER';
+    sub.textContent='All arguments. Use either side. Create chaos.';
+  }
+
+  const allArgs=[...args,...extra];
+  const pfx=faction==='earth'?'E':'M';
+  list.innerHTML=allArgs.map((a,i)=>{
+    const n=faction==='wildcard'?(i<5?`M${i+1}`:`E${i-4}`):`${pfx}${i+1}`;
+    const cls=faction==='earth'?'bc':(faction==='wildcard'&&i>=5)?'bc':'rc';
+    return `<div class="arg-item">
+      <div class="arg-n ${cls}">${n}</div>
+      <div class="arg-body"><strong>${a.short}:</strong> ${a.text}</div>
+    </div>`;
+  }).join('');
+}
+function openDossier(){openOverlay('dossierOverlay');}
+
+// ════════════════════════════════════════
+// TWIST POPUP
+// ════════════════════════════════════════
+function showTwist(t){
+  document.getElementById('twistEmoji').textContent=t.emoji;
+  document.getElementById('twistTitle').textContent=t.title;
+  document.getElementById('twistBody').textContent=t.body;
+  openOverlay('twistOverlay');
+}
+
+// ════════════════════════════════════════
+// VOTING
+// ════════════════════════════════════════
+async function castVote(side){
+  const r=await sget(ROOM_KEY())||{votes:{mars:0,earth:0}};
+  r.votes=r.votes||{mars:0,earth:0};
+  r.votes[side]++;
+  await sset(ROOM_KEY(),r);
+  if(side==='mars') marsVotes++; else earthVotes++;
+  updateVoteUI();
+}
+function updateVoteUI(){
+  const tot=marsVotes+earthVotes;
+  const mp=tot?(marsVotes/tot*100):50;
+  document.getElementById('marsVBar').style.width=mp+'%';
+  document.getElementById('earthVBar').style.width=(100-mp)+'%';
+  document.getElementById('marsVC').textContent=marsVotes+' — Colony';
+  document.getElementById('earthVC').textContent='Earth — '+earthVotes;
+}
+
+// ════════════════════════════════════════
+// TIMER
+// ════════════════════════════════════════
+function startTimer(){
+  timerInt=setInterval(()=>{
+    timeLeft--;
+    const m=String(Math.floor(timeLeft/60)).padStart(2,'0');
+    const s=String(timeLeft%60).padStart(2,'0');
+    const el=document.getElementById('timerDisp');
+    el.textContent=`${m}:${s}`;
+    if(timeLeft<=30) el.classList.add('urgent');
+    if(timeLeft<=0){clearInterval(timerInt);endDebate();}
+  },1000);
+}
+
+// ════════════════════════════════════════
+// END
+// ════════════════════════════════════════
+function endDebate(){
+  addSysMsg('⬤ TIME EXPIRED — DEBATE CONCLUDED — AUDIENCE VERDICT BELOW ⬤');
+  const tot=marsVotes+earthVotes;
+  const mp=tot?marsVotes/tot:0.5;
+  const ep=document.getElementById('endPlanet');
+  const er=document.getElementById('endResult');
+  const es=document.getElementById('endSub');
+
+  if(tot===0){
+    ep.className='end-planet tie-ep'; er.textContent='THE JURY IS OUT';
+    er.style.color='var(--gold)';
+    es.innerHTML='No votes cast. Humanity remains undecided.<br>Perhaps that is the most honest answer of all.';
+  } else if(mp>0.55){
+    ep.className='end-planet mars-ep'; er.textContent='COLONY WINS';
+    er.style.color='var(--mars-g)';
+    es.innerHTML=`The audience voted ${marsVotes}–${earthVotes} for Mars colonization.<br><em>Launch window: 2047. Godspeed, colonists.</em>`;
+  } else if(mp<0.45){
+    ep.className='end-planet earth-ep'; er.textContent='EARTH HOLDS';
+    er.style.color='var(--earth-g)';
+    es.innerHTML=`The audience voted ${earthVotes}–${marsVotes} to stay home.<br><em>Now we have to fix what we broke.</em>`;
+  } else {
+    ep.className='end-planet tie-ep'; er.textContent='HUMANITY IS SPLIT';
+    er.style.color='var(--gold)';
+    es.innerHTML=`${marsVotes} for the stars. ${earthVotes} for home.<br><em>The debate never ends. It just changes rooms.</em>`;
+  }
+  openOverlay('endOverlay');
+}
+
+// ════════════════════════════════════════
+// RECORDING
+// ════════════════════════════════════════
+async function toggleRec(){
+  const btn=document.getElementById('recBtn');
+  const dot=document.getElementById('recDot');
+  const lbl=document.getElementById('recLabel');
+  if(!isRec){
+    try{
+      const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+      mediaRec=new MediaRecorder(stream); audioChunks=[];
+      mediaRec.ondataavailable=e=>audioChunks.push(e.data);
+      mediaRec.onstop=()=>{
+        const blob=new Blob(audioChunks,{type:'audio/webm'});
+        const url=URL.createObjectURL(blob);
+        const a=document.createElement('a');
+        a.href=url; a.download=`debate-${roomCode}-${faction}-${Date.now()}.webm`; a.click();
+      };
+      mediaRec.start(); isRec=true;
+      btn.classList.add('on'); dot.classList.add('pulsing'); lbl.textContent='STOP';
+    } catch(e){addSysMsg('⚠ MICROPHONE ACCESS DENIED — check browser permissions');}
+  } else {
+    if(mediaRec) mediaRec.stop();
+    isRec=false; btn.classList.remove('on'); dot.classList.remove('pulsing'); lbl.textContent='REC';
+  }
+}
+
+// ════════════════════════════════════════
+// TRANSCRIPT
+// ════════════════════════════════════════
+function copyTranscript(){
+  const t=transcript.map(m=>`[${m.sender}]: ${m.text}`).join('\n\n');
+  navigator.clipboard.writeText(t||'No messages recorded in this session.');
+}
+
+// ════════════════════════════════════════
+// TICKER
+// ════════════════════════════════════════
+function initTicker(){
+  const inner=document.getElementById('tickerInner');
+  const items=[...TICKER_ITEMS,...TICKER_ITEMS];
+  inner.innerHTML=items.map(t=>`<span class="ticker-item">// <em class="${t.type}">${t.text}</em></span>`).join('');
+}
+
+// ════════════════════════════════════════
+// OVERLAY HELPERS
+// ════════════════════════════════════════
+function openOverlay(id){document.getElementById(id).classList.add('open');}
+function closeOverlay(id){document.getElementById(id).classList.remove('open');}
+
+function showApp(){
+  document.getElementById('landing').style.display='none';
+  document.getElementById('app').classList.add('active');
+}
+
+function resetAll(){
+  clearInterval(timerInt); clearInterval(pollInt);
+  faction=null; roomCode=null; myName=null; isWild=false; isBooth=false;
+  connected=false; marsVotes=0; earthVotes=0; timeLeft=300;
+  isRec=false; twistShown=false; transcript=[]; lastMsgIdx=0; lastTypingSent=0;
+  if(mediaRec){try{mediaRec.stop();}catch(e){} mediaRec=null;}
+  document.getElementById('msgs').innerHTML='<div class="typing-ind" id="typingInd">opponent is composing a transmission...</div>';
+  document.getElementById('msgInput').value='';
+  document.getElementById('wildcardStrip').style.display='none';
+  document.getElementById('waitOverlay').style.display='none';
+  updateVoteUI();
+  ['dossierOverlay','twistOverlay','revealOverlay','joinOverlay','endOverlay'].forEach(closeOverlay);
+  document.getElementById('app').classList.remove('active');
+  document.getElementById('landing').style.display='flex';
+  ['bgMars','bgEarth','bgWild'].forEach(id=>document.getElementById(id).style.display='none');
+  // clear dust/stars
+  document.getElementById('bgMars').innerHTML='';
+  document.getElementById('bgEarth').innerHTML='<div class="earth-glow"></div>';
+}
+
+// Close overlays on backdrop click
+document.querySelectorAll('.overlay').forEach(o=>{
+  o.addEventListener('click',e=>{if(e.target===o) o.classList.remove('open');});
+});
+
+// Room input uppercase
+document.getElementById('roomJoinInput')?.addEventListener('input',function(){
+  this.value=this.value.toUpperCase().replace(/[^A-Z0-9]/g,'');
+});
+document.getElementById('roomJoinInput')?.addEventListener('keydown',e=>{
+  if(e.key==='Enter') joinWild();
+});
+</script>
+</body>
+</html>
