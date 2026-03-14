@@ -43,7 +43,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 
 
 .screen{display:none;position:relative;z-index:2}
-.screen.active{display:flex;flex-direction:column;align-items:stretch;min-height:100vh}
+.screen.active{display:flex;flex-direction:column;align-items:center;min-height:100vh}
 
 /* ══ ORGANIZER ══ */
 #org{justify-content:center;padding:2rem}
@@ -77,86 +77,165 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 .org-link-name{font-family:var(--disp);font-size:9px;font-weight:600;letter-spacing:.15em;color:var(--gold)}
 .org-link-sub{font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:2px}
 
-/* ══ BOOTH — CENTERED SINGLE COLUMN ══ */
-#marsScreen,#earthScreen{
-  justify-content:center;align-items:center;
-  position:relative;overflow:hidden;height:100vh;
-}
+/* ══ BOOTH — FULL VIEWPORT, NO SCROLL ══ */
+#marsScreen,#earthScreen{justify-content:flex-start;position:relative;overflow:hidden;height:100vh}
 canvas.booth-env{position:fixed;inset:0;z-index:1;pointer-events:none}
-canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 .booth-floats{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
+canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
+
+/* Argument float cards — subtle, background only */
 .bfcard{position:absolute;padding:10px 13px;border-radius:4px;font-size:10px;line-height:1.5;
-  max-width:180px;backdrop-filter:blur(8px);pointer-events:none;opacity:.5;
-  animation:bfFloat var(--dur,12s) ease-in-out infinite var(--delay,0s)}
+  max-width:180px;backdrop-filter:blur(8px);pointer-events:none;
+  animation:bfFloat var(--dur,12s) ease-in-out infinite var(--delay,0s);opacity:.55}
 .bfcard.mc{background:rgba(192,57,43,.1);border:1px solid rgba(255,127,92,.2);color:rgba(255,195,165,.8)}
 .bfcard.ec{background:rgba(13,79,107,.12);border:1px solid rgba(93,173,226,.2);color:rgba(155,210,242,.8)}
 .bfcard-tag{font-family:var(--disp);font-size:7px;letter-spacing:.2em;margin-bottom:4px;font-weight:600}
 .bfcard-tag.rc{color:var(--mars-g)}.bfcard-tag.bc{color:var(--earth-g)}
 @keyframes bfFloat{0%{transform:translateY(0) rotate(var(--r0,0deg))}33%{transform:translateY(var(--dy1,-15px)) rotate(var(--r1,1.2deg))}66%{transform:translateY(var(--dy2,-8px)) rotate(var(--r2,-.8deg))}100%{transform:translateY(0) rotate(var(--r0,0deg))}}
+
+/* Back button */
 .booth-back{position:fixed;top:16px;left:16px;z-index:20;display:flex;align-items:center;gap:5px;
   padding:6px 12px;font-size:9px;font-family:var(--mono);letter-spacing:.15em;
   border:1px solid var(--bm);background:rgba(5,5,13,.7);color:var(--muted);
   border-radius:2px;cursor:pointer;transition:all .15s;backdrop-filter:blur(12px)}
 .booth-back:hover{color:var(--text);background:rgba(255,255,255,.1)}
 
-/* Single centered column — everything visible at a glance */
-.booth-wrap{
-  position:relative;z-index:5;
+/* ── MAIN BOOTH LAYOUT: left planet panel + right content panel ── */
+
+
+/* LEFT: planet + title */
+.booth-left{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  min-height:100vh;width:100%;max-width:640px;
-  padding:2rem;text-align:center;gap:.75rem;
+  padding:3rem 2rem 2rem;position:relative;
 }
-.booth-planet{border-radius:50%;position:relative;flex-shrink:0;animation:bpfloat 4s ease-in-out infinite;margin:0 auto}
-.booth-planet.mp{width:100px;height:100px;background:radial-gradient(circle at 38% 32%,#F08060,#7A1500);box-shadow:0 0 60px rgba(192,57,43,.6),inset -14px -14px 24px rgba(0,0,0,.5)}
-.booth-planet.ep{width:100px;height:100px;background:radial-gradient(circle at 35% 30%,#5DADE2,#0A3550);box-shadow:0 0 60px rgba(46,134,193,.6),inset -14px -14px 24px rgba(0,0,0,.5)}
-.booth-planet.ep::before{content:'';position:absolute;top:28%;left:18%;width:55%;height:38%;background:rgba(46,180,60,.45);border-radius:40% 60% 50% 50%;transform:rotate(-18deg)}
-@keyframes bpfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
-.booth-title{font-family:var(--hero);font-size:clamp(3.5rem,10vw,6rem);line-height:.88;letter-spacing:.02em}
-.booth-title .r{color:var(--mars-g);text-shadow:0 0 60px rgba(255,127,92,.5)}
-.booth-title .b{color:var(--earth-g);text-shadow:0 0 60px rgba(93,173,226,.5)}
-.booth-subtitle{font-family:var(--disp);font-size:9px;letter-spacing:.3em;font-weight:600}
-.booth-subtitle.rc{color:var(--mars-g)}.booth-subtitle.bc{color:var(--earth-g)}
-.booth-desc{font-size:11px;color:var(--muted);line-height:1.7;max-width:480px;margin:0 auto}
-.ready-btn{font-family:var(--hero);font-size:clamp(2rem,5vw,2.8rem);letter-spacing:.08em;
-  padding:18px 44px;border-radius:4px;border:none;cursor:pointer;transition:all .3s;
-  display:block;width:100%;max-width:440px;margin:0 auto}
-.ready-btn.mars-ready{background:linear-gradient(135deg,rgba(192,57,43,.3),rgba(231,76,60,.2));
-  color:var(--mars-g);border:2px solid rgba(255,127,92,.4);box-shadow:0 0 40px rgba(192,57,43,.2)}
-.ready-btn.mars-ready:hover{box-shadow:0 0 60px rgba(192,57,43,.4);transform:scale(1.02)}
-.ready-btn.earth-ready{background:linear-gradient(135deg,rgba(13,79,107,.3),rgba(46,134,193,.2));
-  color:var(--earth-g);border:2px solid rgba(93,173,226,.4);box-shadow:0 0 40px rgba(46,134,193,.2)}
-.ready-btn.earth-ready:hover{box-shadow:0 0 60px rgba(46,134,193,.4);transform:scale(1.02)}
-.ready-hint{font-size:9px;color:var(--muted);letter-spacing:.15em}
+.booth-left::after{
+  content:'';position:absolute;top:0;right:0;bottom:0;width:1px;
+  background:linear-gradient(to bottom,transparent,var(--bm),transparent);
+}
+.booth-planet-wrap{position:relative;margin-bottom:1.5rem}
+.booth-planet-canvas-el{border-radius:50%;display:block;animation:bpfloat 4s ease-in-out infinite}
+@keyframes bpfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
+/* Orbital ring around planet */
+.orbit-ring{
+  position:absolute;top:50%;left:50%;border-radius:50%;border:1px solid;
+  transform:translate(-50%,-50%) rotateX(70deg);pointer-events:none;
+  animation:orbitSpin 12s linear infinite;
+}
+.orbit-ring.mr{border-color:rgba(255,127,92,.3);box-shadow:0 0 8px rgba(255,127,92,.15)}
+.orbit-ring.er{border-color:rgba(93,173,226,.3);box-shadow:0 0 8px rgba(93,173,226,.15)}
+@keyframes orbitSpin{from{transform:translate(-50%,-50%) rotateX(70deg) rotateZ(0deg)}to{transform:translate(-50%,-50%) rotateX(70deg) rotateZ(360deg)}}
+/* Dot on orbit ring */
+.orbit-dot{
+  position:absolute;width:8px;height:8px;border-radius:50%;top:50%;left:50%;
+  transform-origin:0 0;animation:orbitDot 12s linear infinite;margin-top:-4px;margin-left:-4px;
+}
+.orbit-dot.mr{background:var(--mars-g);box-shadow:0 0 12px var(--mars-g)}
+.orbit-dot.er{background:var(--earth-g);box-shadow:0 0 12px var(--earth-g)}
+@keyframes orbitDot{from{transform:rotate(0deg) translateX(var(--rad)) rotate(0deg)}to{transform:rotate(360deg) translateX(var(--rad)) rotate(-360deg)}}
+
+.booth-title-block{text-align:center}
+.booth-title{font-family:var(--hero);font-size:clamp(3rem,7vw,5.5rem);line-height:.88;letter-spacing:.03em}
+.booth-title .r{color:var(--mars-g);text-shadow:0 0 50px rgba(255,127,92,.5)}
+.booth-title .b{color:var(--earth-g);text-shadow:0 0 50px rgba(93,173,226,.5)}
+.booth-eyebrow{font-family:var(--disp);font-size:8px;letter-spacing:.4em;color:var(--muted);margin-bottom:.6rem}
+.booth-tagline{font-size:11px;color:var(--muted);line-height:1.6;max-width:280px;margin:.5rem auto 0}
+
+/* ── RIGHT: everything else — status, arguments, CTA ── */
+.booth-right{
+  display:flex;flex-direction:column;justify-content:center;
+  padding:2rem 2.5rem 2rem 2.5rem;gap:1rem;overflow:hidden;
+}
+
+/* Mission status strip at top */
+.mission-strip{
+  display:flex;align-items:center;gap:10px;padding:8px 14px;
+  background:rgba(255,255,255,.03);border:1px solid var(--border);
+  border-radius:3px;flex-shrink:0;
+}
+.mission-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.mission-dot.mc{background:var(--mars-g);animation:mdpulse 2s ease-in-out infinite}
+.mission-dot.ec{background:var(--earth-g);animation:mdpulse 2s ease-in-out infinite}
+@keyframes mdpulse{0%,100%{opacity:1;box-shadow:0 0 6px currentColor}50%{opacity:.5;box-shadow:none}}
+.mission-label{font-family:var(--disp);font-size:8px;letter-spacing:.25em;flex:1}
+.mission-label.rc{color:var(--mars-g)}.mission-label.bc{color:var(--earth-g)}
+.mission-time{font-size:9px;color:var(--muted);letter-spacing:.1em}
+
+/* Arguments section — always visible */
+.args-section{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
+.args-header{font-size:8px;letter-spacing:.3em;color:var(--muted);font-family:var(--disp);flex-shrink:0}
+
+/* Argument cards — interactive, tappable */
+.arg-cards{flex:1;display:flex;flex-direction:column;gap:6px;overflow-y:auto;min-height:0}
+.arg-cards::-webkit-scrollbar{width:2px}.arg-cards::-webkit-scrollbar-thumb{background:var(--border)}
+.arg-card{
+  padding:10px 14px;border-radius:4px;cursor:pointer;transition:all .2s;
+  display:flex;align-items:flex-start;gap:10px;flex-shrink:0;position:relative;overflow:hidden;
+}
+.arg-card::before{content:'';position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:2px 0 0 2px}
+.arg-card.mc-card{background:rgba(192,57,43,.08);border:1px solid rgba(192,57,43,.2)}
+.arg-card.mc-card::before{background:var(--mars-g)}
+.arg-card.mc-card:hover{background:rgba(192,57,43,.18);border-color:rgba(255,127,92,.4);transform:translateX(3px)}
+.arg-card.ec-card{background:rgba(13,79,107,.1);border:1px solid rgba(46,134,193,.2)}
+.arg-card.ec-card::before{background:var(--earth-g)}
+.arg-card.ec-card:hover{background:rgba(46,134,193,.18);border-color:rgba(93,173,226,.4);transform:translateX(3px)}
+.arg-card.selected-arg{transform:translateX(4px)!important}
+.arg-card.mc-card.selected-arg{background:rgba(192,57,43,.25);border-color:rgba(255,127,92,.6);box-shadow:0 0 16px rgba(192,57,43,.2)}
+.arg-card.ec-card.selected-arg{background:rgba(46,134,193,.22);border-color:rgba(93,173,226,.6);box-shadow:0 0 16px rgba(46,134,193,.2)}
+.arg-num{font-family:var(--disp);font-size:8px;font-weight:600;flex-shrink:0;margin-top:2px;letter-spacing:.1em}
+.arg-num.rc{color:var(--mars-g)}.arg-num.bc{color:var(--earth-g)}
+.arg-text-block{flex:1;min-width:0}
+.arg-title{font-family:var(--disp);font-size:9px;font-weight:600;letter-spacing:.12em;margin-bottom:3px}
+.arg-title.rc{color:var(--mars-g)}.arg-title.bc{color:var(--earth-g)}
+.arg-body{font-size:10.5px;color:var(--muted);line-height:1.55;
+  overflow:hidden;max-height:0;transition:max-height .3s ease;}
+.arg-card.selected-arg .arg-body{max-height:100px}
+
+/* CTA zone */
+.cta-zone{flex-shrink:0;display:flex;flex-direction:column;gap:8px}
+
+/* Status */
+.booth-status-line{
+  display:flex;align-items:center;gap:8px;padding:10px 14px;
+  border-radius:3px;border:1px solid var(--border);font-size:10px;letter-spacing:.12em;
+  background:rgba(255,255,255,.02);min-height:44px;
+}
+.bs-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bs-dot.mc{background:var(--mars-g)}.bs-dot.ec{background:var(--earth-g)}
+.bs-dot.gold{background:var(--gold);animation:wblink 1s ease-in-out infinite}
+.bs-dot.green{background:#2ECC71}
+.bs-text{flex:1;color:var(--muted)}
+
+/* Ready button — full width, prominent */
+.ready-btn{
+  font-family:var(--hero);font-size:clamp(1.8rem,4vw,2.5rem);letter-spacing:.1em;
+  padding:18px 40px;border-radius:4px;border:none;cursor:pointer;
+  transition:all .3s;display:block;width:100%;position:relative;overflow:hidden;
+}
+.ready-btn::after{content:'';position:absolute;inset:0;background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);opacity:0;transition:opacity .3s}
+.ready-btn:hover::after{opacity:1}
+.ready-btn.mars-ready{background:linear-gradient(135deg,rgba(192,57,43,.4),rgba(231,76,60,.25));color:var(--mars-g);border:2px solid rgba(255,127,92,.55);box-shadow:0 0 40px rgba(192,57,43,.3),inset 0 1px 0 rgba(255,150,100,.15)}
+.ready-btn.mars-ready:hover{box-shadow:0 0 70px rgba(192,57,43,.55);transform:scale(1.02)}
+.ready-btn.earth-ready{background:linear-gradient(135deg,rgba(13,79,107,.4),rgba(46,134,193,.25));color:var(--earth-g);border:2px solid rgba(93,173,226,.55);box-shadow:0 0 40px rgba(46,134,193,.3),inset 0 1px 0 rgba(100,180,255,.15)}
+.ready-btn.earth-ready:hover{box-shadow:0 0 70px rgba(46,134,193,.55);transform:scale(1.02)}
+.ready-hint{font-size:9px;color:var(--muted);letter-spacing:.15em;text-align:center;margin-top:.4rem}
+
+/* Waiting state */
 .wait-state{display:none;flex-direction:column;align-items:center;gap:.6rem}
 .wait-state.show{display:flex}
-.wait-pulse-ring{width:72px;height:72px;border-radius:50%;border:2px solid;position:relative;display:flex;align-items:center;justify-content:center}
-.wait-pulse-ring.mc{border-color:rgba(255,127,92,.4)}.wait-pulse-ring.ec{border-color:rgba(93,173,226,.4)}
+.wait-pulse-ring{width:60px;height:60px;border-radius:50%;border:2px solid;position:relative;display:flex;align-items:center;justify-content:center}
+.wait-pulse-ring.mc{border-color:rgba(255,127,92,.5)}.wait-pulse-ring.ec{border-color:rgba(93,173,226,.5)}
 .wait-pulse-ring::before{content:'';position:absolute;inset:-10px;border-radius:50%;border:1px solid;animation:ringpulse 2s ease-in-out infinite}
 .wait-pulse-ring.mc::before{border-color:rgba(255,127,92,.2)}.wait-pulse-ring.ec::before{border-color:rgba(93,173,226,.2)}
 .wait-pulse-ring::after{content:'';position:absolute;inset:-20px;border-radius:50%;border:1px solid;animation:ringpulse 2s ease-in-out infinite .5s}
 .wait-pulse-ring.mc::after{border-color:rgba(255,127,92,.1)}.wait-pulse-ring.ec::after{border-color:rgba(93,173,226,.1)}
-.wait-icon{font-size:1.8rem}
+.wait-icon{font-size:1.5rem}
 @keyframes ringpulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
 .wait-txt{font-family:var(--disp);font-size:9px;letter-spacing:.2em}
 .wait-txt.rc{color:var(--mars-g)}.wait-txt.bc{color:var(--earth-g)}
-.wait-sub-txt{font-size:10px;color:var(--muted);letter-spacing:.1em;line-height:1.7}
-.connecting-txt{font-family:var(--disp);font-size:11px;letter-spacing:.2em;animation:wblink .8s ease-in-out infinite}
+.wait-sub-txt{font-size:9px;color:var(--muted);letter-spacing:.1em;line-height:1.6;text-align:center}
+.connecting-txt{font-family:var(--disp);font-size:10px;letter-spacing:.2em;animation:wblink .8s ease-in-out infinite}
 .connecting-txt.rc{color:var(--mars-g)}.connecting-txt.bc{color:var(--earth-g)}
-@keyframes wblink{0%,100%{opacity:1}50%{opacity:.35}}
-
-/* Argument cards — inline in the booth, no dropdown */
-.dossier-toggle{display:flex;align-items:center;justify-content:center;gap:8px;
-  font-size:10px;letter-spacing:.2em;color:var(--muted);cursor:pointer;
-  transition:color .2s;background:none;border:none;font-family:var(--mono);padding:4px}
-.dossier-toggle:hover{color:var(--text)}
-.dossier-body{overflow:hidden;max-height:0;transition:max-height .4s ease;width:100%}
-.dossier-body.open{max-height:600px}
-.dossier-inner{background:rgba(255,255,255,.03);border:1px solid var(--border);
-  border-radius:4px;padding:.8rem;text-align:left;backdrop-filter:blur(10px)}
-.darg{padding:8px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;font-size:11px;line-height:1.55}
-.darg:last-child{border-bottom:none}
-.darg-n{font-family:var(--disp);font-size:8px;font-weight:600;flex-shrink:0;margin-top:2px;letter-spacing:.1em}
-.darg-n.rc{color:var(--mars-g)}.darg-n.bc{color:var(--earth-g)}
+@keyframes wblink{0%,100%{opacity:1}50%{opacity:.3}}
 
 /* ══ DEBATE SCREEN ══ */
 #debateScreen{position:relative;min-height:100vh}
@@ -385,10 +464,6 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
         <div><div class="org-link-name">TEST MODE</div><div class="org-link-sub">Simulate a full debate on this device</div></div>
       </div>
     </div>
-    <div style="margin-top:1.5rem;text-align:center">
-      <button onclick="hardReset()" style="font-size:9px;font-family:var(--mono);letter-spacing:.15em;padding:6px 14px;border:1px solid rgba(255,255,255,.1);background:transparent;color:var(--muted);border-radius:2px;cursor:pointer">RESET ROOM STATE</button>
-      <div style="font-size:9px;color:var(--muted);margin-top:4px;letter-spacing:.1em">Use if booths get stuck</div>
-    </div>
   </div>
 </div>
 
@@ -396,19 +471,17 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
      MARS BOOTH
 ══════════════════════════════ -->
 <div id="marsScreen" class="screen">
-  <canvas id="marsEnvCanvas" class="booth-env"></canvas>
-  <canvas class="constellation" id="marsConstellation"></canvas>
+  <div class="bg-atmo bg-mars-atmo"></div>
   <div class="booth-floats" id="marsFloats"></div>
   <button class="booth-back" onclick="showScreen('org')">← ORGANIZER</button>
-
   <div class="booth-wrap">
     <div class="booth-planet mp"></div>
     <div class="booth-title"><span class="r">COLONY</span><br><span class="r">ADVOCATE</span></div>
-    <div class="booth-subtitle rc">// MARS DEBATE STATION //</div>
-    <div class="booth-desc">You believe humanity must colonize Mars — that it is our destiny, our survival, and our greatest adventure. When the Earth Defender is ready, the debate begins automatically.</div>
+    <div class="booth-subtitle rc">// YOUR ARGUMENTS — STUDY BEFORE DEBATE //</div>
+    <div class="dossier-inner" id="marsDosInner" style="width:100%;max-width:540px;text-align:left"></div>
     <div id="marsReadyDiv">
       <button class="ready-btn mars-ready" onclick="boothReady('mars')">READY TO DEBATE?</button>
-      <div class="ready-hint">Both booths must click ready to begin</div>
+      <div class="ready-hint">Read your arguments above, then click when ready</div>
     </div>
     <div class="wait-state" id="marsWaitDiv">
       <div class="wait-pulse-ring mc"><div class="wait-icon">🔴</div></div>
@@ -418,8 +491,6 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
     <div style="display:none" id="marsConnDiv">
       <div class="connecting-txt rc">⬤ CONNECTING...</div>
     </div>
-    <button class="dossier-toggle" id="marsDosTgl" onclick="toggleDossier('mars')">📋 STUDY YOUR ARGUMENTS ▾</button>
-    <div class="dossier-body" id="marsDosBdy"><div class="dossier-inner" id="marsDosInner"></div></div>
   </div>
 </div>
 
@@ -427,19 +498,17 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
      EARTH BOOTH
 ══════════════════════════════ -->
 <div id="earthScreen" class="screen">
-  <canvas id="earthEnvCanvas" class="booth-env"></canvas>
-  <canvas class="constellation" id="earthConstellation"></canvas>
+  <div class="bg-atmo bg-earth-atmo"></div>
   <div class="booth-floats" id="earthFloats"></div>
   <button class="booth-back" onclick="showScreen('org')">← ORGANIZER</button>
-
   <div class="booth-wrap">
     <div class="booth-planet ep"></div>
     <div class="booth-title"><span class="b">EARTH</span><br><span class="b">DEFENDER</span></div>
-    <div class="booth-subtitle bc">// EARTH DEBATE STATION //</div>
-    <div class="booth-desc">You believe Earth is humanity's only home — that abandoning it is cowardice dressed as ambition. When the Colony Advocate is ready, the debate begins automatically.</div>
+    <div class="booth-subtitle bc">// YOUR ARGUMENTS — STUDY BEFORE DEBATE //</div>
+    <div class="dossier-inner" id="earthDosInner" style="width:100%;max-width:540px;text-align:left"></div>
     <div id="earthReadyDiv">
       <button class="ready-btn earth-ready" onclick="boothReady('earth')">READY TO DEBATE?</button>
-      <div class="ready-hint">Both booths must click ready to begin</div>
+      <div class="ready-hint">Read your arguments above, then click when ready</div>
     </div>
     <div class="wait-state" id="earthWaitDiv">
       <div class="wait-pulse-ring ec"><div class="wait-icon">🔵</div></div>
@@ -449,8 +518,6 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
     <div style="display:none" id="earthConnDiv">
       <div class="connecting-txt bc">⬤ CONNECTING...</div>
     </div>
-    <button class="dossier-toggle" id="earthDosTgl" onclick="toggleDossier('earth')">📋 STUDY YOUR ARGUMENTS ▾</button>
-    <div class="dossier-body" id="earthDosBdy"><div class="dossier-inner" id="earthDosInner"></div></div>
   </div>
 </div>
 
@@ -657,9 +724,7 @@ const TICKER=[
 /* ════════════════════════════════
    STATE
 ════════════════════════════════ */
-// Room key includes today's date — resets daily, preventing stale auto-launch
-const TODAY=new Date().toISOString().slice(0,10);
-const ROOM='room:EXHIBIT01:'+TODAY;
+const ROOM='room:EXHIBIT01';
 let activeBooth=null; // 'mars' | 'earth' | 'test'
 let pollInt=null,sigPollInt=null;
 // Clock
@@ -676,6 +741,7 @@ let alertsFired=new Set();
 // Recording
 let isRec=false,mediaRec=null,audioChunks=[],savedAudioURL=null;
 // WebRTC
+let peerConn=null;
 // Votes
 let marsVotes=0,earthVotes=0;
 // Archive events
@@ -688,36 +754,8 @@ let dosOpen={mars:false,earth:false};
 /* ════════════════════════════════
    STORAGE
 ════════════════════════════════ */
-// ── LOCAL STORAGE (archive/audience only — not cross-device) ──
 async function sg(k){try{const r=await window.storage.get(k,true);return r?JSON.parse(r.value):null;}catch{return null;}}
 async function ss(k,v){try{await window.storage.set(k,JSON.stringify(v),true);}catch{}}
-
-// ── PEER SIGNALING via PeerJS ──
-// PeerJS handles WebRTC signaling AND the audio call.
-// Mars always gets peer ID "mars-debate-EXHIBIT01"
-// Earth connects to that ID. Done. No server needed beyond PeerJS public relay.
-const PEER_MARS_ID = 'mars-debate-EXHIBIT01-v2';
-let myPeer = null;      // our PeerJS Peer object
-let peerCall = null;    // the active MediaConnection (audio call)
-let peerData = null;    // DataConnection for signaling messages
-let peerReady = false;  // true once connection established
-
-function getPeerConfig(){
-  return {
-    host: '0.peerjs.com',
-    port: 443,
-    path: '/',
-    secure: true,
-    debug: 0,
-    config: {
-      iceServers:[
-        {urls:'stun:stun.l.google.com:19302'},
-        {urls:'stun:stun1.l.google.com:19302'},
-        {urls:'stun:stun2.l.google.com:19302'},
-      ]
-    }
-  };
-}
 
 /* ════════════════════════════════
    FULL VISUAL ENGINE
@@ -1239,198 +1277,84 @@ function buildDossier(side){buildArgCards(side);}
 function toggleDossier(side){}
 
 /* ════════════════════════════════
-   BOOTH READY — PeerJS direct p2p connection
-   Mars: registers fixed peer ID, waits for Earth to connect.
-   Earth: connects to Mars peer ID.
-   When data channel opens → both sides launch the debate.
-   Audio call established simultaneously via PeerJS.
+   BOOTH READY — PeerJS p2p
 ════════════════════════════════ */
-
-// Fixed ID that Mars always registers. Earth connects to it.
-// Round counter — increments each time Mars clicks Ready
-// Stored in localStorage so page refresh doesn't reset it
-// Earth scans round numbers 0-9 to find the active one
-let _marsRound = parseInt(localStorage.getItem('marsRound')||'0');
-
-function getMarsId(round){
-  const r = (round !== undefined) ? round : _marsRound;
-  const d = new Date();
-  const day = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-  return 'mde-'+day+'-r'+r;
-}
-// MARS_PEER_ID is dynamic now — computed fresh each time boothReady is called
-let _peer=null, _dataConn=null, _mediaCall=null, _launched=false;
-let _earthAttempt=0;
+let _marsRound=parseInt(localStorage.getItem('marsRound')||'0');
+function getMarsId(r){const d=new Date();return 'mde-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'-r'+((r!==undefined)?r:_marsRound);}
+let _peer=null,_dataConn=null,_mediaCall=null,_launched=false;
+let _earthAttempt=0,_earthScanInt=null;
 
 function boothReady(side){
-  activeBooth = side;
-  _launched = false;
-  _earthAttempt = 0;
-
-  // Mars increments round counter each time Ready is clicked
-  // This guarantees a fresh unused PeerJS ID every round
-  if(side === 'mars'){
-    _marsRound = (_marsRound + 1) % 10; // cycle 1-9 then back to 0
-    localStorage.setItem('marsRound', _marsRound);
-    console.log('[P] Mars round now:', _marsRound, '-> ID:', getMarsId());
-  }
-
-  document.getElementById(side+'ReadyDiv').style.display = 'none';
+  activeBooth=side;_launched=false;_earthAttempt=0;
+  if(side==='mars'){_marsRound=(_marsRound+1)%10;localStorage.setItem('marsRound',_marsRound);}
+  document.getElementById(side+'ReadyDiv').style.display='none';
   document.getElementById(side+'WaitDiv').classList.add('show');
-  _setWaitTxt(side, side === 'mars' ? 'Waiting for Earth Defender...' : 'Connecting to Colony Booth...');
+  _setWaitTxt(side,side==='mars'?'Waiting for Earth Defender...':'Connecting to Colony Booth...');
   _startPeer(side);
 }
 
-function _peerCfg(){
-  return {
-    debug: 2,
-    config:{iceServers:[
-      {urls:'stun:stun.l.google.com:19302'},
-      {urls:'stun:stun1.l.google.com:19302'},
-    ]}
-  };
-}
+function _peerCfg(){return {debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}};}
 
 function _startPeer(side){
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
-
-  if(side === 'mars'){
-    const marsId = getMarsId(); // fresh ID using current round
-    console.log('[P] Mars registering as', marsId);
-    _peer = new Peer(marsId, _peerCfg());
-
-    _peer.on('open', id=>{
-      console.log('[P] Mars open as', id);
-      _setWaitTxt('mars', 'Ready — waiting for Earth Defender...');
+  if(side==='mars'){
+    const marsId=getMarsId();
+    console.log('[P] Mars registering:',marsId);
+    _peer=new Peer(marsId,_peerCfg());
+    _peer.on('open',id=>{console.log('[P] Mars open:',id);_setWaitTxt('mars','Waiting for Earth Defender...');});
+    _peer.on('connection',conn=>{
+      conn.on('open',()=>{console.log('[P] Earth connected!');conn.send('ready');_doLaunch('mars');});
     });
-
-    // Earth opens a data connection to signal it's ready
-    _peer.on('connection', conn=>{
-      _dataConn = conn;
-      conn.on('open', ()=>{
-        console.log('[P] Earth connected — launching');
-        conn.send('ready');
-        _doLaunch('mars');
-      });
-      conn.on('error', e=>console.warn('[P] data err', e));
+    _peer.on('call',call=>{
+      _mediaCall=call;
+      navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(st=>{
+        localStream=st;call.answer(st);
+        call.on('stream',rs=>{remoteStream=rs;document.getElementById('remoteAudio').srcObject=rs;startAudioAnalysis(localStream,remoteStream,'mars');setAudioStat('ok','⬤ VOICE CONNECTED');addEvt('Voice connected','sys');});
+      }).catch(()=>setAudioStat('err','MIC DENIED'));
     });
-
-    // Earth calls us for audio
-    _peer.on('call', call=>{
-      _mediaCall = call;
-      navigator.mediaDevices.getUserMedia({audio:true,video:false})
-        .then(stream=>{
-          localStream = stream;
-          call.answer(stream);
-          call.on('stream', rs=>{
-            remoteStream = rs;
-            document.getElementById('remoteAudio').srcObject = rs;
-            startAudioAnalysis(localStream, remoteStream, 'mars');
-            setAudioStat('ok', '⬤ VOICE CONNECTED');
-            addEvt('Voice connected','sys');
-          });
-        })
-        .catch(()=>{ setAudioStat('err','MIC DENIED'); addEvt('⚠ Mic access denied','sys'); });
+    _peer.on('error',e=>{
+      console.warn('[P] mars err:',e.type);
+      if(e.type==='unavailable-id'){_marsRound=(_marsRound+1)%10;localStorage.setItem('marsRound',_marsRound);setTimeout(()=>_startPeer('mars'),500);}
     });
-
-    _peer.on('error', e=>{
-      console.warn('[P] mars error:', e.type, e.message);
-      if(e.type==='unavailable-id'){
-        // Ghost session holding ID — increment round and retry
-        _marsRound = (_marsRound + 1) % 10;
-        localStorage.setItem('marsRound', _marsRound);
-        const newId = getMarsId();
-        console.log('[P] ID taken, bumping round to', _marsRound, '->', newId);
-        _setWaitTxt('mars', 'Retrying connection...');
-        if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
-        setTimeout(()=>_startPeer('mars'), 800);
-      }
-    });
-
   } else {
-    // Earth gets a random ID, then connects to Mars
-    _peer = new Peer(_peerCfg());
-
-    _peer.on('open', id=>{
-      console.log('[P] Earth peer open as', id);
-      _setWaitTxt('earth', 'Connecting to Colony Booth...');
-      _earthConnect();
+    _peer=new Peer(_peerCfg());
+    _peer.on('open',()=>{
+      clearInterval(_earthScanInt);
+      _tryRound(_earthAttempt);
+      _earthScanInt=setInterval(()=>{
+        if(_launched){clearInterval(_earthScanInt);return;}
+        _earthAttempt=(_earthAttempt+1)%10;
+        _tryRound(_earthAttempt);
+      },4000);
     });
-
-    _peer.on('error', e=>{
-      console.warn('[P] earth error:', e.type);
-      setTimeout(_earthConnect, 3000);
-    });
+    _peer.on('error',e=>{if(e.type!=='peer-unavailable')console.warn('[P] earth err:',e.type);});
   }
 }
 
-function _earthConnect(){
+function _tryRound(round){
   if(!_peer||_peer.destroyed||_launched)return;
-  // Scan rounds 0-9 to find which one Mars registered on
-  const targetId=getMarsId(_earthAttempt);
-  console.log('[P] Earth trying round',_earthAttempt,'->',targetId);
-  _setWaitTxt('earth','Connecting... (looking for Colony Booth)');
-
-  const conn=_peer.connect(targetId,{reliable:true,serialization:'json'});
-  _dataConn=conn;
-  let opened=false;
-
+  const id=getMarsId(round);
+  console.log('[P] Earth trying:',id);
+  const conn=_peer.connect(id,{reliable:true,serialization:'json'});
   conn.on('open',()=>{
-    opened=true;
-    console.log('[P] Earth connected on round',_earthAttempt,'->',targetId);
-    _setWaitTxt('earth','Connected! Starting debate...');
-    conn.send('ready');
-    _doLaunch('earth');
-    _callMars(targetId);
+    clearInterval(_earthScanInt);
+    _setWaitTxt('earth','Connected! Launching...');
+    conn.send('ready');_doLaunch('earth');
+    navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(st=>{
+      localStream=st;const call=_peer.call(id,st);_mediaCall=call;
+      call.on('stream',rs=>{remoteStream=rs;document.getElementById('remoteAudio').srcObject=rs;startAudioAnalysis(localStream,remoteStream,'earth');setAudioStat('ok','⬤ VOICE CONNECTED');addEvt('Voice connected','sys');});
+    }).catch(()=>setAudioStat('err','MIC DENIED'));
   });
-
-  conn.on('error',e=>{
-    if(!opened&&!_launched){
-      _earthAttempt=(_earthAttempt+1)%10;
-      setTimeout(_earthConnect,1000);
-    }
-  });
-
-  // Move to next round after 5s if not connected
-  setTimeout(()=>{
-    if(!opened&&!_launched){
-      _earthAttempt=(_earthAttempt+1)%10;
-      _earthConnect();
-    }
-  },5000);
-}
-
-function _callMars(targetId){
-  navigator.mediaDevices.getUserMedia({audio:true,video:false})
-    .then(stream=>{
-      localStream=stream;
-      const call=_peer.call(targetId,stream);
-      _mediaCall=call;
-      call.on('stream',rs=>{
-        remoteStream=rs;
-        document.getElementById('remoteAudio').srcObject=rs;
-        startAudioAnalysis(localStream,remoteStream,'earth');
-        setAudioStat('ok','⬤ VOICE CONNECTED');
-        addEvt('Voice connected','sys');
-      });
-      call.on('error',e=>console.warn('[P] call err',e));
-    })
-    .catch(()=>{setAudioStat('err','MIC DENIED');addEvt('⚠ Mic access denied','sys');});
+  conn.on('error',()=>{});
 }
 
 function _doLaunch(side){
-  if(_launched) return;
-  _launched = true;
-  console.log('[P] Launching debate as', side);
+  if(_launched)return;_launched=true;
   document.getElementById(side+'WaitDiv').classList.remove('show');
-  document.getElementById(side+'ConnDiv').style.display = 'block';
-  setTimeout(()=>launchDebate(side), 1200);
+  document.getElementById(side+'ConnDiv').style.display='block';
+  setTimeout(()=>launchDebate(side),1200);
 }
-
-function _setWaitTxt(side, msg){
-  const el = document.getElementById(side+'WaitDiv').querySelector('.wait-sub-txt');
-  if(el) el.textContent = msg;
-}
+function _setWaitTxt(side,msg){const el=document.getElementById(side+'WaitDiv').querySelector('.wait-sub-txt');if(el)el.textContent=msg;}
 
 async function checkBothReady(){}
 
@@ -1438,25 +1362,8 @@ async function checkBothReady(){}
    TEST MODE
 ════════════════════════════════ */
 function launchTestMode(){
-  testMode=true;activeBooth='mars';_launched=true;
+  testMode=true;activeBooth='mars';
   launchDebate('test');
-}
-
-// Leave booth cleanly — remove our ready flag so returning doesn't auto-trigger
-async function leaveBooth(screenId){
-  clearInterval(pollInt);
-  if(myPeer){try{myPeer.destroy();}catch(e){} myPeer=null;}
-  if(peerCall){try{peerCall.close();}catch(e){} peerCall=null;}
-  if(peerData){try{peerData.close();}catch(e){} peerData=null;}
-  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-  activeBooth=null;_launched=false;peerReady=false;
-  showScreen('org');
-}
-
-// Hard reset — clears all signaling state for this room
-async function hardReset(){
-  await ss(ROOM,{ready:{mars:false,earth:false},signals:[],resetAt:Date.now()});
-  alert('Room state cleared. Both booths can now click Ready.');
 }
 
 /* ════════════════════════════════
@@ -1499,11 +1406,7 @@ async function launchDebate(side){
     setAudioStat('ok','TEST MODE — SIMULATED AUDIO');
     startFakeAudio();
   } else {
-    // Audio setup already done by PeerJS in initPeer()
-    // If audio not connected yet, show connecting status
-    if(!localStream){
-      setAudioStat('wait','CONNECTING AUDIO...');
-    }
+    if(!localStream) setAudioStat('wait','CONNECTING AUDIO...');
   }
 
   startClocks();
@@ -1799,7 +1702,6 @@ async function toggleRec(){
 /* ════════════════════════════════
    WEBRTC
 ════════════════════════════════ */
-
 function setAudioStat(type,txt){
   const el=document.getElementById('audioStat');
   el.className='audio-status-strip '+type;
@@ -1824,13 +1726,12 @@ async function endDebate(){
   closeOverlay('endConfirmOverlay');
   clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
   if(isRec&&mediaRec)mediaRec.stop();
-  if(_mediaCall){try{_mediaCall.close();}catch(e){} _mediaCall=null;}
-  if(_dataConn){try{_dataConn.close();}catch(e){} _dataConn=null;}
+  clearInterval(_earthScanInt);
+  if(_mediaCall){try{_mediaCall.close();}catch(e){}}
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
   if(audioCtx){audioCtx.close();audioCtx=null;}
   _launched=false;
-  // Note: next boothReady click will auto-increment round for a fresh peer ID
   // Mark debate ended for audience page
   const av=await sg('audienceVotes')||{};av.debateActive=false;await ss('audienceVotes',av);
 
@@ -1854,8 +1755,8 @@ async function endDebate(){
   if(arc.length>30)arc=arc.slice(0,30);
   await ss('debateArchive',arc);
 
-  // Reset room ready flags so next debate can start fresh
-  await ss(ROOM,{ready:{mars:false,earth:false},signals:[],clearedAt:Date.now()});_launched=false;
+  // Clean room
+  const r=await sg(ROOM)||{};r.ready={};r.signals=[];await ss(ROOM,r);
 
   openOverlay('endResultOverlay');
 }
@@ -1878,7 +1779,7 @@ function returnToBooth(){
   if(clk)clk.textContent='STANDBY';
   // Reset state
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;marsT=90;earthT=90;totalT=180;
-  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;_launched=false;
+  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;_launched=false;_earthAttempt=0;
   document.getElementById('recBtn').classList.remove('on');
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
