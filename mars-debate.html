@@ -43,7 +43,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 
 
 .screen{display:none;position:relative;z-index:2}
-.screen.active{display:flex;flex-direction:column;align-items:center;min-height:100vh}
+.screen.active{display:flex;flex-direction:column;align-items:stretch;min-height:100vh}
 
 /* ══ ORGANIZER ══ */
 #org{justify-content:center;padding:2rem}
@@ -78,7 +78,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 .org-link-sub{font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:2px}
 
 /* ══ BOOTH — FULL VIEWPORT, NO SCROLL ══ */
-#marsScreen,#earthScreen{justify-content:flex-start;position:relative;overflow:hidden;height:100vh}
+#marsScreen,#earthScreen{justify-content:flex-start;align-items:stretch;position:relative;overflow:hidden;height:100vh}
 canvas.booth-env{position:fixed;inset:0;z-index:1;pointer-events:none}
 .booth-floats{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
@@ -108,12 +108,13 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
   height:100vh;
   width:100%;
   overflow:hidden;
+  flex:1;
 }
 
 /* LEFT: planet + title */
 .booth-left{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  padding:3rem 2rem 2rem;position:relative;
+  padding:2rem;position:relative;
 }
 .booth-left::after{
   content:'';position:absolute;top:0;right:0;bottom:0;width:1px;
@@ -150,7 +151,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 /* ── RIGHT: everything else — status, arguments, CTA ── */
 .booth-right{
   display:flex;flex-direction:column;justify-content:center;
-  padding:2rem 2.5rem 2rem 2.5rem;gap:1rem;overflow:hidden;
+  padding:2rem 2rem 2rem 2rem;gap:.8rem;overflow:hidden;
 }
 
 /* Mission status strip at top */
@@ -168,7 +169,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 .mission-time{font-size:9px;color:var(--muted);letter-spacing:.1em}
 
 /* Arguments section — always visible */
-.args-section{flex:1;display:flex;flex-direction:column;gap:8px;min-height:0;overflow:hidden}
+.args-section{flex:1;display:flex;flex-direction:column;gap:6px;min-height:0;overflow:hidden;min-height:0}
 .args-header{font-size:8px;letter-spacing:.3em;color:var(--muted);font-family:var(--disp);flex-shrink:0}
 
 /* Argument cards — interactive, tappable */
@@ -1418,14 +1419,37 @@ function toggleDossier(side){}
 ════════════════════════════════ */
 
 // Fixed ID that Mars always registers. Earth connects to it.
-const MARS_PEER_ID = 'mars-debate-EXHIBIT01';
+// Round counter — increments each time Mars clicks Ready
+// Stored in localStorage so page refresh doesn't reset it
+// Earth scans round numbers 0-9 to find the active one
+let _marsRound = parseInt(localStorage.getItem('marsRound')||'0');
+
+function getMarsId(round){
+  const r = (round !== undefined) ? round : _marsRound;
+  const d = new Date();
+  const day = d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  return 'mde-'+day+'-r'+r;
+}
+// MARS_PEER_ID is dynamic now — computed fresh each time boothReady is called
 let _peer=null, _dataConn=null, _mediaCall=null, _launched=false;
+let _marsIdSuffix=0, _earthAttempt=0;
 
 function boothReady(side){
   activeBooth = side;
   _launched = false;
+  _earthAttempt = 0;
+
+  // Mars increments round counter each time Ready is clicked
+  // This guarantees a fresh unused PeerJS ID every round
+  if(side === 'mars'){
+    _marsRound = (_marsRound + 1) % 10; // cycle 1-9 then back to 0
+    localStorage.setItem('marsRound', _marsRound);
+    console.log('[P] Mars round now:', _marsRound, '-> ID:', getMarsId());
+  }
+
   document.getElementById(side+'ReadyDiv').style.display = 'none';
   document.getElementById(side+'WaitDiv').classList.add('show');
+  _setWaitTxt(side, side === 'mars' ? 'Waiting for Earth Defender...' : 'Connecting to Colony Booth...');
   _startPeer(side);
 }
 
@@ -1443,11 +1467,13 @@ function _startPeer(side){
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
 
   if(side === 'mars'){
-    _peer = new Peer(MARS_PEER_ID, _peerCfg());
+    const marsId = getMarsId(); // fresh ID using current round
+    console.log('[P] Mars registering as', marsId);
+    _peer = new Peer(marsId, _peerCfg());
 
     _peer.on('open', id=>{
-      console.log('[P] Mars registered as', id);
-      _setWaitTxt('mars', 'Waiting for Earth Defender...');
+      console.log('[P] Mars open as', id);
+      _setWaitTxt('mars', 'Ready — waiting for Earth Defender...');
     });
 
     // Earth opens a data connection to signal it's ready
@@ -1481,9 +1507,15 @@ function _startPeer(side){
 
     _peer.on('error', e=>{
       console.warn('[P] mars error:', e.type, e.message);
-      if(e.type === 'unavailable-id'){
-        _setWaitTxt('mars', 'ID busy — retrying in 3s...');
-        setTimeout(()=>_startPeer('mars'), 3000);
+      if(e.type==='unavailable-id'){
+        // Ghost session holding ID — increment round and retry
+        _marsRound = (_marsRound + 1) % 10;
+        localStorage.setItem('marsRound', _marsRound);
+        const newId = getMarsId();
+        console.log('[P] ID taken, bumping round to', _marsRound, '->', newId);
+        _setWaitTxt('mars', 'Retrying connection...');
+        if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
+        setTimeout(()=>_startPeer('mars'), 800);
       }
     });
 
@@ -1504,52 +1536,59 @@ function _startPeer(side){
   }
 }
 
+let _earthAttempt=0;
 function _earthConnect(){
-  if(!_peer || _peer.destroyed || _launched) return;
-  console.log('[P] Earth connecting to', MARS_PEER_ID);
-  _setWaitTxt('earth', 'Connecting to Colony Booth...');
+  if(!_peer||_peer.destroyed||_launched)return;
+  // Scan rounds 0-9 to find which one Mars registered on
+  const targetId=getMarsId(_earthAttempt);
+  console.log('[P] Earth trying round',_earthAttempt,'->',targetId);
+  _setWaitTxt('earth','Connecting... (looking for Colony Booth)');
 
-  const conn = _peer.connect(MARS_PEER_ID, {reliable:true});
-  _dataConn = conn;
-  let opened = false;
+  const conn=_peer.connect(targetId,{reliable:true,serialization:'json'});
+  _dataConn=conn;
+  let opened=false;
 
-  conn.on('open', ()=>{
-    opened = true;
-    console.log('[P] data channel open');
+  conn.on('open',()=>{
+    opened=true;
+    console.log('[P] Earth connected on round',_earthAttempt,'->',targetId);
+    _setWaitTxt('earth','Connected! Starting debate...');
     conn.send('ready');
     _doLaunch('earth');
-
-    // Make the audio call to Mars
-    navigator.mediaDevices.getUserMedia({audio:true,video:false})
-      .then(stream=>{
-        localStream = stream;
-        const call = _peer.call(MARS_PEER_ID, stream);
-        _mediaCall = call;
-        call.on('stream', rs=>{
-          remoteStream = rs;
-          document.getElementById('remoteAudio').srcObject = rs;
-          startAudioAnalysis(localStream, remoteStream, 'earth');
-          setAudioStat('ok', '⬤ VOICE CONNECTED');
-          addEvt('Voice connected','sys');
-        });
-        call.on('error', e=>console.warn('[P] call err', e));
-      })
-      .catch(()=>{ setAudioStat('err','MIC DENIED'); addEvt('⚠ Mic access denied','sys'); });
+    _callMars(targetId);
   });
 
-  conn.on('error', e=>{
-    console.warn('[P] conn err', e);
-    if(!opened) setTimeout(_earthConnect, 3000);
+  conn.on('error',e=>{
+    if(!opened&&!_launched){
+      _earthAttempt=(_earthAttempt+1)%10;
+      setTimeout(_earthConnect,1000);
+    }
   });
 
-  // Retry if no connection in 10s
+  // Move to next round after 5s if not connected
   setTimeout(()=>{
-    if(!opened && !_launched){
-      console.log('[P] timed out, retrying');
-      _setWaitTxt('earth','Colony Booth not found yet — retrying...');
+    if(!opened&&!_launched){
+      _earthAttempt=(_earthAttempt+1)%10;
       _earthConnect();
     }
-  }, 10000);
+  },5000);
+}
+
+function _callMars(targetId){
+  navigator.mediaDevices.getUserMedia({audio:true,video:false})
+    .then(stream=>{
+      localStream=stream;
+      const call=_peer.call(targetId,stream);
+      _mediaCall=call;
+      call.on('stream',rs=>{
+        remoteStream=rs;
+        document.getElementById('remoteAudio').srcObject=rs;
+        startAudioAnalysis(localStream,remoteStream,'earth');
+        setAudioStat('ok','⬤ VOICE CONNECTED');
+        addEvt('Voice connected','sys');
+      });
+      call.on('error',e=>console.warn('[P] call err',e));
+    })
+    .catch(()=>{setAudioStat('err','MIC DENIED');addEvt('⚠ Mic access denied','sys');});
 }
 
 function _doLaunch(side){
@@ -2021,6 +2060,7 @@ async function endDebate(){
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
   if(audioCtx){audioCtx.close();audioCtx=null;}
   _launched=false;
+  // Note: next boothReady click will auto-increment round for a fresh peer ID
   // Mark debate ended for audience page
   const av=await sg('audienceVotes')||{};av.debateActive=false;await ss('audienceVotes',av);
 
@@ -2068,7 +2108,7 @@ function returnToBooth(){
   if(clk)clk.textContent='STANDBY';
   // Reset state
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;marsT=90;earthT=90;totalT=180;
-  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;launched=false;
+  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;launched=false;
   document.getElementById('recBtn').classList.remove('on');
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
