@@ -1432,7 +1432,7 @@ function getMarsId(round){
 }
 // MARS_PEER_ID is dynamic now — computed fresh each time boothReady is called
 let _peer=null, _dataConn=null, _mediaCall=null, _launched=false;
-let _marsIdSuffix=0, _earthAttempt=0;
+let _earthAttempt=0;
 
 function boothReady(side){
   activeBooth = side;
@@ -1536,7 +1536,6 @@ function _startPeer(side){
   }
 }
 
-let _earthAttempt=0;
 function _earthConnect(){
   if(!_peer||_peer.destroyed||_launched)return;
   // Scan rounds 0-9 to find which one Mars registered on
@@ -1611,7 +1610,7 @@ async function checkBothReady(){}
    TEST MODE
 ════════════════════════════════ */
 function launchTestMode(){
-  testMode=true;activeBooth='mars';launched=true;
+  testMode=true;activeBooth='mars';_launched=true;
   launchDebate('test');
 }
 
@@ -1622,7 +1621,7 @@ async function leaveBooth(screenId){
   if(peerCall){try{peerCall.close();}catch(e){} peerCall=null;}
   if(peerData){try{peerData.close();}catch(e){} peerData=null;}
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-  activeBooth=null;launched=false;peerReady=false;
+  activeBooth=null;_launched=false;peerReady=false;
   showScreen('org');
 }
 
@@ -2085,7 +2084,7 @@ async function endDebate(){
   await ss('debateArchive',arc);
 
   // Reset room ready flags so next debate can start fresh
-  await ss(ROOM,{ready:{mars:false,earth:false},signals:[],clearedAt:Date.now()});launched=false;
+  await ss(ROOM,{ready:{mars:false,earth:false},signals:[],clearedAt:Date.now()});_launched=false;
 
   openOverlay('endResultOverlay');
 }
@@ -2108,7 +2107,7 @@ function returnToBooth(){
   if(clk)clk.textContent='STANDBY';
   // Reset state
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;marsT=90;earthT=90;totalT=180;
-  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;launched=false;
+  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;_launched=false;
   document.getElementById('recBtn').classList.remove('on');
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
