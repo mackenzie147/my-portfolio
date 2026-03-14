@@ -571,6 +571,28 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 ══════════════════════════════ -->
 <div id="debateScreen" class="screen">
   <div class="debate-bg-mars"></div>
+
+  <!-- WALKIE TALKIE CONNECT SCREEN -->
+  <div id="walkieTalkieScreen" style="display:none;position:fixed;inset:0;z-index:50;
+    background:rgba(5,5,13,.97);display:none;flex-direction:column;align-items:center;
+    justify-content:center;text-align:center;padding:2rem;gap:1.2rem">
+    <div style="font-size:3rem">📻</div>
+    <div style="font-family:var(--hero);font-size:clamp(2.5rem,8vw,4rem);color:var(--gold);line-height:1">
+      SECURE CHANNEL
+    </div>
+    <div style="font-family:var(--disp);font-size:10px;letter-spacing:.3em;color:var(--mars-g)" id="wtSide"></div>
+    <div style="max-width:500px;font-size:12px;color:var(--muted);line-height:1.8;
+      border:1px solid rgba(240,192,64,.2);border-radius:4px;padding:1.2rem;
+      background:rgba(240,192,64,.04)">
+      <strong style="color:var(--gold)">TURN TO CHANNEL 5 ON YOUR WALKIE TALKIE.</strong><br><br>
+      In 2047, all digital communications are monitored by the Colonial Authority.
+      Debate is considered subversive. This channel is encrypted and off-grid.<br><br>
+      <em style="color:rgba(240,192,64,.6)">Those who question the Mars directive do so at their own risk.</em>
+    </div>
+    <div style="font-family:var(--disp);font-size:28px;color:var(--gold);letter-spacing:.1em" id="wtCountdown">30</div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:.2em">SECONDS UNTIL DEBATE BEGINS</div>
+  </div>
+
   <div class="debate-layout">
 
     <!-- Top bar -->
@@ -632,6 +654,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
       <div class="speaker-display">
         <div class="sd-label">// NOW SPEAKING //</div>
         <div class="sd-name rc" id="speakerName">COLONY ADVOCATE</div>
+        <div class="sd-sub" id="speakerSub">Turn begins now</div>
         <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap">
           <button onclick="passMic()" style="font-family:var(--disp);font-size:9px;letter-spacing:.15em;padding:7px 16px;border:1px solid var(--bm);background:rgba(255,255,255,.06);color:var(--text);border-radius:2px;cursor:pointer" title="Pass the floor to the other speaker">🎤 PASS MIC</button>
           <button id="muteBtn" onclick="toggleMute()" style="font-family:var(--disp);font-size:9px;letter-spacing:.15em;padding:7px 16px;border:1px solid var(--bm);background:rgba(255,255,255,.06);color:var(--text);border-radius:2px;cursor:pointer" title="Mute/unmute your microphone">🔊 MUTE MIC</button>
@@ -668,6 +691,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 
     <!-- Ticker — inside flex column so it never overlaps -->
     <div class="ticker" id="tickerBar" style="display:none"><div class="ticker-inner" id="tickerInner"></div></div>
+  </div>
   </div>
   <audio id="remoteAudio" autoplay playsinline style="display:none" volume="1"></audio>
 </div>
@@ -1330,13 +1354,12 @@ function buildDossier(side){
 function toggleDossier(){}
 
 /* ════════════════════════════════
-   BOOTH READY — PeerJS
-   Simple: Earth calls Mars with audio.
-   Mars answers. Both sides launch when call is established.
+   BOOTH READY — PeerJS (sync only, no audio)
+   Audio via walkie talkie. PeerJS just syncs launch.
 ════════════════════════════════ */
 
 const ROOM_ID = 'mars-debate-exhibit';
-let _peer=null, _dataConn=null, _mediaCall=null, _launched=false, _retryTimer=null;
+let _peer=null, _dataConn=null, _launched=false, _retryTimer=null;
 
 function boothReady(side){
   activeBooth=side; _launched=false;
@@ -1346,134 +1369,62 @@ function boothReady(side){
 }
 
 function _cfg(){
-  return {debug:1,config:{iceServers:[
-    {urls:'stun:stun.l.google.com:19302'},
-    {urls:'stun:stun1.l.google.com:19302'},
-  ]}};
+  return {debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'}]}};
 }
 
 function _startPeer(side){
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
 
   if(side==='mars'){
-    console.log('[P] Mars: registering as',ROOM_ID);
     _peer=new Peer(ROOM_ID,_cfg());
-
     _peer.on('open',()=>{
-      console.log('[P] Mars: open, waiting for Earth to call');
+      console.log('[P] Mars ready');
       _setWaitTxt('mars','Waiting for Earth Defender...');
     });
-
-    // Earth will call us — answer and launch when stream arrives
-    _peer.on('call',call=>{
-      console.log('[P] Mars: incoming call from Earth — answering');
-      _setWaitTxt('mars','Earth calling — connecting audio...');
-      _mediaCall=call;
-      navigator.mediaDevices.getUserMedia({audio:true,video:false})
-        .then(st=>{
-          localStream=st;
-          call.answer(st);
-          call.on('stream',rs=>{
-            console.log('[P] Mars: got Earth audio — LAUNCHING');
-            remoteStream=rs;
-            const ra=document.getElementById('remoteAudio');
-            ra.srcObject=rs;
-            ra.muted=false;
-            ra.volume=1.0;
-            ra.play().catch(e=>console.warn('play err:',e));
-            startAudioAnalysis(localStream,remoteStream,'mars');
-            setAudioStat('ok','⬤ VOICE CONNECTED');
-            addEvt('Voice connected','sys');
-            _doLaunch('mars');
-          });
-          call.on('error',e=>console.warn('[P] Mars call err:',e));
-        })
-        .catch(()=>setAudioStat('err','MIC DENIED — allow microphone'));
+    _peer.on('connection',conn=>{
+      console.log('[P] Mars: Earth connected');
+      _dataConn=conn;
+      conn.on('data',d=>{ if(d==='PASS_MIC') _localPassMic(); });
+      _doLaunch('mars');
     });
-
     _peer.on('error',e=>{
-      console.warn('[P] Mars error:',e.type);
       if(e.type==='unavailable-id'){
-        _setWaitTxt('mars','Previous session active — retrying in 5s...');
+        _setWaitTxt('mars','Previous session active — retrying...');
         setTimeout(()=>_startPeer('mars'),5000);
       }
     });
-
   } else {
-    // Earth: get mic, then call Mars
     _peer=new Peer(_cfg());
     _peer.on('open',()=>{
-      console.log('[P] Earth: peer open — calling Mars');
-      _setWaitTxt('earth','Calling Colony Booth...');
-      _earthCall();
+      console.log('[P] Earth: connecting to Mars');
+      _setWaitTxt('earth','Connecting to Colony Booth...');
+      _earthConnect();
     });
-    _peer.on('error',e=>console.warn('[P] Earth peer error:',e.type));
   }
 }
 
-function _earthCall(){
+function _earthConnect(){
   if(_launched||!_peer||_peer.destroyed)return;
   clearTimeout(_retryTimer);
-  console.log('[P] Earth: connecting to',ROOM_ID);
-
-  // Open data channel for pass-mic signaling
-  if(!_dataConn||_dataConn.open===false){
-    _dataConn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
-    _dataConn.on('open',()=>console.log('[P] Earth: data channel open'));
-    _dataConn.on('data',d=>{
-      console.log('[P] Earth received:',d);
-      if(d==='PASS_MIC') _localPassMic();
-    });
-    _dataConn.on('error',e=>console.warn('[P] data err:',e));
-  }
-
-  // Make the audio call
-  navigator.mediaDevices.getUserMedia({audio:true,video:false})
-    .then(st=>{
-      localStream=st;
-      console.log('[P] Earth: got mic, calling Mars');
-      const call=_peer.call(ROOM_ID,st);
-      _mediaCall=call;
-
-      call.on('stream',rs=>{
-        console.log('[P] Earth: got Mars audio stream');
-        remoteStream=rs;
-        const ra=document.getElementById('remoteAudio');
-        ra.srcObject=rs;
-        ra.muted=false;
-        ra.volume=1.0;
-        ra.play().catch(e=>console.warn('play err:',e));
-        startAudioAnalysis(localStream,remoteStream,'earth');
-        setAudioStat('ok','⬤ VOICE CONNECTED');
-        addEvt('Voice connected','sys');
-        _doLaunch('earth');
-      });
-
-      call.on('error',e=>{
-        console.warn('[P] call error:',e);
-        if(!_launched) _retryTimer=setTimeout(_earthCall,3000);
-      });
-
-      // Retry if no stream in 8s
-      _retryTimer=setTimeout(()=>{
-        if(!_launched){
-          console.log('[P] Earth: no stream, retrying');
-          _setWaitTxt('earth','Still connecting...');
-          try{call.close();}catch(e){}
-          _earthCall();
-        }
-      },8000);
-    })
-    .catch(e=>{
-      setAudioStat('err','MIC DENIED — allow microphone');
-      console.warn('[P] mic err:',e);
-    });
+  const conn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
+  _dataConn=conn;
+  conn.on('open',()=>{
+    console.log('[P] Earth: connected');
+    conn.send('HELLO');
+    conn.on('data',d=>{ if(d==='PASS_MIC') _localPassMic(); });
+    _doLaunch('earth');
+  });
+  conn.on('error',()=>{
+    if(!_launched) _retryTimer=setTimeout(_earthConnect,2000);
+  });
+  _retryTimer=setTimeout(()=>{
+    if(!_launched){ _setWaitTxt('earth','Still connecting...'); _earthConnect(); }
+  },4000);
 }
 
 function _doLaunch(side){
   if(_launched)return; _launched=true;
   clearTimeout(_retryTimer);
-  console.log('[P] LAUNCHING as',side);
   document.getElementById(side+'WaitDiv').classList.remove('show');
   document.getElementById(side+'ConnDiv').style.display='block';
   setTimeout(()=>launchDebate(side),1200);
@@ -1482,6 +1433,24 @@ function _doLaunch(side){
 function _setWaitTxt(side,msg){
   const el=document.getElementById(side+'WaitDiv').querySelector('.wait-sub-txt');
   if(el)el.textContent=msg;
+}
+
+function _localPassMic(){
+  const next=activeSpeaker==='mars'?'earth':'mars';
+  activeSpeaker=next; setSpeaker(next);
+  addEvt(next==='mars'?'Floor: Colony Advocate':'Floor: Earth Defender');
+}
+
+function passMic(){
+  if(activeBooth!==activeSpeaker){ return; }
+  _localPassMic();
+  if(_dataConn){try{_dataConn.send('PASS_MIC');}catch(e){}}
+}
+
+function toggleMute(){
+  if(localStream) localStream.getAudioTracks().forEach(t=>t.enabled=!t.enabled);
+  const btn=document.getElementById('muteBtn');
+  if(btn) btn.textContent=btn.textContent.includes('MUTE')?'🔊 UNMUTE MIC':'🔊 MUTE MIC';
 }
 
 async function checkBothReady(){}
@@ -1519,6 +1488,8 @@ async function launchDebate(side){
   await syncVotesToStorage();
   startAudiencePoll();
 
+  // Show walkie talkie connect screen for 30s before debate starts
+  showWalkieTalkieScreen(side);
   addEvt('⬤ DEBATE STARTED','sys');
 
   // Style return button
@@ -1688,18 +1659,73 @@ function setSpeaker(side){
 }
 
 /* ════════════════════════════════
-   CLOCKS
+   WALKIE TALKIE INTRO + TURN-BASED CLOCK
 ════════════════════════════════ */
+function showWalkieTalkieScreen(side){
+  const ws=document.getElementById('walkieTalkieScreen');
+  const dl=document.querySelector('.debate-layout');
+  if(ws){ws.style.display='flex';}
+  if(dl){dl.style.display='none';}
+
+  // Show which side this debater is on
+  const sideEl=document.getElementById('wtSide');
+  if(sideEl) sideEl.textContent=side==='mars'?'⬤ YOU ARE THE COLONY ADVOCATE':'⬤ YOU ARE THE EARTH DEFENDER';
+
+  // Countdown 30s then start debate
+  let countdown=30;
+  const ctEl=document.getElementById('wtCountdown');
+  const interval=setInterval(()=>{
+    countdown--;
+    if(ctEl) ctEl.textContent=countdown;
+    if(countdown<=0){
+      clearInterval(interval);
+      if(ws){ws.style.display='none';}
+      if(dl){dl.style.display='flex';}
+    }
+  },1000);
+}
+
+/* ════════════════════════════════
+   CLOCKS — TURN-BASED 30s TURNS
+════════════════════════════════ */
+// Each turn is 30 seconds. Mars goes first.
+// When their 30s runs out, auto-switch to the other person.
+const TURN_SECONDS=30;
+let currentTurnTime=TURN_SECONDS;
+
 function startClocks(){
   clearInterval(chessInt);clearInterval(totalInt);
+  currentTurnTime=TURN_SECONDS;
+  updateTurnUI();
+
   chessInt=setInterval(()=>{
+    // Count down the TOTAL individual clocks
     if(activeSpeaker==='mars'){
       marsT=Math.max(0,marsT-1);
-      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony time is up. Earth Defender, make your case.');}
+      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony Advocate used all their time!');}
     }else{
       earthT=Math.max(0,earthT-1);
-      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth time is up. Colony Advocate, respond.');}
+      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth Defender used all their time!');}
     }
+
+    // Count down the current TURN (30s each)
+    currentTurnTime=Math.max(0,currentTurnTime-1);
+    updateTurnUI();
+
+    if(currentTurnTime===10&&!alertsFired.has('turn10_'+activeSpeaker)){
+      alertsFired.add('turn10_'+activeSpeaker);
+      addEvt('10 seconds left in this turn');
+    }
+
+    // Auto-switch at end of turn
+    if(currentTurnTime===0){
+      currentTurnTime=TURN_SECONDS;
+      const next=activeSpeaker==='mars'?'earth':'mars';
+      activeSpeaker=next; setSpeaker(next);
+      if(_dataConn){try{_dataConn.send('PASS_MIC');}catch(e){}}
+      addEvt(next==='mars'?'Turn: Colony Advocate (30s)':'Turn: Earth Defender (30s)');
+    }
+
     checkTimeAlerts();
     updateChessUI();
   },1000);
