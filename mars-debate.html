@@ -376,6 +376,8 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 .ab-m{background:var(--mars);transition:width .6s ease}.ab-e{background:var(--earth-l);transition:width .6s ease}
 .ab-listeners{font-size:8px;color:var(--muted);letter-spacing:.15em;text-align:center}
 .ab-right{flex-shrink:0}
+.end-btn{font-family:var(--disp);font-size:9px;font-weight:600;letter-spacing:.2em;padding:8px 18px;border:1px solid rgba(255,80,60,.5);background:rgba(192,57,43,.15);color:var(--mars-g);border-radius:2px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.end-btn:hover{background:rgba(192,57,43,.35);border-color:var(--mars-g)}
 
 /* remove old debate-bottom (replaced by audience-bar) */
 
@@ -630,7 +632,10 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
       <div class="speaker-display">
         <div class="sd-label">// NOW SPEAKING //</div>
         <div class="sd-name rc" id="speakerName">COLONY ADVOCATE</div>
-        <div class="sd-sub" id="speakerSub">detected by microphone</div>
+        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap">
+          <button onclick="passMic()" style="font-family:var(--disp);font-size:9px;letter-spacing:.15em;padding:7px 16px;border:1px solid var(--bm);background:rgba(255,255,255,.06);color:var(--text);border-radius:2px;cursor:pointer" title="Pass the floor to the other speaker">🎤 PASS MIC</button>
+          <button id="muteBtn" onclick="toggleMute()" style="font-family:var(--disp);font-size:9px;letter-spacing:.15em;padding:7px 16px;border:1px solid var(--bm);background:rgba(255,255,255,.06);color:var(--text);border-radius:2px;cursor:pointer" title="Mute/unmute your microphone">🔊 MUTE MIC</button>
+        </div>
       </div>
 
       <!-- Event log -->
@@ -1594,29 +1599,43 @@ function startFakeAudio(){
   },250);
 }
 
-// Main audio polling loop — called every 150ms
+// Audio viz loop — animates bars from mic levels (no auto speaker switch)
 let audioLoopInt=null;
-const SPEAK_THRESHOLD=8; // audio level to be considered "speaking"
-const COOLDOWN_FRAMES=5; // frames before allowing speaker switch
+let _micMuted=false;
 function startAudioLoop(){
   clearInterval(audioLoopInt);
   audioLoopInt=setInterval(()=>{
-    if(testMode)return; // test mode uses fakeInt
+    if(testMode)return;
     const ml=getAudioLevel(analyserMars),el=getAudioLevel(analyserEarth);
     marsAudioLevel=ml;earthAudioLevel=el;
-    // Determine who is louder above threshold
-    const marsSpeak=ml>SPEAK_THRESHOLD,earthSpeak=el>SPEAK_THRESHOLD;
-    // Animate viz
     animateVizBars('marsViz',ml);
     animateVizBars('earthViz',el);
-    // Switch speaker
-    if(speakerSwitchCooldown>0){speakerSwitchCooldown--;return;}
-    if(marsSpeak&&activeSpeaker!=='mars'){
-      activeSpeaker='mars';setSpeaker('mars');speakerSwitchCooldown=COOLDOWN_FRAMES;
-    }else if(earthSpeak&&!marsSpeak&&activeSpeaker!=='earth'){
-      activeSpeaker='earth';setSpeaker('earth');speakerSwitchCooldown=COOLDOWN_FRAMES;
-    }
+    // Resume AudioContext if suspended (user gesture may have happened by now)
+    if(audioCtx&&audioCtx.state==='suspended') audioCtx.resume();
   },150);
+}
+
+// Pass the mic to the other speaker
+function passMic(){
+  const next=activeSpeaker==='mars'?'earth':'mars';
+  activeSpeaker=next;
+  setSpeaker(next);
+  addEvt(next==='mars'?'Mic passed to Colony Advocate':'Mic passed to Earth Defender');
+}
+
+// Mute/unmute local mic
+function toggleMute(){
+  _micMuted=!_micMuted;
+  if(localStream){
+    localStream.getAudioTracks().forEach(t=>t.enabled=!_micMuted);
+  }
+  const btn=document.getElementById('muteBtn');
+  if(btn){
+    btn.textContent=_micMuted?'🔇 UNMUTE MIC':'🔊 MUTE MIC';
+    btn.style.borderColor=_micMuted?'var(--mars-g)':'var(--bm)';
+    btn.style.color=_micMuted?'var(--mars-g)':'var(--text)';
+  }
+  addEvt(_micMuted?'Mic muted':'Mic unmuted','sys');
 }
 
 function animateVizBars(id,level){
@@ -1642,7 +1661,7 @@ function setSpeaker(side){
     mSt.textContent='LISTENING';mSt.className='speaking-status rc dim';
     snEl.textContent='EARTH DEFENDER';snEl.className='sd-name bc';
   }
-  ssEl.textContent='detected by microphone';
+  ssEl.textContent='click PASS MIC to switch speaker';
 }
 
 /* ════════════════════════════════
