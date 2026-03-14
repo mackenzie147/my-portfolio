@@ -585,7 +585,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
       border:1px solid rgba(240,192,64,.2);border-radius:4px;padding:1.2rem;
       background:rgba(240,192,64,.04)">
       <strong style="color:var(--gold)">TURN TO CHANNEL 5 ON YOUR WALKIE TALKIE.</strong><br><br>
-      In 2047, all digital communications are monitored by the Colonial Authority.
+      In the near-distant future, all digital communications are monitored by the Colonial Authority.
       Debate is considered subversive. This channel is encrypted and off-grid.<br><br>
       <em style="color:rgba(240,192,64,.6)">Those who question the Mars directive do so at their own risk.</em>
     </div>
@@ -655,10 +655,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
         <div class="sd-label">// NOW SPEAKING //</div>
         <div class="sd-name rc" id="speakerName">COLONY ADVOCATE</div>
         <div class="sd-sub" id="speakerSub">Turn begins now</div>
-        <div style="display:flex;gap:8px;justify-content:center;margin-top:8px;flex-wrap:wrap">
-          <button onclick="passMic()" style="font-family:var(--disp);font-size:9px;letter-spacing:.15em;padding:7px 16px;border:1px solid var(--bm);background:rgba(255,255,255,.06);color:var(--text);border-radius:2px;cursor:pointer" title="Pass the floor to the other speaker">🎤 PASS MIC</button>
-          <button id="muteBtn" onclick="toggleMute()" style="font-family:var(--disp);font-size:9px;letter-spacing:.15em;padding:7px 16px;border:1px solid var(--bm);background:rgba(255,255,255,.06);color:var(--text);border-radius:2px;cursor:pointer" title="Mute/unmute your microphone">🔊 MUTE MIC</button>
-        </div>
+
       </div>
 
       <!-- Event log -->
@@ -1384,6 +1381,8 @@ function _startPeer(side){
     _peer.on('connection',conn=>{
       console.log('[P] Mars: Earth connected');
       _dataConn=conn;
+      // Send LAUNCH so Earth knows to start even if conn.on(open) never fires
+      setTimeout(()=>{ try{conn.send('LAUNCH');}catch(e){} },500);
       conn.on('data',d=>{ if(d==='PASS_MIC') _localPassMic(); });
       _doLaunch('mars');
     });
@@ -1408,18 +1407,30 @@ function _earthConnect(){
   clearTimeout(_retryTimer);
   const conn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
   _dataConn=conn;
+
+  let done=false;
   conn.on('open',()=>{
-    console.log('[P] Earth: connected');
-    conn.send('HELLO');
+    if(done)return; done=true;
+    console.log('[P] Earth: connected via open');
     conn.on('data',d=>{ if(d==='PASS_MIC') _localPassMic(); });
     _doLaunch('earth');
+  });
+  // Fallback: if Mars sent LAUNCH signal
+  conn.on('data',d=>{
+    if(d==='LAUNCH'&&!done){ done=true; conn.on('data',d2=>{ if(d2==='PASS_MIC') _localPassMic(); }); _doLaunch('earth'); }
+    if(d==='PASS_MIC') _localPassMic();
   });
   conn.on('error',()=>{
     if(!_launched) _retryTimer=setTimeout(_earthConnect,2000);
   });
+  // After 5s if not launched, force launch anyway - Mars is ready
   _retryTimer=setTimeout(()=>{
-    if(!_launched){ _setWaitTxt('earth','Still connecting...'); _earthConnect(); }
-  },4000);
+    if(!_launched&&!done){
+      done=true;
+      console.log('[P] Earth: force launching after timeout');
+      _doLaunch('earth');
+    }
+  },5000);
 }
 
 function _doLaunch(side){
@@ -1644,18 +1655,26 @@ function setSpeaker(side){
   const mEl=document.getElementById('marsChess'),eEl=document.getElementById('earthChess');
   const mSt=document.getElementById('marsStatus'),eSt=document.getElementById('earthStatus');
   const snEl=document.getElementById('speakerName'),ssEl=document.getElementById('speakerSub');
+  const iAmSpeaking=(activeBooth===side);
+
   if(side==='mars'){
     if(mEl)mEl.classList.add('speaking');if(eEl)eEl.classList.remove('speaking');
     if(mSt){mSt.textContent='SPEAKING';mSt.className='speaking-status rc';}
     if(eSt){eSt.textContent='LISTENING';eSt.className='speaking-status bc dim';}
-    if(snEl){snEl.textContent='COLONY ADVOCATE';snEl.className='sd-name rc';}
+    if(snEl){
+      snEl.textContent=iAmSpeaking?'🎙 YOUR TURN — SPEAK NOW':'COLONY ADVOCATE SPEAKING';
+      snEl.className='sd-name rc';
+    }
   }else{
     if(eEl)eEl.classList.add('speaking');if(mEl)mEl.classList.remove('speaking');
     if(eSt){eSt.textContent='SPEAKING';eSt.className='speaking-status bc';}
     if(mSt){mSt.textContent='LISTENING';mSt.className='speaking-status rc dim';}
-    if(snEl){snEl.textContent='EARTH DEFENDER';snEl.className='sd-name bc';}
+    if(snEl){
+      snEl.textContent=iAmSpeaking?'🎙 YOUR TURN — SPEAK NOW':'EARTH DEFENDER SPEAKING';
+      snEl.className='sd-name bc';
+    }
   }
-  if(ssEl) ssEl.textContent='click PASS MIC to switch speaker';
+  if(ssEl) ssEl.textContent=iAmSpeaking?'Speak into your walkie talkie':'Listen on your walkie talkie';
 }
 
 /* ════════════════════════════════
