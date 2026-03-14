@@ -189,22 +189,28 @@ canvas#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
 @keyframes evtin{from{opacity:0;transform:translateX(-5px)}to{opacity:1}}
 .evt.sys{color:var(--gold)}.evt.warn-evt{color:var(--mars-g)}
 
-/* Bottom bar */
-.debate-bottom{flex-shrink:0;padding:8px 20px;border-top:1px solid var(--border);background:rgba(5,5,13,.55);backdrop-filter:blur(8px);display:flex;align-items:center;gap:10px}
-.end-btn{font-family:var(--disp);font-size:9px;font-weight:600;letter-spacing:.2em;padding:8px 18px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--muted);border-radius:2px;cursor:pointer;transition:all .2s}
-.end-btn:hover{border-color:var(--mars-l);color:var(--mars-l)}
-.vote-row{flex:1;display:flex;align-items:center;gap:8px}
-.vm-label{font-size:8px;letter-spacing:.2em;color:var(--muted);white-space:nowrap}
-.vm-track{flex:1;height:4px;border-radius:2px;background:rgba(255,255,255,.06);overflow:hidden;display:flex}
-.vm-m{background:var(--mars);transition:width .5s}.vm-e{background:var(--earth-l);transition:width .5s}
-.vm-counts{font-size:9px;color:var(--muted);white-space:nowrap;min-width:36px;text-align:right}
-.vbtns{display:flex;gap:4px}
-.vbtn{padding:5px 9px;font-size:8px;font-family:var(--disp);font-weight:600;letter-spacing:.1em;border-radius:2px;cursor:pointer;border:1px solid;transition:all .15s}
-.vbtn.mv{border-color:rgba(192,57,43,.35);color:var(--mars-g);background:rgba(192,57,43,.06)}.vbtn.mv:hover{background:rgba(192,57,43,.2)}
-.vbtn.ev{border-color:rgba(46,134,193,.35);color:var(--earth-g);background:rgba(46,134,193,.06)}.vbtn.ev:hover{background:rgba(46,134,193,.2)}
+/* ══ AUDIENCE BAR ══ */
+.audience-bar{flex-shrink:0;display:flex;align-items:center;gap:12px;padding:8px 16px;border-top:1px solid var(--border);background:rgba(5,5,13,.6);backdrop-filter:blur(10px)}
+.ab-left{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.ab-qr-wrap{width:48px;height:48px;flex-shrink:0;border-radius:3px;overflow:hidden;background:white;padding:2px}
+.ab-qr-wrap canvas{width:44px!important;height:44px!important;display:block}
+.ab-info{display:flex;flex-direction:column;gap:2px}
+.ab-title{font-family:var(--disp);font-size:8px;letter-spacing:.25em;color:var(--muted);font-weight:600}
+.ab-url{font-size:9px;color:var(--gold);letter-spacing:.08em}
+.ab-mid{flex:1;display:flex;flex-direction:column;gap:4px;min-width:0}
+.ab-score{display:flex;align-items:center;gap:8px}
+.ab-sc{font-family:var(--disp);font-size:14px;font-weight:700;flex-shrink:0}
+.ab-sc.rc{color:var(--mars-g)}.ab-sc.bc{color:var(--earth-g)}
+.ab-track{flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;display:flex}
+.ab-m{background:var(--mars);transition:width .6s ease}.ab-e{background:var(--earth-l);transition:width .6s ease}
+.ab-listeners{font-size:8px;color:var(--muted);letter-spacing:.15em;text-align:center}
+.ab-right{flex-shrink:0}
+
+/* remove old debate-bottom (replaced by audience-bar) */
 
 /* ══ TICKER ══ */
-.ticker{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(0,0,0,.82);border-top:1px solid var(--border);padding:5px 0;overflow:hidden;pointer-events:none}
+/* Ticker is part of the debate-layout flex column — NOT fixed — so it never overlaps */
+.ticker{background:rgba(0,0,0,.82);border-top:1px solid var(--border);padding:5px 0;overflow:hidden;pointer-events:none;flex-shrink:0;width:100%}
 .ticker-inner{display:flex;animation:tick 55s linear infinite;white-space:nowrap}
 .ticker-item{padding:0 2.5rem;font-size:9px;color:var(--muted);letter-spacing:.08em}
 .ticker-item em{font-style:normal}.ticker-item em.rc{color:var(--mars-g)}.ticker-item em.bc{color:var(--earth-g)}
@@ -287,8 +293,8 @@ canvas#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
 <!-- Global rec banner -->
 <div class="rec-banner" id="recBannerGlobal"><div class="rbdot"></div><span>● RECORDING IN PROGRESS — WILL AUTO-DOWNLOAD WHEN STOPPED</span><div class="rbdot"></div></div>
 
-<!-- Ticker (debate only) -->
-<div class="ticker" id="tickerBar" style="display:none"><div class="ticker-inner" id="tickerInner"></div></div>
+<!-- QR code library -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
 <!-- ══════════════════════════════
      ORGANIZER
@@ -468,19 +474,32 @@ canvas#stars{position:fixed;inset:0;z-index:0;pointer-events:none}
       <div class="event-log" id="eventLog"></div>
     </div>
 
-    <!-- Bottom -->
-    <div class="debate-bottom">
-      <div class="vote-row">
-        <div class="vm-label">AUDIENCE:</div>
-        <div class="vm-track"><div class="vm-m" id="vmMars" style="width:50%"></div><div class="vm-e" id="vmEarth" style="width:50%"></div></div>
-        <div class="vm-counts" id="vmCounts">0/0</div>
+    <!-- Audience bar — vote display only, QR shown here -->
+    <div class="audience-bar">
+      <div class="ab-left">
+        <div class="ab-qr-wrap" id="abQrWrap">
+          <canvas id="qrCanvas" width="48" height="48"></canvas>
+        </div>
+        <div class="ab-info">
+          <div class="ab-title">AUDIENCE VOTE</div>
+          <div class="ab-url" id="abUrl">personal-website.dev/mars-audience</div>
+        </div>
       </div>
-      <div class="vbtns">
-        <button class="vbtn mv" onclick="castVote('mars')">🔴</button>
-        <button class="vbtn ev" onclick="castVote('earth')">🔵</button>
+      <div class="ab-mid">
+        <div class="ab-score">
+          <span class="ab-sc rc" id="abMarsN">0</span>
+          <div class="ab-track"><div class="ab-m" id="abMarsBar" style="width:50%"></div><div class="ab-e" id="abEarthBar" style="width:50%"></div></div>
+          <span class="ab-sc bc" id="abEarthN">0</span>
+        </div>
+        <div class="ab-listeners"><span id="abListeners">0</span> watching live</div>
       </div>
-      <button class="end-btn" onclick="openOverlay('endConfirmOverlay')">END DEBATE</button>
+      <div class="ab-right">
+        <button class="end-btn" onclick="openOverlay('endConfirmOverlay')">END DEBATE</button>
+      </div>
     </div>
+
+    <!-- Ticker — inside flex column so it never overlaps -->
+    <div class="ticker" id="tickerBar" style="display:none"><div class="ticker-inner" id="tickerInner"></div></div>
   </div>
   <audio id="remoteAudio" autoplay playsinline style="display:none"></audio>
 </div>
@@ -641,7 +660,6 @@ function showScreen(id){
   document.getElementById(id).classList.add('active');
   if(id==='marsScreen'){initBoothFloats('mars');buildDossier('mars');}
   if(id==='earthScreen'){initBoothFloats('earth');buildDossier('earth');}
-  document.getElementById('tickerBar').style.display=id==='debateScreen'?'block':'none';
 }
 
 /* ════════════════════════════════
@@ -735,6 +753,10 @@ async function launchDebate(side){
 
   showScreen('debateScreen');
   initTickerContent();
+  document.getElementById('tickerBar').style.display='block';
+  initAudienceBar();
+  await syncVotesToStorage();
+  startAudiencePoll();
 
   addEvt('⬤ DEBATE STARTED','sys');
 
@@ -925,7 +947,7 @@ function showAlert(emoji,title,body){
 }
 
 /* ════════════════════════════════
-   VOTE
+   VOTE — updated for audience-bar IDs
 ════════════════════════════════ */
 function castVote(side){
   if(side==='mars')marsVotes++;else earthVotes++;
@@ -933,13 +955,87 @@ function castVote(side){
 }
 function updateVoteUI(){
   const tot=marsVotes+earthVotes,mp=tot?(marsVotes/tot*100):50;
-  document.getElementById('vmMars').style.width=mp+'%';
-  document.getElementById('vmEarth').style.width=(100-mp)+'%';
-  document.getElementById('vmCounts').textContent=`${marsVotes}/${earthVotes}`;
+  // audience bar
+  document.getElementById('abMarsBar').style.width=mp+'%';
+  document.getElementById('abEarthBar').style.width=(100-mp)+'%';
+  document.getElementById('abMarsN').textContent=marsVotes;
+  document.getElementById('abEarthN').textContent=earthVotes;
+  // end screen final bars
   document.getElementById('vfMarsBar').style.width=mp+'%';
   document.getElementById('vfEarthBar').style.width=(100-mp)+'%';
   document.getElementById('vfMarsN').textContent=marsVotes;
   document.getElementById('vfEarthN').textContent=earthVotes;
+}
+
+/* ════════════════════════════════
+   QR CODE + AUDIENCE URL
+════════════════════════════════ */
+function initAudienceBar(){
+  // Build the audience URL — same domain, /mars-audience path
+  const base=location.origin+location.pathname.replace(/[^/]*$/,'');
+  const audienceUrl=base+'mars-audience.html';
+  document.getElementById('abUrl').textContent=audienceUrl.replace(/^https?:\/\//,'').replace(/\/$/,'');
+
+  // Draw QR with canvas fallback since qrcodejs may not load
+  const canvas=document.getElementById('qrCanvas');
+  try{
+    // Clear and use qrcodejs if available
+    if(typeof QRCode!=='undefined'){
+      canvas.getContext('2d').clearRect(0,0,48,48);
+      new QRCode(canvas,{text:audienceUrl,width:48,height:48,colorDark:'#000',colorLight:'#fff',correctLevel:QRCode.CorrectLevel.L});
+    }else{
+      // Fallback: draw a simple placeholder
+      drawFallbackQR(canvas,audienceUrl);
+    }
+  }catch(e){drawFallbackQR(canvas,audienceUrl);}
+}
+
+function drawFallbackQR(canvas,url){
+  // Simple visual placeholder — just draw a QR-like grid pattern
+  const ctx=canvas.getContext('2d'),s=48;
+  ctx.fillStyle='#fff';ctx.fillRect(0,0,s,s);
+  ctx.fillStyle='#000';
+  // Position markers
+  [[0,0],[0,5],[5,0]].forEach(([r,c])=>{
+    ctx.fillRect(c*6,r*6,18,18);
+    ctx.fillStyle='#fff';ctx.fillRect(c*6+2,r*6+2,14,14);
+    ctx.fillStyle='#000';ctx.fillRect(c*6+4,r*6+4,10,10);
+    ctx.fillStyle='#fff';ctx.fillRect(c*6+6,r*6+6,6,6);
+    ctx.fillStyle='#000';ctx.fillRect(c*6+8,r*6+8,2,2);
+  });
+  // Data dots based on URL hash
+  let h=0;for(let i=0;i<url.length;i++)h=(h*31+url.charCodeAt(i))>>>0;
+  for(let i=0;i<25;i++){
+    const x=20+(((h>>(i%32))&1)*4+(i%7)*3);
+    const y=20+((h>>(i%16+1)&3)*3+(i%5)*4);
+    if(x<46&&y<46){ctx.fillStyle='#000';ctx.fillRect(x,y,2,2);}
+  }
+}
+
+/* ════════════════════════════════
+   AUDIENCE LIVE POLL
+   Reads vote data written by audience page
+════════════════════════════════ */
+let audiencePollInt=null;
+function startAudiencePoll(){
+  clearInterval(audiencePollInt);
+  audiencePollInt=setInterval(async()=>{
+    const data=await sg('audienceVotes');
+    if(!data)return;
+    // Audience votes are additive on top of in-room votes
+    // Just update display counts from shared state
+    marsVotes=data.mars||0;
+    earthVotes=data.earth||0;
+    document.getElementById('abListeners').textContent=data.listeners||0;
+    updateVoteUI();
+  },2000);
+}
+
+async function syncVotesToStorage(){
+  // Write current vote state so audience page can read it
+  const data=await sg('audienceVotes')||{mars:0,earth:0,listeners:0,debateActive:false};
+  data.debateActive=true;
+  await ss('audienceVotes',data);
 }
 
 /* ════════════════════════════════
@@ -1053,11 +1149,13 @@ function addEvt(text,cls=''){
 ════════════════════════════════ */
 async function endDebate(){
   closeOverlay('endConfirmOverlay');
-  clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);
+  clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
   if(isRec&&mediaRec)mediaRec.stop();
   if(peerConn){peerConn.close();peerConn=null;}
   if(localStream)localStream.getTracks().forEach(t=>t.stop());
   if(audioCtx){audioCtx.close();audioCtx=null;}
+  // Mark debate ended for audience page
+  const av=await sg('audienceVotes')||{};av.debateActive=false;await ss('audienceVotes',av);
 
   const tot=marsVotes+earthVotes,mp=tot?marsVotes/tot:0.5;
   let result='UNDECIDED',resultTxt='',subTxt='';
