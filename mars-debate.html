@@ -1358,6 +1358,7 @@ function toggleDossier(){}
 const ROOM_ID = 'mars-debate-exhibit';
 let _peer=null, _dataConn=null, _launched=false, _retryTimer=null;
 let _debateStartMs=0; // wall clock start time, shared between both laptops
+let _debateEnding=false;
 
 function boothReady(side){
   activeBooth=side; _launched=false;
@@ -1803,7 +1804,7 @@ function startWallClock(){
       clearInterval(_wallClockInt);
       clearInterval(audioLoopInt);
       clearInterval(fakeInt);
-      endDebate();
+      if(!_debateEnding){ _debateEnding=true; endDebate(); }
     }
   },250); // tick 4x/sec for smooth countdown
 }
@@ -2034,6 +2035,7 @@ function addEvt(text,cls=''){
    END DEBATE
 ════════════════════════════════ */
 async function endDebate(){
+  _debateEnding=true;
   closeOverlay('endConfirmOverlay');
   clearInterval(chessInt);clearInterval(totalInt);clearInterval(_wallClockInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
   if(isRec&&mediaRec)mediaRec.stop();
@@ -2069,7 +2071,47 @@ async function endDebate(){
   // Clean room
   const r=await sg(ROOM)||{};r.ready={};r.signals=[];await ss(ROOM,r);
 
-  openOverlay('endResultOverlay');
+  showThanksScreen();
+}
+function showThanksScreen(){
+  // Hide debate screen, show thanks
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  const side=activeBooth==='earth'?'earth':'mars';
+  const col=side==='mars'?'var(--mars-g)':'var(--earth-g)';
+  const title=side==='mars'?'COLONY ADVOCATE':'EARTH DEFENDER';
+
+  // Create or reuse thanks div
+  let thanks=document.getElementById('_thanksScreen');
+  if(!thanks){
+    thanks=document.createElement('div');
+    thanks.id='_thanksScreen';
+    thanks.style.cssText='position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;gap:1.2rem;background:rgba(5,5,13,.98)';
+    document.body.appendChild(thanks);
+  }
+  thanks.innerHTML=`
+    <div style="font-size:3rem">🌌</div>
+    <div style="font-family:var(--hero);font-size:clamp(3rem,10vw,6rem);line-height:.9;color:${col}">THANKS FOR<br>DEBATING</div>
+    <div style="font-family:var(--disp);font-size:10px;letter-spacing:.3em;color:var(--muted)">${title}</div>
+    <div style="font-size:12px;color:var(--muted);max-width:400px;line-height:1.8">
+      Your arguments have been heard.<br>
+      The recording has been saved to your Downloads folder.<br><br>
+      <em style="color:rgba(240,192,64,.6)">In the near-distant future, this debate never happened.</em>
+    </div>
+    <div style="font-size:10px;color:var(--muted);letter-spacing:.2em">Returning to booth in <span id="_thanksCt">5</span>s...</div>
+  `;
+  thanks.style.display='flex';
+
+  let ct=5;
+  const iv=setInterval(()=>{
+    ct--;
+    const el=document.getElementById('_thanksCt');
+    if(el)el.textContent=ct;
+    if(ct<=0){
+      clearInterval(iv);
+      thanks.style.display='none';
+      returnToBooth();
+    }
+  },1000);
 }
 
 /* ════════════════════════════════
@@ -2082,7 +2124,7 @@ function returnToBooth(){
   // Full state reset
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;
   marsT=90;earthT=90;totalT=180;currentTurnTime=TURN_SECONDS;
-  _debateStartMs=0;_lastTurnIndex=-1;_launched=false;
+  _debateStartMs=0;_lastTurnIndex=-1;_launched=false;_debateEnding=false;
   clearInterval(_wallClockInt);clearTimeout(_retryTimer);
   events=[];savedAudioURL=null;alertsFired.clear();
 
