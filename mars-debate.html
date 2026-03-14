@@ -1353,41 +1353,26 @@ function _startPeer(side){
     _peer=new Peer(ROOM_ID,_cfg());
 
     _peer.on('open',()=>{
-      console.log('[P] Mars: ready');
+      console.log('[P] Mars: ready, waiting');
       _setWaitTxt('mars','Waiting for Earth Defender...');
     });
 
+    // The moment Earth connects — launch Mars immediately
     _peer.on('connection',conn=>{
-      console.log('[P] Mars: connection received, open=',conn.open);
-      _setWaitTxt('mars','Earth connecting — launching...');
-
-      // conn.on('open') is unreliable — use a poll instead
-      let attempts=0;
-      const trySend=()=>{
-        attempts++;
-        console.log('[P] Mars: trySend attempt',attempts,'open=',conn.open);
-        if(conn.open){
-          console.log('[P] Mars: sending GO');
-          conn.send('GO');
-          _doLaunch('mars');
-        } else if(attempts<20){
-          setTimeout(trySend,300);
-        } else {
-          // Give up waiting for open, just launch Mars anyway
-          // Earth will launch via its own open event
-          console.log('[P] Mars: open never fired, launching anyway');
-          _doLaunch('mars');
-        }
-      };
-      setTimeout(trySend,300);
+      console.log('[P] Mars: Earth connected -> launching now');
+      _doLaunch('mars');
     });
 
+    // Earth will call us for audio — answer it
     _peer.on('call',call=>{
+      console.log('[P] Mars: answering call');
       _mediaCall=call;
       navigator.mediaDevices.getUserMedia({audio:true,video:false})
         .then(st=>{
-          localStream=st; call.answer(st);
+          localStream=st;
+          call.answer(st);
           call.on('stream',rs=>{
+            console.log('[P] Mars: got remote audio stream');
             remoteStream=rs;
             document.getElementById('remoteAudio').srcObject=rs;
             startAudioAnalysis(localStream,remoteStream,'mars');
@@ -1406,9 +1391,10 @@ function _startPeer(side){
     });
 
   } else {
+    // Earth: get a random peer ID, then connect to Mars
     _peer=new Peer(_cfg());
     _peer.on('open',()=>{
-      console.log('[P] Earth: open, connecting');
+      console.log('[P] Earth: peer open, connecting to Mars');
       _setWaitTxt('earth','Connecting to Colony Booth...');
       _earthConnect();
     });
@@ -1421,57 +1407,52 @@ function _earthConnect(){
   clearTimeout(_earthTimer);
   console.log('[P] Earth: connecting to',ROOM_ID);
 
+  // Step 1: open a data connection to Mars (this triggers Mars's connection event)
   const conn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
-  let done=false;
 
-  const launch=()=>{
-    if(done||_launched)return;
-    done=true;
-    clearTimeout(_earthTimer);
-    console.log('[P] Earth: launching');
-    _setWaitTxt('earth','Connected! Launching...');
-    _doLaunch('earth');
-    _callMars();
-  };
+  // Step 2: immediately launch Earth and start audio call
+  // Don't wait for conn.open — just go
+  _doLaunch('earth');
 
-  // Three ways Earth can know it's connected:
-  conn.on('open', ()=>{ console.log('[P] Earth: conn open'); launch(); });
-  conn.on('data', d=>{ console.log('[P] Earth: got data',d); if(d==='GO') launch(); });
-
-  conn.on('error',e=>{
-    console.log('[P] Earth conn error:',e.type);
-    if(!done&&!_launched) _earthTimer=setTimeout(_earthConnect,2000);
-  });
-
-  // Retry every 4s if nothing happens
-  _earthTimer=setTimeout(()=>{
-    if(!done&&!_launched){
-      console.log('[P] Earth: timeout, retrying');
-      _earthConnect();
-    }
-  },4000);
-}
-
-function _callMars(){
-  if(!_peer||_peer.destroyed)return;
+  // Step 3: make the audio call to Mars
   navigator.mediaDevices.getUserMedia({audio:true,video:false})
     .then(st=>{
       localStream=st;
+      console.log('[P] Earth: calling Mars for audio');
       const call=_peer.call(ROOM_ID,st);
       _mediaCall=call;
       call.on('stream',rs=>{
+        console.log('[P] Earth: got remote audio stream');
         remoteStream=rs;
         document.getElementById('remoteAudio').srcObject=rs;
         startAudioAnalysis(localStream,remoteStream,'earth');
         setAudioStat('ok','⬤ VOICE CONNECTED');
         addEvt('Voice connected','sys');
       });
-    }).catch(()=>setAudioStat('err','MIC DENIED'));
+      call.on('error',e=>console.warn('[P] call error:',e));
+    })
+    .catch(()=>setAudioStat('err','MIC DENIED'));
+
+  conn.on('error',e=>{
+    console.log('[P] Earth conn error:',e.type);
+    // If Mars not there yet, retry
+    if(!_launched) _earthTimer=setTimeout(_earthConnect,2000);
+  });
+
+  // Retry if Mars not found within 4s
+  _earthTimer=setTimeout(()=>{
+    if(!_launched){
+      console.log('[P] Earth: Mars not found yet, retrying');
+      _setWaitTxt('earth','Still connecting...');
+      _earthConnect();
+    }
+  },4000);
 }
 
 function _doLaunch(side){
   if(_launched)return; _launched=true;
   console.log('[P] LAUNCHING as',side);
+  clearTimeout(_earthTimer);
   document.getElementById(side+'WaitDiv').classList.remove('show');
   document.getElementById(side+'ConnDiv').style.display='block';
   setTimeout(()=>launchDebate(side),1200);
