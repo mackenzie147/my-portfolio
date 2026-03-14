@@ -1321,27 +1321,23 @@ function toggleDossier(side){}
 
 /* ════════════════════════════════
    BOOTH READY — PeerJS
-   KEY FIX: Earth does NOT scan rapidly.
-   It tries one ID, waits for definitive open OR error,
-   THEN tries next. No racing. No skipping.
 ════════════════════════════════ */
 
 let _marsRound=parseInt(localStorage.getItem('marsRound')||'0');
 function getMarsId(r){
   const d=new Date();
-  const day=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
-  return 'mde-'+day+'-r'+((r!==undefined)?r:_marsRound);
+  return 'mde-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'-r'+(r!==undefined?r:_marsRound);
 }
 
 let _peer=null,_mediaCall=null,_launched=false;
-let _earthAttempt=0,_earthTimer=null,_connecting=false;
+let _earthAttempt=0,_earthTimer=null;
 
 function boothReady(side){
-  activeBooth=side;_launched=false;_earthAttempt=0;_connecting=false;
+  activeBooth=side;_launched=false;_earthAttempt=0;
   if(side==='mars'){
     _marsRound=(_marsRound+1)%10;
     localStorage.setItem('marsRound',_marsRound);
-    console.log('[P] Mars round:',_marsRound,'ID:',getMarsId());
+    console.log('[P] Mars round:',_marsRound,'-> ID:',getMarsId());
   }
   document.getElementById(side+'ReadyDiv').style.display='none';
   document.getElementById(side+'WaitDiv').classList.add('show');
@@ -1349,14 +1345,10 @@ function boothReady(side){
 }
 
 function _peerCfg(){
-  return {
-    debug:1,
-    config:{iceServers:[
-      {urls:'stun:stun.l.google.com:19302'},
-      {urls:'stun:stun1.l.google.com:19302'},
-      {urls:'stun:stun2.l.google.com:19302'},
-    ]}
-  };
+  return {debug:0,config:{iceServers:[
+    {urls:'stun:stun.l.google.com:19302'},
+    {urls:'stun:stun1.l.google.com:19302'},
+  ]}};
 }
 
 function _startPeer(side){
@@ -1368,17 +1360,18 @@ function _startPeer(side){
     _peer=new Peer(id,_peerCfg());
 
     _peer.on('open',()=>{
-      console.log('[P] Mars: ready, waiting for Earth');
-      _setWaitTxt('mars','Ready — waiting for Earth Defender to connect...');
+      console.log('[P] Mars: open and waiting');
+      _setWaitTxt('mars','Waiting for Earth Defender...');
     });
 
     _peer.on('connection',conn=>{
-      console.log('[P] Mars: Earth data connection incoming');
+      console.log('[P] Mars: got connection from Earth');
+      _setWaitTxt('mars','Earth connected — launching...');
+      // Wait for the data channel to fully open
       conn.on('open',()=>{
-        console.log('[P] Mars: data channel open, launching');
+        console.log('[P] Mars: data channel open -> launching');
         _doLaunch('mars');
       });
-      conn.on('error',e=>console.warn('[P] Mars conn err:',e));
     });
 
     _peer.on('call',call=>{
@@ -1395,67 +1388,50 @@ function _startPeer(side){
             addEvt('Voice connected','sys');
           });
         })
-        .catch(()=>{setAudioStat('err','MIC DENIED — check browser permissions');});
+        .catch(()=>setAudioStat('err','MIC DENIED'));
     });
 
     _peer.on('error',e=>{
-      console.warn('[P] Mars error:',e.type,e.message);
+      console.warn('[P] Mars error:',e.type);
       if(e.type==='unavailable-id'){
-        // ID taken by ghost session — bump round and retry
         _marsRound=(_marsRound+1)%10;
         localStorage.setItem('marsRound',_marsRound);
-        console.log('[P] Mars ID taken, retrying as',getMarsId());
-        _setWaitTxt('mars','ID busy, retrying...');
-        setTimeout(()=>_startPeer('mars'),1000);
+        setTimeout(()=>_startPeer('mars'),500);
       }
     });
 
   } else {
-    // Earth: get random ID, then sequentially try Mars rounds
     _peer=new Peer(_peerCfg());
     _peer.on('open',()=>{
-      console.log('[P] Earth: peer open, starting scan');
+      console.log('[P] Earth: peer open, scanning for Mars...');
       _setWaitTxt('earth','Looking for Colony Booth...');
+      _earthAttempt=0;
       _earthScan();
     });
     _peer.on('error',e=>{
-      if(e.type!=='peer-unavailable') console.warn('[P] Earth peer err:',e.type);
+      if(e.type!=='peer-unavailable') console.warn('[P] Earth peer error:',e.type);
     });
   }
 }
 
-// Sequential scan — waits for each attempt to resolve before moving on
 function _earthScan(){
   if(_launched||!_peer||_peer.destroyed)return;
-  if(_connecting)return; // already waiting on an attempt
-  _connecting=true;
+  clearTimeout(_earthTimer);
 
   const id=getMarsId(_earthAttempt);
-  console.log('[P] Earth: trying round',_earthAttempt,'->',id);
-  _setWaitTxt('earth','Looking for Colony Booth (attempt '+(_earthAttempt+1)+')...');
+  console.log('[P] Earth: connecting to',id);
+  _setWaitTxt('earth','Looking for Colony Booth (round '+_earthAttempt+')...');
 
-  const conn=_peer.connect(id,{reliable:true,serialization:'json'});
-  let resolved=false;
+  const conn=_peer.connect(id,{reliable:true});
+  let done=false;
 
-  const next=()=>{
-    if(resolved)return;
-    resolved=true;
-    _connecting=false;
-    if(!_launched){
-      _earthAttempt=(_earthAttempt+1)%10;
-      clearTimeout(_earthTimer);
-      _earthTimer=setTimeout(_earthScan,800); // move to next after 800ms
-    }
-  };
-
-  conn.on('open',()=>{
-    resolved=true;
-    _connecting=false;
-    console.log('[P] Earth: CONNECTED to',id);
+  const succeed=()=>{
+    if(done)return; done=true;
     clearTimeout(_earthTimer);
-    _setWaitTxt('earth','Connected! Launching debate...');
+    console.log('[P] Earth: OPEN on',id);
+    _setWaitTxt('earth','Connected! Launching...');
     _doLaunch('earth');
-    // Make the audio call
+    // Audio call
     navigator.mediaDevices.getUserMedia({audio:true,video:false})
       .then(st=>{
         localStream=st;
@@ -1468,22 +1444,40 @@ function _earthScan(){
           setAudioStat('ok','⬤ VOICE CONNECTED');
           addEvt('Voice connected','sys');
         });
-        call.on('error',e=>console.warn('[P] call err:',e));
       })
-      .catch(()=>{setAudioStat('err','MIC DENIED');});
+      .catch(()=>setAudioStat('err','MIC DENIED'));
+  };
+
+  const tryNext=()=>{
+    if(done||_launched)return; done=true;
+    clearTimeout(_earthTimer);
+    _earthAttempt=(_earthAttempt+1)%10;
+    // Small delay before next attempt to avoid hammering
+    _earthTimer=setTimeout(_earthScan,1200);
+  };
+
+  conn.on('open', succeed);
+
+  // Only move on if we get peer-unavailable (Mars not on this round)
+  // Do NOT move on for other errors — they might mean connection is in progress
+  conn.on('error', e=>{
+    console.log('[P] Earth conn error:',e.type,'on round',_earthAttempt);
+    if(e.type==='peer-unavailable'){
+      tryNext();
+    }
+    // For other errors (network etc), retry same round after delay
+    else{
+      if(done||_launched)return; done=true;
+      _earthTimer=setTimeout(_earthScan,2000);
+    }
   });
 
-  conn.on('error',e=>{
-    // peer-unavailable = Mars not on this round, move on
-    console.log('[P] Earth: round',_earthAttempt,'unavailable, next...');
-    next();
-  });
-
-  // Safety timeout — if neither open nor error fires in 3s, move on
+  // Timeout: if neither open nor error fires in 6s, try next round
   _earthTimer=setTimeout(()=>{
-    console.log('[P] Earth: round',_earthAttempt,'timed out, next...');
-    next();
-  },3000);
+    if(done||_launched)return;
+    console.log('[P] Earth: timeout on round',_earthAttempt);
+    tryNext();
+  },6000);
 }
 
 function _doLaunch(side){
@@ -1870,7 +1864,7 @@ async function endDebate(){
   closeOverlay('endConfirmOverlay');
   clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
   if(isRec&&mediaRec)mediaRec.stop();
-  clearTimeout(_earthTimer);_connecting=false;
+  clearTimeout(_earthTimer);
   if(_mediaCall){try{_mediaCall.close();}catch(e){}}
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
@@ -1923,7 +1917,7 @@ function returnToBooth(){
   if(clk)clk.textContent='STANDBY';
   // Reset state
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;marsT=90;earthT=90;totalT=180;
-  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;_connecting=false;_launched=false;_earthAttempt=0;
+  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;clearTimeout(_earthTimer);_launched=false;_earthAttempt=0;
   document.getElementById('recBtn').classList.remove('on');
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
