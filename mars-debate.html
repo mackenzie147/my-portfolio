@@ -1527,24 +1527,37 @@ async function launchDebate(side){
    Drives the chess clock automatically
 ════════════════════════════════ */
 function startAudioAnalysis(localSt,remoteSt,mySide){
-  audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  // Resume or create AudioContext (Chrome suspends until user gesture)
+  if(!audioCtx){
+    audioCtx=new(window.AudioContext||window.webkitAudioContext)();
+  }
+  if(audioCtx.state==='suspended') audioCtx.resume();
+
   analyserMars=audioCtx.createAnalyser();analyserMars.fftSize=256;
   analyserEarth=audioCtx.createAnalyser();analyserEarth.fftSize=256;
 
-  // My side = local stream
+  // Local mic → my analyser
   const localSrc=audioCtx.createMediaStreamSource(localSt);
-  if(mySide==='mars')localSrc.connect(analyserMars);
+  if(mySide==='mars') localSrc.connect(analyserMars);
   else localSrc.connect(analyserEarth);
 
-  // Remote = other side
+  // Remote audio → other side's analyser
   if(remoteSt){
     const remoteSrc=audioCtx.createMediaStreamSource(remoteSt);
-    if(mySide==='mars')remoteSrc.connect(analyserEarth);
+    if(mySide==='mars') remoteSrc.connect(analyserEarth);
     else remoteSrc.connect(analyserMars);
+    // ALSO connect remote to destination so we can hear them
+    remoteSrc.connect(audioCtx.destination);
+  }
+
+  // Make sure the remoteAudio element is playing
+  const remAudio=document.getElementById('remoteAudio');
+  if(remAudio && remAudio.srcObject){
+    remAudio.play().catch(e=>console.log('autoplay blocked:',e));
   }
 
   setAudioStat('ok','⬤ VOICE CONNECTED');
-  addEvt('Voice connection active — microphone driving clock','sys');
+  addEvt('Voice connected — mic driving clock','sys');
 }
 
 function getAudioLevel(analyser){
@@ -1632,34 +1645,51 @@ function startClocks(){
   chessInt=setInterval(()=>{
     if(activeSpeaker==='mars'){
       marsT=Math.max(0,marsT-1);
-      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP',`The Colony Advocate's time has expired. Earth Defender, make your case.`);}
+      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony Advocate's time is up. Earth Defender — make your case.');}
     }else{
       earthT=Math.max(0,earthT-1);
-      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP',`The Earth Defender's time has expired. Colony Advocate, respond.`);}
+      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth Defender's time is up. Colony Advocate — respond.');}
     }
+    checkTimeAlerts();
     updateChessUI();
   },1000);
   totalInt=setInterval(()=>{
     totalT=Math.max(0,totalT-1);
     updateTotalUI();
-    checkTimeAlerts();
     if(totalT===0){clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);endDebate();}
   },1000);
   startAudioLoop();
 }
 
 function checkTimeAlerts(){
-  if(totalT===90&&!alertsFired.has('90')){
-    alertsFired.add('90');
-    showAlert('⚡','90 SECONDS REMAINING','Time to wrap up your strongest arguments. Start moving toward a conclusion.');
+  // Individual clock warnings — fire when active speaker hits 30s and 10s
+  if(activeSpeaker==='mars'){
+    if(marsT===30&&!alertsFired.has('mars30')){
+      alertsFired.add('mars30');
+      showAlert('⚡','COLONY: 30 SECONDS LEFT','Wrap up your argument. Make your strongest point now.');
+    }
+    if(marsT===10&&!alertsFired.has('mars10')){
+      alertsFired.add('mars10');
+      showAlert('⌛','COLONY: 10 SECONDS','Final moments for Colony Advocate.');
+    }
+  } else {
+    if(earthT===30&&!alertsFired.has('earth30')){
+      alertsFired.add('earth30');
+      showAlert('⚡','EARTH: 30 SECONDS LEFT','Wrap up your argument. Make your strongest point now.');
+    }
+    if(earthT===10&&!alertsFired.has('earth10')){
+      alertsFired.add('earth10');
+      showAlert('⌛','EARTH: 10 SECONDS','Final moments for Earth Defender.');
+    }
   }
-  if(totalT===30&&!alertsFired.has('30')){
-    alertsFired.add('30');
-    showAlert('🏁','CLOSING ARGUMENTS — 30 SECONDS','This is your final chance. Make your single most powerful point. Leave nothing on the table.');
+  // Total time warnings
+  if(totalT===60&&!alertsFired.has('60')){
+    alertsFired.add('60');
+    showAlert('🏁','ONE MINUTE REMAINING','Start moving toward your closing argument.');
   }
-  if(totalT===10&&!alertsFired.has('10')){
-    alertsFired.add('10');
-    showAlert('⌛','10 SECONDS','Final moments. Speak now or forever hold your peace.');
+  if(totalT===10&&!alertsFired.has('total10')){
+    alertsFired.add('total10');
+    showAlert('⌛','10 SECONDS TOTAL','Final moments. Speak now.');
   }
 }
 
