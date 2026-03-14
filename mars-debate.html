@@ -78,7 +78,7 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
 .org-link-sub{font-size:9px;color:var(--muted);letter-spacing:.06em;margin-top:2px}
 
 /* ══ BOOTH — FULL VIEWPORT, NO SCROLL ══ */
-#marsScreen,#earthScreen{justify-content:flex-start;position:relative;overflow:hidden;height:100vh}
+#marsScreen,#earthScreen{justify-content:center;align-items:center;position:relative;overflow:hidden;height:100vh}
 canvas.booth-env{position:fixed;inset:0;z-index:1;pointer-events:none}
 .booth-floats{position:fixed;inset:0;z-index:2;pointer-events:none;overflow:hidden}
 canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
@@ -99,6 +99,49 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
   border:1px solid var(--bm);background:rgba(5,5,13,.7);color:var(--muted);
   border-radius:2px;cursor:pointer;transition:all .15s;backdrop-filter:blur(12px)}
 .booth-back:hover{color:var(--text);background:rgba(255,255,255,.1)}
+.booth-wrap{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  min-height:100vh;width:100%;max-width:640px;
+  padding:2rem;margin:0 auto;text-align:center;gap:.6rem;
+}
+.booth-planet{border-radius:50%;position:relative;flex-shrink:0;animation:bpfloat 4s ease-in-out infinite;margin:0 auto}
+.booth-planet.mp{width:100px;height:100px;background:radial-gradient(circle at 38% 32%,#F08060,#7A1500);box-shadow:0 0 60px rgba(192,57,43,.6),inset -14px -14px 24px rgba(0,0,0,.5)}
+.booth-planet.ep{width:100px;height:100px;background:radial-gradient(circle at 35% 30%,#5DADE2,#0A3550);box-shadow:0 0 60px rgba(46,134,193,.6),inset -14px -14px 24px rgba(0,0,0,.5)}
+.booth-planet.ep::before{content:'';position:absolute;top:28%;left:18%;width:55%;height:38%;background:rgba(46,180,60,.45);border-radius:40% 60% 50% 50%;transform:rotate(-18deg)}
+@keyframes bpfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.booth-title{font-family:var(--hero);font-size:clamp(3rem,9vw,5.5rem);line-height:.9;margin-bottom:.2rem}
+.booth-title .r{color:var(--mars-g);text-shadow:0 0 40px rgba(255,127,92,.5)}
+.booth-title .b{color:var(--earth-g);text-shadow:0 0 40px rgba(93,173,226,.5)}
+.booth-subtitle{font-family:var(--disp);font-size:9px;letter-spacing:.25em;font-weight:600;margin-bottom:.4rem}
+.booth-subtitle.rc{color:var(--mars-g)}.booth-subtitle.bc{color:var(--earth-g)}
+.dossier-inner{background:rgba(255,255,255,.04);border:1px solid var(--border);border-radius:4px;padding:.8rem 1rem}
+.darg{padding:7px 0;border-bottom:1px solid var(--border);display:flex;gap:10px;font-size:11px;line-height:1.55}
+.darg:last-child{border-bottom:none}
+.darg-n{font-family:var(--disp);font-size:8px;font-weight:600;flex-shrink:0;margin-top:2px;letter-spacing:.1em}
+.darg-n.rc{color:var(--mars-g)}.darg-n.bc{color:var(--earth-g)}
+.ready-btn{font-family:var(--hero);font-size:clamp(1.8rem,5vw,2.8rem);letter-spacing:.08em;padding:16px 40px;border-radius:4px;border:none;cursor:pointer;transition:all .3s;display:block;width:100%;max-width:480px;margin:.4rem auto 0}
+.ready-btn.mars-ready{background:linear-gradient(135deg,rgba(192,57,43,.3),rgba(231,76,60,.2));color:var(--mars-g);border:2px solid rgba(255,127,92,.4);box-shadow:0 0 40px rgba(192,57,43,.2)}
+.ready-btn.mars-ready:hover{box-shadow:0 0 60px rgba(192,57,43,.4);transform:scale(1.02)}
+.ready-btn.earth-ready{background:linear-gradient(135deg,rgba(13,79,107,.3),rgba(46,134,193,.2));color:var(--earth-g);border:2px solid rgba(93,173,226,.4);box-shadow:0 0 40px rgba(46,134,193,.2)}
+.ready-btn.earth-ready:hover{box-shadow:0 0 60px rgba(46,134,193,.4);transform:scale(1.02)}
+.ready-hint{font-size:9px;color:var(--muted);letter-spacing:.15em}
+.wait-state{display:none;flex-direction:column;align-items:center;gap:.6rem}
+.wait-state.show{display:flex}
+.wait-pulse-ring{width:72px;height:72px;border-radius:50%;border:2px solid;position:relative;display:flex;align-items:center;justify-content:center}
+.wait-pulse-ring.mc{border-color:rgba(255,127,92,.4)}.wait-pulse-ring.ec{border-color:rgba(93,173,226,.4)}
+.wait-pulse-ring::before{content:'';position:absolute;inset:-10px;border-radius:50%;border:1px solid;animation:ringpulse 2s ease-in-out infinite}
+.wait-pulse-ring.mc::before{border-color:rgba(255,127,92,.2)}.wait-pulse-ring.ec::before{border-color:rgba(93,173,226,.2)}
+.wait-pulse-ring::after{content:'';position:absolute;inset:-20px;border-radius:50%;border:1px solid;animation:ringpulse 2s ease-in-out infinite .5s}
+.wait-pulse-ring.mc::after{border-color:rgba(255,127,92,.1)}.wait-pulse-ring.ec::after{border-color:rgba(93,173,226,.1)}
+.wait-icon{font-size:1.8rem}
+@keyframes ringpulse{0%,100%{opacity:.4;transform:scale(1)}50%{opacity:1;transform:scale(1.06)}}
+.wait-txt{font-family:var(--disp);font-size:9px;letter-spacing:.2em}
+.wait-txt.rc{color:var(--mars-g)}.wait-txt.bc{color:var(--earth-g)}
+.wait-sub-txt{font-size:10px;color:var(--muted);letter-spacing:.1em;line-height:1.7}
+.connecting-txt{font-family:var(--disp);font-size:11px;letter-spacing:.2em;animation:wblink .8s ease-in-out infinite}
+.connecting-txt.rc{color:var(--mars-g)}.connecting-txt.bc{color:var(--earth-g)}
+
 
 /* ── MAIN BOOTH LAYOUT: left planet panel + right content panel ── */
 
@@ -1277,84 +1320,185 @@ function buildDossier(side){buildArgCards(side);}
 function toggleDossier(side){}
 
 /* ════════════════════════════════
-   BOOTH READY — PeerJS p2p
+   BOOTH READY — PeerJS
+   KEY FIX: Earth does NOT scan rapidly.
+   It tries one ID, waits for definitive open OR error,
+   THEN tries next. No racing. No skipping.
 ════════════════════════════════ */
+
 let _marsRound=parseInt(localStorage.getItem('marsRound')||'0');
-function getMarsId(r){const d=new Date();return 'mde-'+d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate()+'-r'+((r!==undefined)?r:_marsRound);}
-let _peer=null,_dataConn=null,_mediaCall=null,_launched=false;
-let _earthAttempt=0,_earthScanInt=null;
+function getMarsId(r){
+  const d=new Date();
+  const day=d.getFullYear()+'-'+(d.getMonth()+1)+'-'+d.getDate();
+  return 'mde-'+day+'-r'+((r!==undefined)?r:_marsRound);
+}
+
+let _peer=null,_mediaCall=null,_launched=false;
+let _earthAttempt=0,_earthTimer=null,_connecting=false;
 
 function boothReady(side){
-  activeBooth=side;_launched=false;_earthAttempt=0;
-  if(side==='mars'){_marsRound=(_marsRound+1)%10;localStorage.setItem('marsRound',_marsRound);}
+  activeBooth=side;_launched=false;_earthAttempt=0;_connecting=false;
+  if(side==='mars'){
+    _marsRound=(_marsRound+1)%10;
+    localStorage.setItem('marsRound',_marsRound);
+    console.log('[P] Mars round:',_marsRound,'ID:',getMarsId());
+  }
   document.getElementById(side+'ReadyDiv').style.display='none';
   document.getElementById(side+'WaitDiv').classList.add('show');
-  _setWaitTxt(side,side==='mars'?'Waiting for Earth Defender...':'Connecting to Colony Booth...');
   _startPeer(side);
 }
 
-function _peerCfg(){return {debug:0,config:{iceServers:[{urls:'stun:stun.l.google.com:19302'},{urls:'stun:stun1.l.google.com:19302'}]}};}
+function _peerCfg(){
+  return {
+    debug:1,
+    config:{iceServers:[
+      {urls:'stun:stun.l.google.com:19302'},
+      {urls:'stun:stun1.l.google.com:19302'},
+      {urls:'stun:stun2.l.google.com:19302'},
+    ]}
+  };
+}
 
 function _startPeer(side){
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
+
   if(side==='mars'){
-    const marsId=getMarsId();
-    console.log('[P] Mars registering:',marsId);
-    _peer=new Peer(marsId,_peerCfg());
-    _peer.on('open',id=>{console.log('[P] Mars open:',id);_setWaitTxt('mars','Waiting for Earth Defender...');});
-    _peer.on('connection',conn=>{
-      conn.on('open',()=>{console.log('[P] Earth connected!');conn.send('ready');_doLaunch('mars');});
+    const id=getMarsId();
+    console.log('[P] Mars: registering as',id);
+    _peer=new Peer(id,_peerCfg());
+
+    _peer.on('open',()=>{
+      console.log('[P] Mars: ready, waiting for Earth');
+      _setWaitTxt('mars','Ready — waiting for Earth Defender to connect...');
     });
+
+    _peer.on('connection',conn=>{
+      console.log('[P] Mars: Earth data connection incoming');
+      conn.on('open',()=>{
+        console.log('[P] Mars: data channel open, launching');
+        _doLaunch('mars');
+      });
+      conn.on('error',e=>console.warn('[P] Mars conn err:',e));
+    });
+
     _peer.on('call',call=>{
       _mediaCall=call;
-      navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(st=>{
-        localStream=st;call.answer(st);
-        call.on('stream',rs=>{remoteStream=rs;document.getElementById('remoteAudio').srcObject=rs;startAudioAnalysis(localStream,remoteStream,'mars');setAudioStat('ok','⬤ VOICE CONNECTED');addEvt('Voice connected','sys');});
-      }).catch(()=>setAudioStat('err','MIC DENIED'));
+      navigator.mediaDevices.getUserMedia({audio:true,video:false})
+        .then(st=>{
+          localStream=st;
+          call.answer(st);
+          call.on('stream',rs=>{
+            remoteStream=rs;
+            document.getElementById('remoteAudio').srcObject=rs;
+            startAudioAnalysis(localStream,remoteStream,'mars');
+            setAudioStat('ok','⬤ VOICE CONNECTED');
+            addEvt('Voice connected','sys');
+          });
+        })
+        .catch(()=>{setAudioStat('err','MIC DENIED — check browser permissions');});
     });
+
     _peer.on('error',e=>{
-      console.warn('[P] mars err:',e.type);
-      if(e.type==='unavailable-id'){_marsRound=(_marsRound+1)%10;localStorage.setItem('marsRound',_marsRound);setTimeout(()=>_startPeer('mars'),500);}
+      console.warn('[P] Mars error:',e.type,e.message);
+      if(e.type==='unavailable-id'){
+        // ID taken by ghost session — bump round and retry
+        _marsRound=(_marsRound+1)%10;
+        localStorage.setItem('marsRound',_marsRound);
+        console.log('[P] Mars ID taken, retrying as',getMarsId());
+        _setWaitTxt('mars','ID busy, retrying...');
+        setTimeout(()=>_startPeer('mars'),1000);
+      }
     });
+
   } else {
+    // Earth: get random ID, then sequentially try Mars rounds
     _peer=new Peer(_peerCfg());
     _peer.on('open',()=>{
-      clearInterval(_earthScanInt);
-      _tryRound(_earthAttempt);
-      _earthScanInt=setInterval(()=>{
-        if(_launched){clearInterval(_earthScanInt);return;}
-        _earthAttempt=(_earthAttempt+1)%10;
-        _tryRound(_earthAttempt);
-      },4000);
+      console.log('[P] Earth: peer open, starting scan');
+      _setWaitTxt('earth','Looking for Colony Booth...');
+      _earthScan();
     });
-    _peer.on('error',e=>{if(e.type!=='peer-unavailable')console.warn('[P] earth err:',e.type);});
+    _peer.on('error',e=>{
+      if(e.type!=='peer-unavailable') console.warn('[P] Earth peer err:',e.type);
+    });
   }
 }
 
-function _tryRound(round){
-  if(!_peer||_peer.destroyed||_launched)return;
-  const id=getMarsId(round);
-  console.log('[P] Earth trying:',id);
+// Sequential scan — waits for each attempt to resolve before moving on
+function _earthScan(){
+  if(_launched||!_peer||_peer.destroyed)return;
+  if(_connecting)return; // already waiting on an attempt
+  _connecting=true;
+
+  const id=getMarsId(_earthAttempt);
+  console.log('[P] Earth: trying round',_earthAttempt,'->',id);
+  _setWaitTxt('earth','Looking for Colony Booth (attempt '+(_earthAttempt+1)+')...');
+
   const conn=_peer.connect(id,{reliable:true,serialization:'json'});
+  let resolved=false;
+
+  const next=()=>{
+    if(resolved)return;
+    resolved=true;
+    _connecting=false;
+    if(!_launched){
+      _earthAttempt=(_earthAttempt+1)%10;
+      clearTimeout(_earthTimer);
+      _earthTimer=setTimeout(_earthScan,800); // move to next after 800ms
+    }
+  };
+
   conn.on('open',()=>{
-    clearInterval(_earthScanInt);
-    _setWaitTxt('earth','Connected! Launching...');
-    conn.send('ready');_doLaunch('earth');
-    navigator.mediaDevices.getUserMedia({audio:true,video:false}).then(st=>{
-      localStream=st;const call=_peer.call(id,st);_mediaCall=call;
-      call.on('stream',rs=>{remoteStream=rs;document.getElementById('remoteAudio').srcObject=rs;startAudioAnalysis(localStream,remoteStream,'earth');setAudioStat('ok','⬤ VOICE CONNECTED');addEvt('Voice connected','sys');});
-    }).catch(()=>setAudioStat('err','MIC DENIED'));
+    resolved=true;
+    _connecting=false;
+    console.log('[P] Earth: CONNECTED to',id);
+    clearTimeout(_earthTimer);
+    _setWaitTxt('earth','Connected! Launching debate...');
+    _doLaunch('earth');
+    // Make the audio call
+    navigator.mediaDevices.getUserMedia({audio:true,video:false})
+      .then(st=>{
+        localStream=st;
+        const call=_peer.call(id,st);
+        _mediaCall=call;
+        call.on('stream',rs=>{
+          remoteStream=rs;
+          document.getElementById('remoteAudio').srcObject=rs;
+          startAudioAnalysis(localStream,remoteStream,'earth');
+          setAudioStat('ok','⬤ VOICE CONNECTED');
+          addEvt('Voice connected','sys');
+        });
+        call.on('error',e=>console.warn('[P] call err:',e));
+      })
+      .catch(()=>{setAudioStat('err','MIC DENIED');});
   });
-  conn.on('error',()=>{});
+
+  conn.on('error',e=>{
+    // peer-unavailable = Mars not on this round, move on
+    console.log('[P] Earth: round',_earthAttempt,'unavailable, next...');
+    next();
+  });
+
+  // Safety timeout — if neither open nor error fires in 3s, move on
+  _earthTimer=setTimeout(()=>{
+    console.log('[P] Earth: round',_earthAttempt,'timed out, next...');
+    next();
+  },3000);
 }
 
 function _doLaunch(side){
-  if(_launched)return;_launched=true;
+  if(_launched)return;
+  _launched=true;
+  console.log('[P] LAUNCHING as',side);
   document.getElementById(side+'WaitDiv').classList.remove('show');
   document.getElementById(side+'ConnDiv').style.display='block';
   setTimeout(()=>launchDebate(side),1200);
 }
-function _setWaitTxt(side,msg){const el=document.getElementById(side+'WaitDiv').querySelector('.wait-sub-txt');if(el)el.textContent=msg;}
+
+function _setWaitTxt(side,msg){
+  const el=document.getElementById(side+'WaitDiv').querySelector('.wait-sub-txt');
+  if(el)el.textContent=msg;
+}
 
 async function checkBothReady(){}
 
@@ -1726,7 +1870,7 @@ async function endDebate(){
   closeOverlay('endConfirmOverlay');
   clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
   if(isRec&&mediaRec)mediaRec.stop();
-  clearInterval(_earthScanInt);
+  clearTimeout(_earthTimer);_connecting=false;
   if(_mediaCall){try{_mediaCall.close();}catch(e){}}
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
@@ -1779,7 +1923,7 @@ function returnToBooth(){
   if(clk)clk.textContent='STANDBY';
   // Reset state
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;marsT=90;earthT=90;totalT=180;
-  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;_launched=false;_earthAttempt=0;
+  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;_earthAttempt=0;_connecting=false;_launched=false;_earthAttempt=0;
   document.getElementById('recBtn').classList.remove('on');
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
