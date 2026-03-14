@@ -1357,6 +1357,7 @@ function toggleDossier(){}
 
 const ROOM_ID = 'mars-debate-exhibit';
 let _peer=null, _dataConn=null, _launched=false, _retryTimer=null;
+let _debateStartMs=0; // wall clock start time, shared between both laptops
 
 function boothReady(side){
   activeBooth=side; _launched=false;
@@ -1395,9 +1396,14 @@ function _startPeer(side){
   } else {
     _peer=new Peer(_cfg());
     _peer.on('open',()=>{
-      console.log('[P] Earth: connecting to Mars');
-      _setWaitTxt('earth','Connecting to Colony Booth...');
+      console.log('[P] Earth: peer open, scanning for Mars');
+      _setWaitTxt('earth','Waiting for Colony Booth...');
       _earthConnect();
+    });
+    _peer.on('error',e=>{
+      console.warn('[P] Earth peer error:',e.type);
+      // Keep retrying — Mars may not be ready yet
+      if(!_launched) setTimeout(()=>_startPeer('earth'),3000);
     });
   }
 }
@@ -1441,6 +1447,7 @@ function _doLaunch(side){
   setTimeout(()=>launchDebate(side),1200);
 }
 
+
 function _setWaitTxt(side,msg){
   const el=document.getElementById(side+'WaitDiv').querySelector('.wait-sub-txt');
   if(el)el.textContent=msg;
@@ -1456,20 +1463,21 @@ function _localPassMic(){
 
 function _handleDataMsg(raw){
   let d;
-  try{d=(typeof raw==='string'&&raw.startsWith('{'))?JSON.parse(raw):raw;}catch(e){d=raw;}
-  if(d==='PASS_MIC'||d==='LAUNCH'){
-    if(d==='PASS_MIC') _localPassMic();
-    if(d==='LAUNCH'&&!_launched) _doLaunch('earth');
-    return;
+  try{d=(typeof raw==='string'&&raw[0]==='{')? JSON.parse(raw):raw;}catch(e){d=raw;}
+  if(d==='PASS_MIC'){_localPassMic();return;}
+  if(d==='LAUNCH'&&!_launched){_doLaunch('earth');return;}
+  if(!d||typeof d!=='object')return;
+  if(d.type==='SYNC_START'){
+    // Earth receives the wall-clock start time from Mars
+    _debateStartMs=d.startMs;
+    console.log('[SYNC] Got start time from Mars:',_debateStartMs);
+    startWallClock();
   }
-  if(d&&d.type==='SYNC'){
-    // Earth receives clock sync from Mars
-    activeSpeaker=d.speaker;
-    marsT=d.marsT; earthT=d.earthT; totalT=d.totalT;
-    currentTurnTime=d.currentTurnTime;
-    setSpeaker(d.speaker);
-    updateChessUI(); updateTotalUI(); updateTurnUI();
-    addEvt(d.speaker==='mars'?'Turn: Colony Advocate':'Turn: Earth Defender');
+  if(d.type==='SYNC'){
+    // Legacy turn sync (used for PASS_MIC early handoff)
+    if(d.speaker) activeSpeaker=d.speaker;
+    if(d.currentTurnTime!==undefined) currentTurnTime=d.currentTurnTime;
+    setSpeaker(activeSpeaker); updateTurnUI();
   }
 }
 
@@ -1721,93 +1729,97 @@ function showWalkieTalkieScreen(side){
       clearInterval(interval);
       if(ws){ws.style.display='none';}
       if(dl){dl.style.display='flex';}
+
+      // Mars sets wall-clock start time and sends to Earth
+      if(activeBooth==='mars'||testMode){
+        _debateStartMs=Date.now();
+        if(_dataConn){try{_dataConn.send(JSON.stringify({type:'SYNC_START',startMs:_debateStartMs}));}catch(e){}}
+        startWallClock();
+      }
+      // Earth: startWallClock called when SYNC_START received, or after 3s timeout
+      if(activeBooth==='earth'){
+        setTimeout(()=>{ if(!_debateStartMs){_debateStartMs=Date.now();startWallClock();} },3000);
+      }
     }
   },1000);
 }
 
 /* ════════════════════════════════
-   CLOCKS — TURN-BASED 30s TURNS
+   CLOCKS — WALL CLOCK BASED
+   Both laptops compute current state from shared start timestamp.
+   Zero drift. Mars broadcasts start time to Earth via data channel.
 ════════════════════════════════ */
-// Each turn is 30 seconds. Mars goes first.
-// When their 30s runs out, auto-switch to the other person.
 const TURN_SECONDS=30;
+const TOTAL_SECONDS=180;
 let currentTurnTime=TURN_SECONDS;
+let _wallClockInt=null;
+let _lastTurnIndex=-1;
 
 function startClocks(){
-  clearInterval(chessInt);clearInterval(totalInt);
-  currentTurnTime=TURN_SECONDS;
-  updateTurnUI();
-
-  chessInt=setInterval(()=>{
-    // Individual chess clocks count down while that person is speaking
-    if(activeSpeaker==='mars'){
-      marsT=Math.max(0,marsT-1);
-      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony Advocate used all their time!');}
-    }else{
-      earthT=Math.max(0,earthT-1);
-      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth Defender used all their time!');}
-    }
-
-    // Turn countdown — ONLY Mars drives the switch and tells Earth
-    currentTurnTime=Math.max(0,currentTurnTime-1);
-    updateTurnUI();
-
-    if(currentTurnTime===10&&!alertsFired.has('turn10_'+activeSpeaker)){
-      alertsFired.add('turn10_'+activeSpeaker);
-      addEvt('10 seconds left in this turn');
-    }
-
-    // Auto-switch — Mars broadcasts to Earth so they stay in sync
-    if(currentTurnTime===0){
-      currentTurnTime=TURN_SECONDS;
-      const next=activeSpeaker==='mars'?'earth':'mars';
-      activeSpeaker=next; setSpeaker(next);
-      // Send sync message with full state so Earth stays locked in
-      const syncMsg={type:'SYNC',speaker:next,marsT,earthT,totalT,currentTurnTime:TURN_SECONDS};
-      if(_dataConn){try{_dataConn.send(JSON.stringify(syncMsg));}catch(e){}}
-      addEvt(next==='mars'?'Turn: Colony Advocate':'Turn: Earth Defender');
-    }
-
-    checkTimeAlerts();
-    updateChessUI();
-  },1000);
-  totalInt=setInterval(()=>{
-    totalT=Math.max(0,totalT-1);
-    updateTotalUI();
-    if(totalT===0){clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);endDebate();}
-  },1000);
+  // startClocks just kicks off audio loop — actual timing via startWallClock()
   startAudioLoop();
 }
 
+function startWallClock(){
+  clearInterval(_wallClockInt);
+  clearInterval(chessInt);clearInterval(totalInt);
+  _lastTurnIndex=-1;
+
+  _wallClockInt=setInterval(()=>{
+    if(!_debateStartMs)return;
+    const elapsed=Math.floor((Date.now()-_debateStartMs)/1000);
+    
+    // Total remaining
+    totalT=Math.max(0,TOTAL_SECONDS-elapsed);
+    updateTotalUI();
+
+    // Current turn
+    const turnIndex=Math.floor(elapsed/TURN_SECONDS);
+    const turnElapsed=elapsed-(turnIndex*TURN_SECONDS);
+    currentTurnTime=Math.max(0,TURN_SECONDS-turnElapsed);
+    const speaker=turnIndex%2===0?'mars':'earth';
+
+    // Detect turn switch
+    if(turnIndex!==_lastTurnIndex){
+      _lastTurnIndex=turnIndex;
+      activeSpeaker=speaker;
+      setSpeaker(speaker);
+      addEvt(speaker==='mars'?'Turn: Colony Advocate (30s)':'Turn: Earth Defender (30s)');
+    }
+
+    // Individual chess clocks: count how many full turns each side has had
+    // Mars speaks on even turns (0,2,4...), Earth on odd (1,3,5...)
+    const completedTurns=turnIndex;
+    const marsFullTurns=Math.ceil(completedTurns/2);
+    const earthFullTurns=Math.floor(completedTurns/2);
+    const currentTurnSeconds=Math.min(turnElapsed,TURN_SECONDS);
+    if(speaker==='mars') marsT=Math.max(0,90-(marsFullTurns*TURN_SECONDS)-currentTurnSeconds);
+    else earthT=Math.max(0,90-(earthFullTurns*TURN_SECONDS)-currentTurnSeconds);
+    updateChessUI();
+    updateTurnUI();
+    checkTimeAlerts();
+
+    if(totalT===0){
+      clearInterval(_wallClockInt);
+      clearInterval(audioLoopInt);
+      clearInterval(fakeInt);
+      endDebate();
+    }
+  },250); // tick 4x/sec for smooth countdown
+}
+
 function checkTimeAlerts(){
-  // Individual clock warnings — fire when active speaker hits 30s and 10s
-  if(activeSpeaker==='mars'){
-    if(marsT===30&&!alertsFired.has('mars30')){
-      alertsFired.add('mars30');
-      showAlert('⚡','COLONY: 30 SECONDS LEFT','Wrap up your argument. Make your strongest point now.');
-    }
-    if(marsT===10&&!alertsFired.has('mars10')){
-      alertsFired.add('mars10');
-      showAlert('⌛','COLONY: 10 SECONDS','Final moments for Colony Advocate.');
-    }
-  } else {
-    if(earthT===30&&!alertsFired.has('earth30')){
-      alertsFired.add('earth30');
-      showAlert('⚡','EARTH: 30 SECONDS LEFT','Wrap up your argument. Make your strongest point now.');
-    }
-    if(earthT===10&&!alertsFired.has('earth10')){
-      alertsFired.add('earth10');
-      showAlert('⌛','EARTH: 10 SECONDS','Final moments for Earth Defender.');
-    }
+  if(currentTurnTime===10&&!alertsFired.has('turn10_'+activeSpeaker)){
+    alertsFired.add('turn10_'+activeSpeaker);
+    addEvt('10 seconds left in this turn');
   }
-  // Total time warnings
   if(totalT===60&&!alertsFired.has('60')){
     alertsFired.add('60');
     showAlert('🏁','ONE MINUTE REMAINING','Start moving toward your closing argument.');
   }
   if(totalT===10&&!alertsFired.has('total10')){
     alertsFired.add('total10');
-    showAlert('⌛','10 SECONDS TOTAL','Final moments. Speak now.');
+    showAlert('⌛','10 SECONDS','Final moments. Speak now.');
   }
 }
 
@@ -2023,7 +2035,7 @@ function addEvt(text,cls=''){
 ════════════════════════════════ */
 async function endDebate(){
   closeOverlay('endConfirmOverlay');
-  clearInterval(chessInt);clearInterval(totalInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
+  clearInterval(chessInt);clearInterval(totalInt);clearInterval(_wallClockInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
   if(isRec&&mediaRec)mediaRec.stop();
   clearTimeout(_earthTimer);
   if(_mediaCall){try{_mediaCall.close();}catch(e){}}
@@ -2066,25 +2078,31 @@ async function endDebate(){
 function returnToBooth(){
   closeOverlay('endResultOverlay');
   const booth=activeBooth==='earth'?'earth':'mars';
+
+  // Full state reset
+  testMode=false;isRec=false;marsVotes=0;earthVotes=0;
+  marsT=90;earthT=90;totalT=180;currentTurnTime=TURN_SECONDS;
+  _debateStartMs=0;_lastTurnIndex=-1;_launched=false;
+  clearInterval(_wallClockInt);clearTimeout(_retryTimer);
+  events=[];savedAudioURL=null;alertsFired.clear();
+
+  // Destroy peer so next debate gets fresh connection
+  if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
+  if(_dataConn){try{_dataConn.close();}catch(e){} _dataConn=null;}
+  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
+
+  // Reset UI
   document.getElementById(booth+'ReadyDiv').style.display='block';
   document.getElementById(booth+'WaitDiv').classList.remove('show');
   document.getElementById(booth+'ConnDiv').style.display='none';
-  // Reset status line
-  const dot=document.getElementById(booth+'StatusDot');
-  const txt=document.getElementById(booth+'StatusText');
-  if(dot)dot.className='bs-dot gold';
-  if(txt)txt.textContent='Waiting for both booths to be ready';
-  const clk=document.getElementById(booth+'ClockDisplay');
-  if(clk)clk.textContent='STANDBY';
-  // Reset state
-  testMode=false;isRec=false;marsVotes=0;earthVotes=0;marsT=90;earthT=90;totalT=180;
-  events=[];savedAudioURL=null;alertsFired.clear();_launched=false;clearTimeout(_earthTimer);_launched=false;
   document.getElementById('recBtn').classList.remove('on');
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
   document.getElementById('recBannerGlobal').classList.remove('show');
   document.getElementById('recSaved').classList.remove('show');
   document.getElementById('eventLog').innerHTML='';
+
+  // Return to THIS side's booth — ready for next pair
   showScreen(booth+'Screen');
 }
 
