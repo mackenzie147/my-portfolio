@@ -1645,10 +1645,10 @@ function startClocks(){
   chessInt=setInterval(()=>{
     if(activeSpeaker==='mars'){
       marsT=Math.max(0,marsT-1);
-      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony Advocate's time is up. Earth Defender — make your case.');}
+      if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony time is up. Earth Defender, make your case.');}
     }else{
       earthT=Math.max(0,earthT-1);
-      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth Defender's time is up. Colony Advocate — respond.');}
+      if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth time is up. Colony Advocate, respond.');}
     }
     checkTimeAlerts();
     updateChessUI();
