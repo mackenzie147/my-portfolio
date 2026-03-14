@@ -1336,7 +1336,7 @@ function toggleDossier(){}
 ════════════════════════════════ */
 
 const ROOM_ID = 'mars-debate-exhibit';
-let _peer=null, _mediaCall=null, _launched=false, _retryTimer=null;
+let _peer=null, _dataConn=null, _mediaCall=null, _launched=false, _retryTimer=null;
 
 function boothReady(side){
   activeBooth=side; _launched=false;
@@ -1414,23 +1414,35 @@ function _startPeer(side){
 function _earthCall(){
   if(_launched||!_peer||_peer.destroyed)return;
   clearTimeout(_retryTimer);
-  console.log('[P] Earth: getting mic and calling',ROOM_ID);
+  console.log('[P] Earth: connecting to',ROOM_ID);
 
+  // Open data channel for pass-mic signaling
+  if(!_dataConn||_dataConn.open===false){
+    _dataConn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
+    _dataConn.on('open',()=>console.log('[P] Earth: data channel open'));
+    _dataConn.on('data',d=>{
+      console.log('[P] Earth received:',d);
+      if(d==='PASS_MIC') _localPassMic();
+    });
+    _dataConn.on('error',e=>console.warn('[P] data err:',e));
+  }
+
+  // Make the audio call
   navigator.mediaDevices.getUserMedia({audio:true,video:false})
     .then(st=>{
       localStream=st;
-      console.log('[P] Earth: got mic, calling',ROOM_ID);
+      console.log('[P] Earth: got mic, calling Mars');
       const call=_peer.call(ROOM_ID,st);
       _mediaCall=call;
 
       call.on('stream',rs=>{
-        console.log('[P] Earth: got Mars audio — LAUNCHING');
+        console.log('[P] Earth: got Mars audio stream');
         remoteStream=rs;
-        const ra2=document.getElementById('remoteAudio');
-        ra2.srcObject=rs;
-        ra2.muted=false;
-        ra2.volume=1.0;
-        ra2.play().catch(e=>console.warn('play err:',e));
+        const ra=document.getElementById('remoteAudio');
+        ra.srcObject=rs;
+        ra.muted=false;
+        ra.volume=1.0;
+        ra.play().catch(e=>console.warn('play err:',e));
         startAudioAnalysis(localStream,remoteStream,'earth');
         setAudioStat('ok','⬤ VOICE CONNECTED');
         addEvt('Voice connected','sys');
@@ -1438,28 +1450,23 @@ function _earthCall(){
       });
 
       call.on('error',e=>{
-        console.warn('[P] Earth call error:',e);
-        // Retry the call
+        console.warn('[P] call error:',e);
         if(!_launched) _retryTimer=setTimeout(_earthCall,3000);
       });
 
-      call.on('close',()=>{
-        console.log('[P] Earth: call closed');
-      });
-
-      // If no stream in 6s, retry
+      // Retry if no stream in 8s
       _retryTimer=setTimeout(()=>{
         if(!_launched){
-          console.log('[P] Earth: no stream yet, retrying call');
-          _setWaitTxt('earth','Still connecting — retrying...');
+          console.log('[P] Earth: no stream, retrying');
+          _setWaitTxt('earth','Still connecting...');
           try{call.close();}catch(e){}
           _earthCall();
         }
-      },6000);
+      },8000);
     })
     .catch(e=>{
-      console.warn('[P] Earth mic error:',e);
-      setAudioStat('err','MIC DENIED — allow microphone in browser');
+      setAudioStat('err','MIC DENIED — allow microphone');
+      console.warn('[P] mic err:',e);
     });
 }
 
@@ -1615,12 +1622,28 @@ function startAudioLoop(){
   },150);
 }
 
-// Pass the mic to the other speaker
-function passMic(){
+// Local flip (called on both sides when pass happens)
+function _localPassMic(){
   const next=activeSpeaker==='mars'?'earth':'mars';
   activeSpeaker=next;
   setSpeaker(next);
-  addEvt(next==='mars'?'Mic passed to Colony Advocate':'Mic passed to Earth Defender');
+  addEvt(next==='mars'?'Floor: Colony Advocate':'Floor: Earth Defender');
+}
+
+// Pass mic button — only the CURRENT SPEAKER on THIS laptop should press this
+// It flips locally AND sends signal to other laptop
+function passMic(){
+  // Only allow the active speaker's laptop to pass
+  if(activeBooth!==activeSpeaker){
+    addEvt('You are not the active speaker','sys');
+    return;
+  }
+  // Flip locally
+  _localPassMic();
+  // Signal the other laptop
+  if(_dataConn){
+    try{_dataConn.send('PASS_MIC');}catch(e){console.warn('send err:',e);}
+  }
 }
 
 // Mute/unmute local mic
