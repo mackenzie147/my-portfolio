@@ -1651,17 +1651,17 @@ function setSpeaker(side){
   const mSt=document.getElementById('marsStatus'),eSt=document.getElementById('earthStatus');
   const snEl=document.getElementById('speakerName'),ssEl=document.getElementById('speakerSub');
   if(side==='mars'){
-    mEl.classList.add('speaking');eEl.classList.remove('speaking');
-    mSt.textContent='SPEAKING';mSt.className='speaking-status rc';
-    eSt.textContent='LISTENING';eSt.className='speaking-status bc dim';
-    snEl.textContent='COLONY ADVOCATE';snEl.className='sd-name rc';
+    if(mEl)mEl.classList.add('speaking');if(eEl)eEl.classList.remove('speaking');
+    if(mSt){mSt.textContent='SPEAKING';mSt.className='speaking-status rc';}
+    if(eSt){eSt.textContent='LISTENING';eSt.className='speaking-status bc dim';}
+    if(snEl){snEl.textContent='COLONY ADVOCATE';snEl.className='sd-name rc';}
   }else{
-    eEl.classList.add('speaking');mEl.classList.remove('speaking');
-    eSt.textContent='SPEAKING';eSt.className='speaking-status bc';
-    mSt.textContent='LISTENING';mSt.className='speaking-status rc dim';
-    snEl.textContent='EARTH DEFENDER';snEl.className='sd-name bc';
+    if(eEl)eEl.classList.add('speaking');if(mEl)mEl.classList.remove('speaking');
+    if(eSt){eSt.textContent='SPEAKING';eSt.className='speaking-status bc';}
+    if(mSt){mSt.textContent='LISTENING';mSt.className='speaking-status rc dim';}
+    if(snEl){snEl.textContent='EARTH DEFENDER';snEl.className='sd-name bc';}
   }
-  ssEl.textContent='click PASS MIC to switch speaker';
+  if(ssEl) ssEl.textContent='click PASS MIC to switch speaker';
 }
 
 /* ════════════════════════════════
