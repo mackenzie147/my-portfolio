@@ -1383,7 +1383,7 @@ function _startPeer(side){
       _dataConn=conn;
       // Send LAUNCH so Earth knows to start even if conn.on(open) never fires
       setTimeout(()=>{ try{conn.send('LAUNCH');}catch(e){} },500);
-      conn.on('data',d=>{ if(d==='PASS_MIC') _localPassMic(); });
+      conn.on('data',d=>{ _handleDataMsg(d); });
       _doLaunch('mars');
     });
     _peer.on('error',e=>{
@@ -1412,12 +1412,12 @@ function _earthConnect(){
   conn.on('open',()=>{
     if(done)return; done=true;
     console.log('[P] Earth: connected via open');
-    conn.on('data',d=>{ if(d==='PASS_MIC') _localPassMic(); });
+    conn.on('data',d=>{ _handleDataMsg(d); });
     _doLaunch('earth');
   });
   // Fallback: if Mars sent LAUNCH signal
   conn.on('data',d=>{
-    if(d==='LAUNCH'&&!done){ done=true; conn.on('data',d2=>{ if(d2==='PASS_MIC') _localPassMic(); }); _doLaunch('earth'); }
+    if(d==='LAUNCH'&&!done){ done=true; conn.on('data',d2=>{ _handleDataMsg(d2); }); _doLaunch('earth'); }
     if(d==='PASS_MIC') _localPassMic();
   });
   conn.on('error',()=>{
@@ -1449,7 +1449,28 @@ function _setWaitTxt(side,msg){
 function _localPassMic(){
   const next=activeSpeaker==='mars'?'earth':'mars';
   activeSpeaker=next; setSpeaker(next);
+  currentTurnTime=TURN_SECONDS;
+  updateTurnUI();
   addEvt(next==='mars'?'Floor: Colony Advocate':'Floor: Earth Defender');
+}
+
+function _handleDataMsg(raw){
+  let d;
+  try{d=(typeof raw==='string'&&raw.startsWith('{'))?JSON.parse(raw):raw;}catch(e){d=raw;}
+  if(d==='PASS_MIC'||d==='LAUNCH'){
+    if(d==='PASS_MIC') _localPassMic();
+    if(d==='LAUNCH'&&!_launched) _doLaunch('earth');
+    return;
+  }
+  if(d&&d.type==='SYNC'){
+    // Earth receives clock sync from Mars
+    activeSpeaker=d.speaker;
+    marsT=d.marsT; earthT=d.earthT; totalT=d.totalT;
+    currentTurnTime=d.currentTurnTime;
+    setSpeaker(d.speaker);
+    updateChessUI(); updateTotalUI(); updateTurnUI();
+    addEvt(d.speaker==='mars'?'Turn: Colony Advocate':'Turn: Earth Defender');
+  }
 }
 
 function passMic(){
@@ -1718,7 +1739,7 @@ function startClocks(){
   updateTurnUI();
 
   chessInt=setInterval(()=>{
-    // Count down the TOTAL individual clocks
+    // Individual chess clocks count down while that person is speaking
     if(activeSpeaker==='mars'){
       marsT=Math.max(0,marsT-1);
       if(marsT===0&&!alertsFired.has('mars0')){alertsFired.add('mars0');showAlert('⏰','COLONY: TIME UP','Colony Advocate used all their time!');}
@@ -1727,7 +1748,7 @@ function startClocks(){
       if(earthT===0&&!alertsFired.has('earth0')){alertsFired.add('earth0');showAlert('⏰','EARTH: TIME UP','Earth Defender used all their time!');}
     }
 
-    // Count down the current TURN (30s each)
+    // Turn countdown — ONLY Mars drives the switch and tells Earth
     currentTurnTime=Math.max(0,currentTurnTime-1);
     updateTurnUI();
 
@@ -1736,13 +1757,15 @@ function startClocks(){
       addEvt('10 seconds left in this turn');
     }
 
-    // Auto-switch at end of turn
+    // Auto-switch — Mars broadcasts to Earth so they stay in sync
     if(currentTurnTime===0){
       currentTurnTime=TURN_SECONDS;
       const next=activeSpeaker==='mars'?'earth':'mars';
       activeSpeaker=next; setSpeaker(next);
-      if(_dataConn){try{_dataConn.send('PASS_MIC');}catch(e){}}
-      addEvt(next==='mars'?'Turn: Colony Advocate (30s)':'Turn: Earth Defender (30s)');
+      // Send sync message with full state so Earth stays locked in
+      const syncMsg={type:'SYNC',speaker:next,marsT,earthT,totalT,currentTurnTime:TURN_SECONDS};
+      if(_dataConn){try{_dataConn.send(JSON.stringify(syncMsg));}catch(e){}}
+      addEvt(next==='mars'?'Turn: Colony Advocate':'Turn: Earth Defender');
     }
 
     checkTimeAlerts();
@@ -1796,10 +1819,25 @@ function updateChessUI(){
 }
 function updateTotalUI(){
   const el=document.getElementById('totalTime');
-  el.textContent=fmt(totalT);
-  el.style.color=totalT<=30?'var(--mars-l)':totalT<=60?'var(--gold)':'var(--gold)';
+  if(el){el.textContent=fmt(totalT);el.style.color=totalT<=30?'var(--mars-l)':'var(--gold)';}
 }
 function fmt(s){return`${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`;}
+
+function updateTurnUI(){
+  const ssEl=document.getElementById('speakerSub');
+  const iAmSpeaking=(activeBooth===activeSpeaker);
+  if(ssEl){
+    if(iAmSpeaking){
+      ssEl.textContent='🎙 YOUR TURN — '+currentTurnTime+'s left — speak into walkie talkie';
+    }else{
+      ssEl.textContent='🎧 LISTENING — '+currentTurnTime+'s until your turn';
+    }
+  }
+  ['mars','earth'].forEach(s=>{
+    const el=document.getElementById(s+'Chess');
+    if(el) el.style.outline=(s===activeSpeaker&&currentTurnTime<=10)?'2px solid var(--gold)':'none';
+  });
+}
 
 /* ════════════════════════════════
    ALERTS
@@ -1905,8 +1943,36 @@ async function syncVotesToStorage(){
 }
 
 /* ════════════════════════════════
-   RECORDING
+   RECORDING — auto-starts when debate launches
 ════════════════════════════════ */
+async function autoStartRec(){
+  if(isRec)return;
+  try{
+    const st=await navigator.mediaDevices.getUserMedia({audio:true,video:false});
+    mediaRec=new MediaRecorder(st);
+    audioChunks=[];
+    mediaRec.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRec.onstop=()=>{
+      const blob=new Blob(audioChunks,{type:'audio/webm'});
+      savedAudioURL=URL.createObjectURL(blob);
+      const a=document.createElement('a');
+      a.href=savedAudioURL;
+      a.download='debate-'+(activeBooth||'unknown')+'-'+Date.now()+'.webm';
+      a.click();
+      document.getElementById('recSaved').classList.add('show');
+    };
+    mediaRec.start();
+    isRec=true;
+    document.getElementById('recBtn').classList.add('on');
+    document.getElementById('recDot').classList.add('pulse');
+    document.getElementById('recLabel').textContent='■ REC';
+    document.getElementById('recBannerGlobal').classList.add('show');
+    addEvt('Recording started automatically','sys');
+  }catch(e){
+    addEvt('⚠ Could not auto-record — allow mic access','sys');
+  }
+}
+
 async function toggleRec(){
   const btn=document.getElementById('recBtn'),dot=document.getElementById('recDot'),lbl=document.getElementById('recLabel'),banner=document.getElementById('recBannerGlobal');
   if(!isRec){
