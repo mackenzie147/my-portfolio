@@ -1353,20 +1353,22 @@ function _startPeer(side){
     _peer=new Peer(ROOM_ID,_cfg());
 
     _peer.on('open',()=>{
-      _setWaitTxt('mars','Waiting for Earth Defender...');
       console.log('[P] Mars: ready');
+      _setWaitTxt('mars','Waiting for Earth Defender...');
     });
 
     _peer.on('connection',conn=>{
-      console.log('[P] Mars: got connection, state=',conn.open);
-      // Handle both already-open and not-yet-open
-      const onOpen=()=>{
-        console.log('[P] Mars: sending GO to Earth');
-        try{ conn.send('GO'); }catch(e){}
+      console.log('[P] Mars: got connection, open=',conn.open);
+      _setWaitTxt('mars','Earth is connecting...');
+
+      const sendGO=()=>{
+        console.log('[P] Mars: sending GO');
+        try{ conn.send('GO'); }catch(e){ console.warn('send err',e); }
         _doLaunch('mars');
       };
-      if(conn.open){ onOpen(); }
-      else{ conn.on('open', onOpen); }
+
+      // conn.open is false when connection event fires — must wait for open
+      conn.on('open', sendGO);
     });
 
     _peer.on('call',call=>{
@@ -1387,8 +1389,13 @@ function _startPeer(side){
     _peer.on('error',e=>{
       console.warn('[P] Mars error:',e.type);
       if(e.type==='unavailable-id'){
-        _setWaitTxt('mars','Room busy — retrying in 3s...');
-        setTimeout(()=>_startPeer('mars'),3000);
+        // Previous session still holding ID — wait for PeerJS to expire it (~60s)
+        // But we can force-expire by connecting TO it and disconnecting
+        _setWaitTxt('mars','Previous session active — clearing in 5s...');
+        setTimeout(()=>{
+          console.log('[P] Mars: retrying after unavailable-id');
+          _startPeer('mars');
+        }, 5000);
       }
     });
 
@@ -1408,54 +1415,51 @@ function _startPeer(side){
 function _earthConnect(){
   if(_launched||!_peer||_peer.destroyed)return;
   clearTimeout(_earthTimer);
-  console.log('[P] Earth: attempting connect to',ROOM_ID);
+  console.log('[P] Earth: connecting to',ROOM_ID);
 
   const conn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
   let done=false;
 
-  // PRIMARY: wait for Mars to send us the 'GO' signal
+  // Listen for GO signal from Mars
   conn.on('data',d=>{
     if(done||_launched)return;
+    console.log('[P] Earth: got data:',d);
     if(d==='GO'){
       done=true;
       clearTimeout(_earthTimer);
-      console.log('[P] Earth: got GO from Mars -> launching');
       _setWaitTxt('earth','Connected! Launching...');
       _doLaunch('earth');
       _callMars();
     }
   });
 
-  // ALSO handle open event (fires on some browsers)
+  // Fallback: if open fires and no GO comes within 3s, launch anyway
   conn.on('open',()=>{
-    console.log('[P] Earth: conn open event fired');
-    // Don't launch here — wait for GO from Mars so both sides are in sync
-    // But if GO doesn't come in 2s after open, launch anyway
+    console.log('[P] Earth: conn open event');
     if(done||_launched)return;
     setTimeout(()=>{
       if(!done&&!_launched){
         done=true;
         clearTimeout(_earthTimer);
-        console.log('[P] Earth: open but no GO, launching anyway');
+        console.log('[P] Earth: open fallback launch');
         _doLaunch('earth');
         _callMars();
       }
-    },2000);
+    },3000);
   });
 
   conn.on('error',e=>{
     console.log('[P] Earth conn error:',e.type);
-    // Retry
     if(!done&&!_launched){
       _earthTimer=setTimeout(_earthConnect,2000);
     }
   });
 
-  // Retry if nothing happens in 4s
+  // Retry every 4s
   _earthTimer=setTimeout(()=>{
     if(!done&&!_launched){
-      console.log('[P] Earth: no response, retrying...');
-      _setWaitTxt('earth','Still connecting — retrying...');
+      console.log('[P] Earth: retry');
+      _setWaitTxt('earth','Still connecting...');
       _earthConnect();
     }
   },4000);
@@ -1475,7 +1479,6 @@ function _callMars(){
         setAudioStat('ok','⬤ VOICE CONNECTED');
         addEvt('Voice connected','sys');
       });
-      call.on('error',e=>console.warn('[P] call err:',e));
     }).catch(()=>setAudioStat('err','MIC DENIED'));
 }
 
