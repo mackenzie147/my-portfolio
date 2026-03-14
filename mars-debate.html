@@ -1349,7 +1349,7 @@ function _startPeer(side){
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
 
   if(side==='mars'){
-    console.log('[P] Mars: registering as',ROOM_ID);
+    console.log('[P] Mars: registering',ROOM_ID);
     _peer=new Peer(ROOM_ID,_cfg());
 
     _peer.on('open',()=>{
@@ -1358,17 +1358,28 @@ function _startPeer(side){
     });
 
     _peer.on('connection',conn=>{
-      console.log('[P] Mars: got connection, open=',conn.open);
-      _setWaitTxt('mars','Earth is connecting...');
+      console.log('[P] Mars: connection received, open=',conn.open);
+      _setWaitTxt('mars','Earth connecting — launching...');
 
-      const sendGO=()=>{
-        console.log('[P] Mars: sending GO');
-        try{ conn.send('GO'); }catch(e){ console.warn('send err',e); }
-        _doLaunch('mars');
+      // conn.on('open') is unreliable — use a poll instead
+      let attempts=0;
+      const trySend=()=>{
+        attempts++;
+        console.log('[P] Mars: trySend attempt',attempts,'open=',conn.open);
+        if(conn.open){
+          console.log('[P] Mars: sending GO');
+          conn.send('GO');
+          _doLaunch('mars');
+        } else if(attempts<20){
+          setTimeout(trySend,300);
+        } else {
+          // Give up waiting for open, just launch Mars anyway
+          // Earth will launch via its own open event
+          console.log('[P] Mars: open never fired, launching anyway');
+          _doLaunch('mars');
+        }
       };
-
-      // conn.open is false when connection event fires — must wait for open
-      conn.on('open', sendGO);
+      setTimeout(trySend,300);
     });
 
     _peer.on('call',call=>{
@@ -1389,26 +1400,19 @@ function _startPeer(side){
     _peer.on('error',e=>{
       console.warn('[P] Mars error:',e.type);
       if(e.type==='unavailable-id'){
-        // Previous session still holding ID — wait for PeerJS to expire it (~60s)
-        // But we can force-expire by connecting TO it and disconnecting
-        _setWaitTxt('mars','Previous session active — clearing in 5s...');
-        setTimeout(()=>{
-          console.log('[P] Mars: retrying after unavailable-id');
-          _startPeer('mars');
-        }, 5000);
+        _setWaitTxt('mars','Previous session active — retrying in 5s...');
+        setTimeout(()=>_startPeer('mars'),5000);
       }
     });
 
   } else {
     _peer=new Peer(_cfg());
     _peer.on('open',()=>{
-      console.log('[P] Earth: peer open, connecting to room');
+      console.log('[P] Earth: open, connecting');
       _setWaitTxt('earth','Connecting to Colony Booth...');
       _earthConnect();
     });
-    _peer.on('error',e=>{
-      console.warn('[P] Earth peer error:',e.type);
-    });
+    _peer.on('error',e=>console.warn('[P] Earth peer error:',e.type));
   }
 }
 
@@ -1420,46 +1424,29 @@ function _earthConnect(){
   const conn=_peer.connect(ROOM_ID,{reliable:true,serialization:'json'});
   let done=false;
 
-  // Listen for GO signal from Mars
-  conn.on('data',d=>{
+  const launch=()=>{
     if(done||_launched)return;
-    console.log('[P] Earth: got data:',d);
-    if(d==='GO'){
-      done=true;
-      clearTimeout(_earthTimer);
-      _setWaitTxt('earth','Connected! Launching...');
-      _doLaunch('earth');
-      _callMars();
-    }
-  });
+    done=true;
+    clearTimeout(_earthTimer);
+    console.log('[P] Earth: launching');
+    _setWaitTxt('earth','Connected! Launching...');
+    _doLaunch('earth');
+    _callMars();
+  };
 
-  // Fallback: if open fires and no GO comes within 3s, launch anyway
-  conn.on('open',()=>{
-    console.log('[P] Earth: conn open event');
-    if(done||_launched)return;
-    setTimeout(()=>{
-      if(!done&&!_launched){
-        done=true;
-        clearTimeout(_earthTimer);
-        console.log('[P] Earth: open fallback launch');
-        _doLaunch('earth');
-        _callMars();
-      }
-    },3000);
-  });
+  // Three ways Earth can know it's connected:
+  conn.on('open', ()=>{ console.log('[P] Earth: conn open'); launch(); });
+  conn.on('data', d=>{ console.log('[P] Earth: got data',d); if(d==='GO') launch(); });
 
   conn.on('error',e=>{
     console.log('[P] Earth conn error:',e.type);
-    if(!done&&!_launched){
-      _earthTimer=setTimeout(_earthConnect,2000);
-    }
+    if(!done&&!_launched) _earthTimer=setTimeout(_earthConnect,2000);
   });
 
-  // Retry every 4s
+  // Retry every 4s if nothing happens
   _earthTimer=setTimeout(()=>{
     if(!done&&!_launched){
-      console.log('[P] Earth: retry');
-      _setWaitTxt('earth','Still connecting...');
+      console.log('[P] Earth: timeout, retrying');
       _earthConnect();
     }
   },4000);
