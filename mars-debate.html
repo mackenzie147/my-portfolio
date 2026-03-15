@@ -1874,16 +1874,12 @@ function castVote(side){
 }
 function updateVoteUI(){
   const tot=marsVotes+earthVotes,mp=tot?(marsVotes/tot*100):50;
-  // audience bar
-  document.getElementById('abMarsBar').style.width=mp+'%';
-  document.getElementById('abEarthBar').style.width=(100-mp)+'%';
-  document.getElementById('abMarsN').textContent=marsVotes;
-  document.getElementById('abEarthN').textContent=earthVotes;
-  // end screen final bars
-  document.getElementById('vfMarsBar').style.width=mp+'%';
-  document.getElementById('vfEarthBar').style.width=(100-mp)+'%';
-  document.getElementById('vfMarsN').textContent=marsVotes;
-  document.getElementById('vfEarthN').textContent=earthVotes;
+  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.style.width=v};
+  const t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
+  s('abMarsBar',mp+'%');s('abEarthBar',(100-mp)+'%');
+  t('abMarsN',marsVotes);t('abEarthN',earthVotes);
+  s('vfMarsBar',mp+'%');s('vfEarthBar',(100-mp)+'%');
+  t('vfMarsN',marsVotes);t('vfEarthN',earthVotes);
 }
 
 /* ════════════════════════════════
