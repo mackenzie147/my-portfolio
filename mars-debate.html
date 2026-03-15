@@ -2035,52 +2035,26 @@ function addEvt(text,cls=''){
    END DEBATE
 ════════════════════════════════ */
 async function endDebate(){
+  if(_debateEnding)return;
   _debateEnding=true;
-  closeOverlay('endConfirmOverlay');
-  clearInterval(chessInt);clearInterval(totalInt);clearInterval(_wallClockInt);clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);clearInterval(audiencePollInt);
-  if(isRec&&mediaRec)mediaRec.stop();
-  clearTimeout(_earthTimer);
+
+  // Stop everything
+  clearInterval(chessInt);clearInterval(totalInt);clearInterval(_wallClockInt);
+  clearInterval(audioLoopInt);clearInterval(fakeInt);clearInterval(sigPollInt);
+  clearInterval(audiencePollInt2);clearTimeout(_retryTimer);
+
+  // Stop recording and save
+  if(isRec&&mediaRec){mediaRec.stop();isRec=false;}
   if(_mediaCall){try{_mediaCall.close();}catch(e){}}
   if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
   if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-  if(audioCtx){audioCtx.close();audioCtx=null;}
-  _launched=false;
-  // Mark debate ended for audience page
+  if(audioCtx){try{audioCtx.close();}catch(e){} audioCtx=null;}
+
+  // Mark audience debate as over
   const av=await sg('audienceVotes')||{};av.debateActive=false;await ss('audienceVotes',av);
 
-  const tot=marsVotes+earthVotes,mp=tot?marsVotes/tot:0.5;
-  let result='UNDECIDED',resultTxt='',subTxt='';
-  const ep=document.getElementById('endPl');
-  if(tot===0){ep.className='pop-planet tp';result='UNDECIDED';resultTxt='THE JURY IS OUT';subTxt='No audience votes were cast.<br>Humanity remains undecided.';}
-  else if(mp>0.55){ep.className='pop-planet mp';result='COLONY';resultTxt='⬤ COLONY WINS';subTxt=`${marsVotes}–${earthVotes} for Mars colonization.<br>Launch window: 2047.`;}
-  else if(mp<0.45){ep.className='pop-planet ep';result='EARTH';resultTxt='⬤ EARTH HOLDS';subTxt=`${earthVotes}–${marsVotes} to stay on Earth.<br>Now we have to fix what we broke.`;}
-  else{ep.className='pop-planet tp';result='SPLIT';resultTxt='HUMANITY IS SPLIT';subTxt=`${marsVotes} for the stars. ${earthVotes} for home.<br>The debate never ends.`;}
-
-  const rl=document.getElementById('endResultLabel');
-  rl.textContent=resultTxt;
-  rl.className='end-result-label '+(result==='COLONY'?'rc':result==='EARTH'?'bc':'gc');
-  document.getElementById('endSub').innerHTML=subTxt;
-  updateVoteUI();
-
-  // Save archive
-  let arc=await sg('debateArchive')||[];
-  arc.unshift({id:Date.now(),date:new Date().toLocaleString(),result,marsV:marsVotes,earthV:earthVotes,events:[...events],hasAudio:!!savedAudioURL,testMode});
-  if(arc.length>30)arc=arc.slice(0,30);
-  await ss('debateArchive',arc);
-
-  // Clean room
-  const r=await sg(ROOM)||{};r.ready={};r.signals=[];await ss(ROOM,r);
-
-  showThanksScreen();
-}
-function showThanksScreen(){
-  // Hide debate screen, show thanks
+  // Show thanks screen
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
-  const side=activeBooth==='earth'?'earth':'mars';
-  const col=side==='mars'?'var(--mars-g)':'var(--earth-g)';
-  const title=side==='mars'?'COLONY ADVOCATE':'EARTH DEFENDER';
-
-  // Create or reuse thanks div
   let thanks=document.getElementById('_thanksScreen');
   if(!thanks){
     thanks=document.createElement('div');
@@ -2088,14 +2062,17 @@ function showThanksScreen(){
     thanks.style.cssText='position:fixed;inset:0;z-index:300;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem;gap:1.2rem;background:rgba(5,5,13,.98)';
     document.body.appendChild(thanks);
   }
+  const side=activeBooth==='earth'?'earth':'mars';
+  const col=side==='mars'?'var(--mars-g)':'var(--earth-g)';
+  const title=side==='mars'?'COLONY ADVOCATE':'EARTH DEFENDER';
   thanks.innerHTML=`
     <div style="font-size:3rem">🌌</div>
-    <div style="font-family:var(--hero);font-size:clamp(3rem,10vw,6rem);line-height:.9;color:${col}">THANKS FOR<br>DEBATING</div>
-    <div style="font-family:var(--disp);font-size:10px;letter-spacing:.3em;color:var(--muted)">${title}</div>
-    <div style="font-size:12px;color:var(--muted);max-width:400px;line-height:1.8">
+    <div style="font-family:var(--hero);font-size:clamp(3rem,10vw,5.5rem);line-height:.9;color:${col}">THANKS FOR<br>DEBATING</div>
+    <div style="font-family:var(--disp);font-size:9px;letter-spacing:.3em;color:var(--muted)">${title}</div>
+    <div style="font-size:12px;color:var(--muted);max-width:400px;line-height:1.9;border:1px solid rgba(255,255,255,.07);border-radius:4px;padding:1.2rem">
       Your arguments have been heard.<br>
-      The recording has been saved to your Downloads folder.<br><br>
-      <em style="color:rgba(240,192,64,.6)">In the near-distant future, this debate never happened.</em>
+      Recording saved to your Downloads folder.<br><br>
+      <em style="color:rgba(240,192,64,.55)">In the near-distant future, this debate never happened.</em>
     </div>
     <div style="font-size:10px;color:var(--muted);letter-spacing:.2em">Returning to booth in <span id="_thanksCt">5</span>s...</div>
   `;
@@ -2109,31 +2086,18 @@ function showThanksScreen(){
     if(ct<=0){
       clearInterval(iv);
       thanks.style.display='none';
-      returnToBooth();
+      _hardReset();
     }
   },1000);
 }
 
-/* ════════════════════════════════
-   RETURN TO BOOTH
-════════════════════════════════ */
-function returnToBooth(){
-  closeOverlay('endResultOverlay');
+function _hardReset(){
+  // Reset all state and go back to the booth this person was using
   const booth=activeBooth==='earth'?'earth':'mars';
-
-  // Full state reset
   testMode=false;isRec=false;marsVotes=0;earthVotes=0;
-  marsT=90;earthT=90;totalT=180;currentTurnTime=TURN_SECONDS;
+  marsT=90;earthT=90;totalT=TOTAL_SECONDS;currentTurnTime=TURN_SECONDS;
   _debateStartMs=0;_lastTurnIndex=-1;_launched=false;_debateEnding=false;
-  clearInterval(_wallClockInt);clearTimeout(_retryTimer);
   events=[];savedAudioURL=null;alertsFired.clear();
-
-  // Destroy peer so next debate gets fresh connection
-  if(_peer){try{_peer.destroy();}catch(e){} _peer=null;}
-  if(_dataConn){try{_dataConn.close();}catch(e){} _dataConn=null;}
-  if(localStream){localStream.getTracks().forEach(t=>t.stop());localStream=null;}
-
-  // Reset UI
   document.getElementById(booth+'ReadyDiv').style.display='block';
   document.getElementById(booth+'WaitDiv').classList.remove('show');
   document.getElementById(booth+'ConnDiv').style.display='none';
@@ -2141,13 +2105,19 @@ function returnToBooth(){
   document.getElementById('recDot').classList.remove('pulse');
   document.getElementById('recLabel').textContent='REC';
   document.getElementById('recBannerGlobal').classList.remove('show');
-  document.getElementById('recSaved').classList.remove('show');
+  const el=document.getElementById('recSaved');if(el)el.classList.remove('show');
   document.getElementById('eventLog').innerHTML='';
-
-  // Return to THIS side's booth — ready for next pair
   showScreen(booth+'Screen');
 }
 
+
+/* ════════════════════════════════
+   RETURN TO BOOTH
+════════════════════════════════ */
+function returnToBooth(){
+  closeOverlay('endResultOverlay');
+  _hardReset();
+}
 /* ════════════════════════════════
    ARCHIVE
 ════════════════════════════════ */
