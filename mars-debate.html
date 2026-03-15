@@ -663,17 +663,31 @@ canvas.constellation{position:fixed;inset:0;z-index:2;pointer-events:none}
       <div class="event-log" id="eventLog"></div>
     </div>
 
-    <!-- Sentiment bar — randomly drifts to feel reactive -->
-    <div style="flex-shrink:0;display:flex;align-items:center;gap:12px;padding:8px 16px;border-top:1px solid var(--border);background:rgba(5,5,13,.6);backdrop-filter:blur(10px)">
-      <div style="font-family:var(--disp);font-size:8px;letter-spacing:.25em;color:var(--mars-g);flex-shrink:0">COLONY</div>
-      <div style="flex:1;height:6px;border-radius:3px;background:rgba(255,255,255,.07);overflow:hidden;display:flex">
-        <div id="sentBar" style="background:linear-gradient(to right,var(--mars),#E74C3C);width:50%;transition:width 1.5s ease"></div>
+    <!-- Audience bar — vote display only, QR shown here -->
+    <div class="audience-bar">
+      <div class="ab-left">
+        <div class="ab-qr-wrap" id="abQrWrap">
+          <canvas id="qrCanvas" width="48" height="48"></canvas>
+        </div>
+        <div class="ab-info">
+          <div class="ab-title">AUDIENCE VOTE</div>
+          <div class="ab-url" id="abUrl">personal-website.dev/mars-audience</div>
+        </div>
       </div>
-      <div style="font-family:var(--disp);font-size:8px;letter-spacing:.25em;color:var(--earth-g);flex-shrink:0">EARTH</div>
-      <button class="end-btn" onclick="endDebate()">END DEBATE</button>
+      <div class="ab-mid">
+        <div class="ab-score">
+          <span class="ab-sc rc" id="abMarsN">0</span>
+          <div class="ab-track"><div class="ab-m" id="abMarsBar" style="width:50%"></div><div class="ab-e" id="abEarthBar" style="width:50%"></div></div>
+          <span class="ab-sc bc" id="abEarthN">0</span>
+        </div>
+        <div class="ab-listeners"><span id="abListeners">0</span> watching live</div>
+      </div>
+      <div class="ab-right">
+        <button class="end-btn" onclick="openOverlay('endConfirmOverlay')">END DEBATE</button>
+      </div>
     </div>
 
-        <!-- Ticker — inside flex column so it never overlaps -->
+    <!-- Ticker — inside flex column so it never overlaps -->
     <div class="ticker" id="tickerBar" style="display:none"><div class="ticker-inner" id="tickerInner"></div></div>
   </div>
   </div>
@@ -1457,9 +1471,8 @@ function _handleDataMsg(raw){
   if(!d||typeof d!=='object')return;
   if(d.type==='SYNC_START'){
     // Earth receives the wall-clock start time from Mars
-    // Subtract 5s to compensate for ~5s lag in Earth receiving the signal
-    _debateStartMs=d.startMs-5000;
-    console.log('[SYNC] Got start time from Mars, adjusted -5s');
+    _debateStartMs=d.startMs;
+    console.log('[SYNC] Got start time from Mars:',_debateStartMs);
     startWallClock();
   }
   if(d.type==='SYNC'){
@@ -1520,7 +1533,6 @@ async function launchDebate(side){
   // Show walkie talkie connect screen for 30s before debate starts
   showWalkieTalkieScreen(side);
   addEvt('⬤ DEBATE STARTED','sys');
-  startSentimentDrift();
 
   // Style return button
   if(activeBooth==='mars'){
@@ -1728,7 +1740,7 @@ function showWalkieTalkieScreen(side){
       }
       // Earth: startWallClock called when SYNC_START received, or after 3s timeout
       if(activeBooth==='earth'){
-        setTimeout(()=>{ if(!_debateStartMs){_debateStartMs=Date.now()-5000;startWallClock();} },3000);
+        setTimeout(()=>{ if(!_debateStartMs){_debateStartMs=Date.now();startWallClock();} },3000);
       }
     }
   },1000);
@@ -1750,19 +1762,6 @@ function startClocks(){
   startAudioLoop();
 }
 
-
-/* Sentiment bar — drifts randomly to feel reactive */
-let _sentPct=50;
-function startSentimentDrift(){
-  setInterval(()=>{
-    // Random walk: drift ±2-8% each tick, biased toward active speaker
-    const bias=activeSpeaker==='mars'?2:-2;
-    const drift=(Math.random()*10-5)+bias;
-    _sentPct=Math.max(15,Math.min(85,_sentPct+drift));
-    const el=document.getElementById('sentBar');
-    if(el) el.style.width=_sentPct+'%';
-  },2500);
-}
 function startWallClock(){
   clearInterval(_wallClockInt);
   clearInterval(chessInt);clearInterval(totalInt);
@@ -1874,12 +1873,16 @@ function castVote(side){
 }
 function updateVoteUI(){
   const tot=marsVotes+earthVotes,mp=tot?(marsVotes/tot*100):50;
-  const s=(id,v)=>{const e=document.getElementById(id);if(e)e.style.width=v};
-  const t=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v};
-  s('abMarsBar',mp+'%');s('abEarthBar',(100-mp)+'%');
-  t('abMarsN',marsVotes);t('abEarthN',earthVotes);
-  s('vfMarsBar',mp+'%');s('vfEarthBar',(100-mp)+'%');
-  t('vfMarsN',marsVotes);t('vfEarthN',earthVotes);
+  // audience bar
+  document.getElementById('abMarsBar').style.width=mp+'%';
+  document.getElementById('abEarthBar').style.width=(100-mp)+'%';
+  document.getElementById('abMarsN').textContent=marsVotes;
+  document.getElementById('abEarthN').textContent=earthVotes;
+  // end screen final bars
+  document.getElementById('vfMarsBar').style.width=mp+'%';
+  document.getElementById('vfEarthBar').style.width=(100-mp)+'%';
+  document.getElementById('vfMarsN').textContent=marsVotes;
+  document.getElementById('vfEarthN').textContent=earthVotes;
 }
 
 /* ════════════════════════════════
