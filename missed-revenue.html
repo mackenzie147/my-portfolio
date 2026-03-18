@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Left on Read — Missed Revenue Calculator</title>
+<title>Missed Revenue Calculator</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
 <style>
   :root {
@@ -32,39 +32,8 @@
   }
 
   .page-wrap {
-    max-width: 900px;
+    max-width: 960px;
     margin: 0 auto;
-  }
-
-  /* ── HEADER ── */
-  .site-header {
-    text-align: center;
-    margin-bottom: 40px;
-  }
-  .site-header .eyebrow {
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 3px;
-    color: var(--ink-faint);
-    text-transform: uppercase;
-    margin-bottom: 10px;
-  }
-  .site-header h1 {
-    font-size: clamp(32px, 6vw, 56px);
-    font-weight: 300;
-    letter-spacing: -1px;
-    line-height: 1.1;
-    color: var(--ink);
-  }
-  .site-header h1 strong { font-weight: 500; }
-  .site-header p {
-    margin-top: 12px;
-    font-size: 16px;
-    color: var(--ink-mid);
-    max-width: 480px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.6;
   }
 
   /* ── PANELS ── */
@@ -157,15 +126,188 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* ── RECEIPT AREA ── */
+  /* ── OUTPUT LAYOUT ── */
   #receipt-section { display: none; }
   #receipt-section.show { display: block; }
 
-  /* ── RECEIPT ── */
+  .output-layout {
+    display: block;
+  }
+
+  /* ── FLOATING SCREENSHOTS PANEL ── */
+  .floating-screenshots {
+    position: fixed;
+    top: 80px;
+    right: 24px;
+    width: 300px;
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.1);
+    z-index: 1000;
+    display: none;
+    user-select: none;
+  }
+  .floating-screenshots.visible { display: block; }
+
+  .float-handle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px 10px;
+    cursor: grab;
+    border-bottom: 1px solid var(--border);
+    border-radius: 12px 12px 0 0;
+    background: var(--paper);
+  }
+  .float-handle:active { cursor: grabbing; }
+  .float-handle-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .float-handle-dots {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3px;
+    opacity: 0.35;
+  }
+  .float-handle-dots span {
+    width: 3px; height: 3px;
+    background: var(--ink);
+    border-radius: 50%;
+    display: block;
+  }
+  .float-title {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+  }
+  .float-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: var(--ink-faint);
+    font-size: 16px;
+    line-height: 1;
+    padding: 0 2px;
+    transition: color 0.1s;
+  }
+  .float-close:hover { color: var(--red); }
+
+  .float-body { padding: 14px; }
+
+  .drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 18px 12px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--paper);
+    position: relative;
+  }
+  .drop-zone:hover, .drop-zone.dragover {
+    border-color: #888;
+    background: #f5f3ee;
+  }
+  .drop-zone input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .drop-zone-icon { font-size: 22px; margin-bottom: 6px; line-height: 1; }
+  .drop-zone-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.5px;
+    line-height: 1.6;
+  }
+  .drop-zone-label strong { color: var(--ink-mid); font-weight: 500; }
+
+  .screenshots-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-top: 10px;
+  }
+
+  .screenshot-item {
+    position: relative;
+    border-radius: 7px;
+    overflow: hidden;
+    background: #f0ede4;
+    aspect-ratio: 9/16;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .screenshot-item.landscape {
+    aspect-ratio: 16/9;
+    grid-column: span 2;
+  }
+  .screenshot-item img {
+    width: 100%; height: 100%;
+    object-fit: cover; display: block;
+  }
+  .screenshot-remove {
+    position: absolute;
+    top: 5px; right: 5px;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.15s;
+  }
+  .screenshot-item:hover .screenshot-remove { opacity: 1; }
+
+  .screenshot-caption {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    padding: 5px 7px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.52));
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: rgba(255,255,255,0.85);
+    letter-spacing: 0.4px;
+    cursor: text;
+    min-height: 22px;
+  }
+  .screenshot-caption[contenteditable="true"]:focus {
+    background: rgba(0,0,0,0.62);
+    outline: none;
+  }
+
+  .screenshots-hint {
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.3px;
+    line-height: 1.6;
+    margin-top: 8px;
+    text-align: center;
+  }
+
+  /* toggle button in edit controls */
+  .btn-sm.screenshots-toggle-btn { position: relative; }
+
+  /* ── RECEIPT AREA ── */
+  .receipt-col {}
+
   .receipt-wrap {
     display: flex;
     justify-content: center;
-    padding: 10px 0 30px;
+    padding: 0 0 30px;
   }
 
   .receipt {
@@ -222,7 +364,6 @@
     letter-spacing: 1.5px;
     margin-top: 6px;
   }
-  .receipt-brand .sub [contenteditable]:focus { outline: 1px dashed #aaa; }
 
   /* STAMP */
   .stamp {
@@ -399,13 +540,6 @@
     line-height: 1.6;
     margin-bottom: 14px;
   }
-  .edit-hint code {
-    background: #f4f4f0;
-    padding: 1px 5px;
-    border-radius: 3px;
-    font-family: 'DM Mono', monospace;
-    font-size: 12px;
-  }
 
   .btn-row {
     display: flex;
@@ -463,35 +597,39 @@
   }
   .demo-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
 
+  /* ── COMPACT HEADER ── */
+  .compact-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+  .compact-header h1 {
+    font-size: 22px;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+    color: var(--ink);
+    font-family: 'DM Mono', monospace;
+  }
+  .compact-header p {
+    font-size: 13px;
+    color: var(--ink-faint);
+    line-height: 1.5;
+  }
+
   /* ── PRINT ── */
   @media print {
     body { background: white !important; padding: 0; }
-    .panel, .edit-controls, .hosting-panel, .site-header, #input-section { display: none !important; }
+    .panel, .edit-controls, .compact-header,
+    #input-section, .demos-row, .floating-screenshots { display: none !important; }
     #receipt-section { display: block !important; }
     .receipt-wrap { padding: 0; }
     .receipt { box-shadow: none; }
     .delete-item-btn { display: none !important; }
     [contenteditable] { outline: none !important; }
   }
-
-  /* ── MISC ── */
-  .add-item-row {
-    display: flex;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .add-item-row input {
-    flex: 1;
-    padding: 7px 10px;
-    border: 1px dashed var(--border);
-    border-radius: 6px;
-    font-family: 'DM Mono', monospace;
-    font-size: 11px;
-    background: transparent;
-    color: var(--ink);
-    outline: none;
-  }
-  .add-item-row input:focus { border-color: #888; }
 
   .receipt-loading {
     text-align: center;
@@ -501,27 +639,16 @@
     color: var(--ink-faint);
     letter-spacing: 1px;
   }
-  .receipt-loading .dots::after {
-    content: '...';
-    animation: dots 1.2s steps(4, end) infinite;
-  }
-  @keyframes dots {
-    0%, 100% { content: ''; }
-    25% { content: '.'; }
-    50% { content: '..'; }
-    75% { content: '...'; }
-  }
 </style>
 </head>
 <body>
 
 <div class="page-wrap">
 
-  <!-- HEADER -->
-  <header class="site-header">
-    <div class="eyebrow">Social Commerce Analytics</div>
-    <h1><strong>Left on Read.</strong><br>Receipt Generator</h1>
-    <p>Paste a social media post link + the comments a brand never replied to. We'll print the receipt for what they lost.</p>
+  <!-- COMPACT HEADER -->
+  <header class="compact-header">
+    <h1>RECEIPT GENERATOR</h1>
+    <p>Paste a post URL + unanswered comments → get the receipt for what the brand lost.</p>
   </header>
 
   <!-- DEMOS -->
@@ -571,73 +698,110 @@
     </div>
   </div>
 
+  <!-- FLOATING SCREENSHOTS PANEL -->
+  <div class="floating-screenshots" id="floating-screenshots">
+    <div class="float-handle" id="float-handle">
+      <div class="float-handle-left">
+        <div class="float-handle-dots">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <span class="float-title">Screenshots</span>
+      </div>
+      <button class="float-close" onclick="toggleScreenshots()" title="Close">×</button>
+    </div>
+    <div class="float-body">
+      <div class="drop-zone" id="drop-zone"
+        ondragover="handleDragOver(event)"
+        ondragleave="handleDragLeave(event)"
+        ondrop="handleDrop(event)">
+        <input type="file" accept="image/*" multiple onchange="handleFiles(this.files)" />
+        <div class="drop-zone-icon">📸</div>
+        <div class="drop-zone-label">
+          <strong>Drop screenshots here</strong><br>
+          or click to upload · up to 4
+        </div>
+      </div>
+      <div class="screenshots-grid" id="screenshots-grid"></div>
+      <div class="screenshots-hint" id="screenshots-hint" style="display:none">
+        Drag handle to move · click captions to edit
+      </div>
+    </div>
+  </div>
+
   <!-- RECEIPT OUTPUT -->
   <div id="receipt-section">
     <div class="edit-controls">
       <div class="panel-label">Edit Receipt</div>
-      <p class="edit-hint">Click any text on the receipt below to edit it inline. Use the buttons to add/remove items or print.</p>
+      <p class="edit-hint">Click any text on the receipt to edit inline. Use the screenshots panel to attach the original post.</p>
       <div class="btn-row">
         <button class="btn-sm" onclick="addLineItem()">+ Add item</button>
         <button class="btn-sm" onclick="recalcTotal()">↻ Recalculate total</button>
-        <button class="btn-sm primary" onclick="window.print()">🖨 Print receipt</button>
+        <button class="btn-sm screenshots-toggle-btn" onclick="toggleScreenshots()" id="ss-toggle-btn">📸 Screenshots</button>
+        <button class="btn-sm primary" onclick="window.print()">🖨 Print / Save as PDF</button>
         <button class="btn-sm" onclick="resetAll()">← Start over</button>
       </div>
     </div>
 
-    <div class="receipt-wrap">
-      <div class="receipt" id="receipt">
-        <div class="stamp">NEVER REPLIED</div>
-        <div class="receipt-inner">
+    <div class="output-layout">
+      <div class="receipt-col">
+        <div class="receipt-wrap">
+          <div class="receipt" id="receipt">
+            <div class="stamp">NEVER REPLIED</div>
+            <div class="receipt-inner">
 
-          <div class="receipt-brand">
-            <div class="brand-name" id="r-brand" contenteditable="true">BRAND NAME</div>
-            <div class="sub">
-              <span id="r-platform" contenteditable="true">INSTAGRAM</span>
-              &nbsp;·&nbsp;
-              <span id="r-date" contenteditable="true">—</span>
+              <div class="receipt-brand">
+                <div class="brand-name" id="r-brand" contenteditable="true">BRAND NAME</div>
+                <div class="sub">
+                  <span id="r-platform" contenteditable="true">INSTAGRAM</span>
+                  &nbsp;·&nbsp;
+                  <span id="r-date" contenteditable="true">—</span>
+                </div>
+              </div>
+
+              <div class="receipt-meta">
+                POST URL<span id="r-url" contenteditable="true" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;white-space:nowrap;">—</span>
+                <br>RECEIPT NO.<span id="r-num" contenteditable="true">—</span>
+                <br>CASHIER<span contenteditable="true">NOT A SINGLE REPLY</span>
+              </div>
+
+              <hr class="receipt-divider"/>
+              <div class="receipt-section-label">ITEMS LOST</div>
+
+              <div id="line-items"></div>
+
+              <hr class="receipt-divider"/>
+              <div class="receipt-totals" id="r-totals"></div>
+
+              <div class="receipt-footer">
+                <div class="footer-big" id="r-footer" contenteditable="true">
+                  SALE NOT COMPLETED<br>
+                  CUSTOMER LEFT UNANSWERED<br>
+                  REVENUE LOST TO SILENCE
+                </div>
+                <div class="footer-tiny">
+                  THIS IS AN ESTIMATE BASED ON<br>
+                  PUBLICLY VISIBLE UNANSWERED COMMENTS<br>
+                  <span id="r-post-ref" contenteditable="true">REF: SOCIAL POST</span>
+                </div>
+              </div>
+
+              <div class="barcode">||||| ||| || ||||| || ||| ||||| ||| |||||</div>
+              <div class="barcode-text" id="r-barcode-text" contenteditable="true">LEFT-ON-READ-0000</div>
+
             </div>
           </div>
-
-          <div class="receipt-meta">
-            POST URL<span id="r-url" contenteditable="true" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;white-space:nowrap;">—</span>
-            <br>RECEIPT NO.<span id="r-num" contenteditable="true">—</span>
-            <br>CASHIER<span contenteditable="true">NOT A SINGLE REPLY</span>
-          </div>
-
-          <hr class="receipt-divider"/>
-          <div class="receipt-section-label">ITEMS LOST</div>
-
-          <div id="line-items"></div>
-
-          <hr class="receipt-divider"/>
-          <div class="receipt-totals" id="r-totals"></div>
-
-          <div class="receipt-footer">
-            <div class="footer-big" id="r-footer" contenteditable="true">
-              SALE NOT COMPLETED<br>
-              CUSTOMER LEFT UNANSWERED<br>
-              REVENUE LOST TO SILENCE
-            </div>
-            <div class="footer-tiny">
-              THIS IS AN ESTIMATE BASED ON<br>
-              PUBLICLY VISIBLE UNANSWERED COMMENTS<br>
-              <span id="r-post-ref" contenteditable="true">REF: SOCIAL POST</span>
-            </div>
-          </div>
-
-          <div class="barcode">||||| ||| || ||||| || ||| ||||| ||| |||||</div>
-          <div class="barcode-text" id="r-barcode-text" contenteditable="true">LEFT-ON-READ-0000</div>
-
         </div>
       </div>
-    </div>
+
+      </div><!-- /receipt-col -->
+    </div><!-- /output-layout -->
   </div>
 
 </div>
 
 <script>
 
-
+/* ── DEMOS ── */
 const DEMOS = {
   nike: {
     url: "https://www.instagram.com/p/nike-airmax2024-example/",
@@ -687,6 +851,144 @@ function loadDemo(key) {
   document.getElementById("input-section").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
+/* ── FLOATING PANEL DRAG ── */
+(function() {
+  let dragging = false, ox = 0, oy = 0;
+  const handle = document.getElementById("float-handle");
+  const panel = document.getElementById("floating-screenshots");
+
+  handle.addEventListener("mousedown", e => {
+    if (e.target.classList.contains("float-close")) return;
+    dragging = true;
+    const rect = panel.getBoundingClientRect();
+    ox = e.clientX - rect.left;
+    oy = e.clientY - rect.top;
+    panel.style.transition = "none";
+    e.preventDefault();
+  });
+
+  document.addEventListener("mousemove", e => {
+    if (!dragging) return;
+    let x = e.clientX - ox;
+    let y = e.clientY - oy;
+    x = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, x));
+    y = Math.max(0, Math.min(window.innerHeight - panel.offsetHeight, y));
+    panel.style.left = x + "px";
+    panel.style.top = y + "px";
+    panel.style.right = "auto";
+  });
+
+  document.addEventListener("mouseup", () => { dragging = false; });
+
+  // Touch support
+  handle.addEventListener("touchstart", e => {
+    if (e.target.classList.contains("float-close")) return;
+    const t = e.touches[0];
+    const rect = panel.getBoundingClientRect();
+    ox = t.clientX - rect.left;
+    oy = t.clientY - rect.top;
+    dragging = true;
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("touchmove", e => {
+    if (!dragging) return;
+    const t = e.touches[0];
+    let x = t.clientX - ox;
+    let y = t.clientY - oy;
+    x = Math.max(0, Math.min(window.innerWidth - panel.offsetWidth, x));
+    y = Math.max(0, Math.min(window.innerHeight - panel.offsetHeight, y));
+    panel.style.left = x + "px";
+    panel.style.top = y + "px";
+    panel.style.right = "auto";
+    e.preventDefault();
+  }, { passive: false });
+
+  document.addEventListener("touchend", () => { dragging = false; });
+})();
+
+function toggleScreenshots() {
+  const panel = document.getElementById("floating-screenshots");
+  const btn = document.getElementById("ss-toggle-btn");
+  const isVisible = panel.classList.contains("visible");
+  panel.classList.toggle("visible", !isVisible);
+  btn.style.background = !isVisible ? "var(--ink)" : "";
+  btn.style.color = !isVisible ? "#fff" : "";
+  btn.style.borderColor = !isVisible ? "var(--ink)" : "";
+}
+
+/* ── SCREENSHOTS ── */
+let screenshots = [];
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById("drop-zone").classList.add("dragover");
+}
+function handleDragLeave(e) {
+  document.getElementById("drop-zone").classList.remove("dragover");
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById("drop-zone").classList.remove("dragover");
+  handleFiles(e.dataTransfer.files);
+}
+
+function handleFiles(files) {
+  const remaining = 4 - screenshots.length;
+  const toAdd = Array.from(files).slice(0, remaining);
+  toAdd.forEach(file => {
+    if (!file.type.startsWith("image/")) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      screenshots.push({ src: e.target.result, caption: "" });
+      renderScreenshots();
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function renderScreenshots() {
+  const grid = document.getElementById("screenshots-grid");
+  const hint = document.getElementById("screenshots-hint");
+  grid.innerHTML = "";
+
+  screenshots.forEach((s, i) => {
+    const imgTest = new Image();
+    imgTest.src = s.src;
+
+    const item = document.createElement("div");
+    item.className = "screenshot-item";
+
+    imgTest.onload = () => {
+      if (imgTest.naturalWidth > imgTest.naturalHeight * 1.2) {
+        item.classList.add("landscape");
+      }
+    };
+
+    item.innerHTML = `
+      <img src="${s.src}" alt="screenshot ${i+1}" />
+      <button class="screenshot-remove" onclick="removeScreenshot(${i})" title="Remove">✕</button>
+      <div class="screenshot-caption" contenteditable="true"
+        oninput="updateCaption(${i}, this.textContent)">${s.caption || ""}</div>
+    `;
+    grid.appendChild(item);
+  });
+
+  hint.style.display = screenshots.length > 0 ? "block" : "none";
+  const dz = document.getElementById("drop-zone");
+  dz.style.display = screenshots.length >= 4 ? "none" : "block";
+}
+
+function removeScreenshot(idx) {
+  screenshots.splice(idx, 1);
+  renderScreenshots();
+}
+
+function updateCaption(idx, text) {
+  if (screenshots[idx]) screenshots[idx].caption = text;
+}
+
+/* ── API ANALYSIS ── */
 let receiptData = null;
 
 function setStatus(msg, type = "loading") {
@@ -799,6 +1101,7 @@ ${comments}`;
   }
 }
 
+/* ── RECEIPT BUILDER ── */
 function buildReceipt(data) {
   const now = new Date();
   const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toUpperCase();
@@ -888,6 +1191,11 @@ function resetAll() {
   document.getElementById("brand-name").value = "";
   document.getElementById("product-name").value = "";
   document.getElementById("extra-context").value = "";
+  screenshots = [];
+  renderScreenshots();
+  document.getElementById("floating-screenshots").classList.remove("visible");
+  const btn = document.getElementById("ss-toggle-btn");
+  if (btn) { btn.style.background = ""; btn.style.color = ""; btn.style.borderColor = ""; }
   hideStatus();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
