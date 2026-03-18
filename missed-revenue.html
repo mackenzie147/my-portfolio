@@ -636,7 +636,7 @@
 </div>
 
 <script>
-const ANTHROPIC_KEY = ""; // ← paste your Anthropic API key here when self-hosting
+
 
 const DEMOS = {
   nike: {
@@ -758,7 +758,7 @@ Comments to analyze:
 ${comments}`;
 
   try {
-    const res = await fetch("https://api.anthropic.com/v1/messages", {
+    const res = await fetch("/api/anthropic", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
