@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Left on Read — Missed Revenue Calculator</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+<style>
+  :root {
+    --paper: #faf8f3;
+    --ink: #1a1a18;
+    --ink-mid: #555550;
+    --ink-faint: #999990;
+    --red: #c0392b;
+    --red-bg: #fdf0ee;
+    --green: #1a6b3c;
+    --green-bg: #eef6f1;
+    --border: #ddddd5;
+    --bg: #f0ede4;
+    --card-shadow: 0 2px 4px rgba(0,0,0,0.06), 0 8px 24px rgba(0,0,0,0.08);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    background-image: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23c8c4b8' fill-opacity='0.25'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E");
+    min-height: 100vh;
+    font-family: 'DM Sans', sans-serif;
+    color: var(--ink);
+    padding: 40px 20px;
+  }
+
+  .page-wrap {
+    max-width: 900px;
+    margin: 0 auto;
+  }
+
+  /* ── HEADER ── */
+  .site-header {
+    text-align: center;
+    margin-bottom: 40px;
+  }
+  .site-header .eyebrow {
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 3px;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .site-header h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 300;
+    letter-spacing: -1px;
+    line-height: 1.1;
+    color: var(--ink);
+  }
+  .site-header h1 strong { font-weight: 500; }
+  .site-header p {
+    margin-top: 12px;
+    font-size: 16px;
+    color: var(--ink-mid);
+    max-width: 480px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.6;
+  }
+
+  /* ── PANELS ── */
+  .panel {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    padding: 28px 32px;
+    margin-bottom: 20px;
+  }
+  .panel-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    margin-bottom: 14px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  .field-group { margin-bottom: 16px; }
+  .field-group label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-mid);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .field-group input, .field-group textarea, .field-group select {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    background: var(--paper);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .field-group input:focus, .field-group textarea:focus {
+    border-color: #888;
+  }
+  .field-group textarea { resize: vertical; min-height: 120px; line-height: 1.6; }
+  .field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  @media(max-width:520px){ .field-row { grid-template-columns: 1fr; } }
+
+  /* ── BUTTON ── */
+  .btn-analyze {
+    width: 100%;
+    padding: 14px;
+    background: var(--ink);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-family: 'DM Mono', monospace;
+    font-size: 13px;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    margin-top: 4px;
+  }
+  .btn-analyze:hover { opacity: 0.88; }
+  .btn-analyze:active { transform: scale(0.99); }
+  .btn-analyze:disabled { opacity: 0.4; cursor: not-allowed; }
+
+  /* ── STATUS ── */
+  .status-bar {
+    display: none;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    background: var(--green-bg);
+    border-radius: 8px;
+    margin-top: 12px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+  }
+  .status-bar.show { display: flex; }
+  .status-bar.err { background: var(--red-bg); color: var(--red); }
+  .spinner {
+    width: 14px; height: 14px;
+    border: 2px solid var(--green);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RECEIPT AREA ── */
+  #receipt-section { display: none; }
+  #receipt-section.show { display: block; }
+
+  /* ── RECEIPT ── */
+  .receipt-wrap {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 30px;
+  }
+
+  .receipt {
+    background: var(--paper);
+    width: 100%;
+    max-width: 400px;
+    padding: 0;
+    position: relative;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.07), 0 20px 40px rgba(0,0,0,0.12);
+    border-radius: 2px;
+    font-family: 'DM Mono', monospace;
+  }
+
+  /* Torn top edge */
+  .receipt::before {
+    content: '';
+    display: block;
+    height: 16px;
+    background:
+      radial-gradient(circle at 50% 0%, var(--bg) 8px, transparent 8px),
+      repeating-linear-gradient(90deg, var(--bg) 0, var(--bg) 8px, transparent 8px, transparent 16px);
+    background-size: 16px 16px, 16px 16px;
+  }
+  .receipt::after {
+    content: '';
+    display: block;
+    height: 16px;
+    background:
+      radial-gradient(circle at 50% 100%, var(--bg) 8px, transparent 8px),
+      repeating-linear-gradient(90deg, var(--bg) 0, var(--bg) 8px, transparent 8px, transparent 16px);
+    background-size: 16px 16px, 16px 16px;
+  }
+
+  .receipt-inner { padding: 4px 28px 8px; }
+
+  .receipt-brand {
+    text-align: center;
+    padding: 16px 0 14px;
+    border-bottom: 1px dashed #ccc;
+    margin-bottom: 14px;
+  }
+  .receipt-brand .brand-name {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .receipt-brand .brand-name[contenteditable]:focus { outline: 1px dashed #aaa; border-radius: 2px; }
+  .receipt-brand .sub {
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 1.5px;
+    margin-top: 6px;
+  }
+  .receipt-brand .sub [contenteditable]:focus { outline: 1px dashed #aaa; }
+
+  /* STAMP */
+  .stamp {
+    position: absolute;
+    top: 40px;
+    right: 18px;
+    border: 2.5px solid var(--red);
+    border-radius: 3px;
+    padding: 3px 9px;
+    font-family: 'DM Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 2px;
+    color: var(--red);
+    font-weight: 500;
+    transform: rotate(-12deg);
+    opacity: 0.9;
+    text-transform: uppercase;
+    pointer-events: none;
+    user-select: none;
+  }
+
+  .receipt-meta {
+    font-size: 10px;
+    color: var(--ink-faint);
+    line-height: 1.8;
+    margin-bottom: 14px;
+    letter-spacing: 0.3px;
+  }
+  .receipt-meta span { float: right; color: var(--ink-mid); }
+
+  .receipt-divider {
+    border: none;
+    border-top: 1px dashed #ccc;
+    margin: 12px 0;
+  }
+
+  .receipt-section-label {
+    font-size: 9px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    text-align: center;
+    margin: 10px 0 8px;
+  }
+
+  /* Line items */
+  .line-item {
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 1px dotted #ddd;
+  }
+  .line-item:last-child { border-bottom: none; }
+
+  .line-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 3px;
+  }
+  .line-item-product {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink);
+    flex: 1;
+    cursor: text;
+  }
+  .line-item-product[contenteditable="true"]:focus { outline: 1px dashed #aaa; }
+  .line-item-price {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    cursor: text;
+    white-space: nowrap;
+  }
+  .line-item-price[contenteditable="true"]:focus { outline: 1px dashed #aaa; }
+  .line-item-question {
+    font-size: 10px;
+    color: var(--ink-faint);
+    font-style: italic;
+    line-height: 1.5;
+    cursor: text;
+  }
+  .line-item-question[contenteditable="true"]:focus { outline: 1px dashed #aaa; }
+  .line-item-note {
+    font-size: 10px;
+    color: var(--red);
+    margin-top: 2px;
+    letter-spacing: 0.3px;
+  }
+  .delete-item-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #ccc;
+    font-size: 14px;
+    padding: 0 2px;
+    line-height: 1;
+    display: none;
+  }
+  .line-item:hover .delete-item-btn { display: inline; }
+  .delete-item-btn:hover { color: var(--red); }
+
+  /* Totals */
+  .receipt-totals { margin-top: 4px; }
+  .total-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--ink-mid);
+    padding: 3px 0;
+    letter-spacing: 0.3px;
+  }
+  .total-row.grand {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--ink);
+    border-top: 1px solid #aaa;
+    padding-top: 8px;
+    margin-top: 6px;
+  }
+  .total-row.grand span { font-weight: 500; }
+
+  .receipt-footer {
+    text-align: center;
+    padding: 14px 0 10px;
+    border-top: 1px dashed #ccc;
+    margin-top: 12px;
+  }
+  .receipt-footer .footer-big {
+    font-size: 11px;
+    color: var(--ink-mid);
+    letter-spacing: 1px;
+    line-height: 1.9;
+  }
+  .receipt-footer .footer-tiny {
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 1px;
+    margin-top: 6px;
+    line-height: 1.8;
+  }
+
+  /* Barcode */
+  .barcode {
+    text-align: center;
+    padding: 14px 0 6px;
+    letter-spacing: -1px;
+    font-size: 36px;
+    color: var(--ink);
+    font-family: 'Libre Barcode 128', 'DM Mono', monospace;
+    line-height: 1;
+  }
+  .barcode-text {
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 3px;
+    text-align: center;
+    margin-top: 2px;
+  }
+
+  /* ── EDIT CONTROLS ── */
+  .edit-controls {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: var(--card-shadow);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+  }
+  .edit-controls .panel-label { margin-bottom: 10px; }
+  .edit-hint {
+    font-size: 13px;
+    color: var(--ink-mid);
+    line-height: 1.6;
+    margin-bottom: 14px;
+  }
+  .edit-hint code {
+    background: #f4f4f0;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+  }
+
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-top: 10px;
+  }
+  .btn-sm {
+    padding: 8px 16px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--paper);
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    color: var(--ink-mid);
+    transition: background 0.1s;
+  }
+  .btn-sm:hover { background: #ece9e0; }
+  .btn-sm.danger { border-color: #f0ccc8; color: var(--red); }
+  .btn-sm.danger:hover { background: var(--red-bg); }
+  .btn-sm.primary { background: var(--ink); color: #fff; border-color: var(--ink); }
+  .btn-sm.primary:hover { opacity: 0.85; }
+
+  /* ── DEMOS ── */
+  .demos-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+    align-items: center;
+  }
+  .demos-label {
+    font-family: 'DM Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--ink-faint);
+    flex-basis: 100%;
+    margin-bottom: 2px;
+  }
+  .demo-btn {
+    padding: 8px 16px;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.4px;
+    cursor: pointer;
+    color: var(--ink-mid);
+    transition: all 0.12s;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+  }
+  .demo-btn:hover { background: var(--ink); color: #fff; border-color: var(--ink); }
+
+  /* ── PRINT ── */
+  @media print {
+    body { background: white !important; padding: 0; }
+    .panel, .edit-controls, .hosting-panel, .site-header, #input-section { display: none !important; }
+    #receipt-section { display: block !important; }
+    .receipt-wrap { padding: 0; }
+    .receipt { box-shadow: none; }
+    .delete-item-btn { display: none !important; }
+    [contenteditable] { outline: none !important; }
+  }
+
+  /* ── MISC ── */
+  .add-item-row {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .add-item-row input {
+    flex: 1;
+    padding: 7px 10px;
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    font-family: 'DM Mono', monospace;
+    font-size: 11px;
+    background: transparent;
+    color: var(--ink);
+    outline: none;
+  }
+  .add-item-row input:focus { border-color: #888; }
+
+  .receipt-loading {
+    text-align: center;
+    padding: 40px;
+    font-family: 'DM Mono', monospace;
+    font-size: 12px;
+    color: var(--ink-faint);
+    letter-spacing: 1px;
+  }
+  .receipt-loading .dots::after {
+    content: '...';
+    animation: dots 1.2s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0%, 100% { content: ''; }
+    25% { content: '.'; }
+    50% { content: '..'; }
+    75% { content: '...'; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-wrap">
+
+  <!-- HEADER -->
+  <header class="site-header">
+    <div class="eyebrow">Social Commerce Analytics</div>
+    <h1><strong>Left on Read.</strong><br>Receipt Generator</h1>
+    <p>Paste a social media post link + the comments a brand never replied to. We'll print the receipt for what they lost.</p>
+  </header>
+
+  <!-- DEMOS -->
+  <div class="demos-row">
+    <div class="demos-label">Try a demo</div>
+    <button class="demo-btn" onclick="loadDemo('nike')">👟 Nike Air Max</button>
+    <button class="demo-btn" onclick="loadDemo('zara')">🧥 Zara Blazer</button>
+    <button class="demo-btn" onclick="loadDemo('peloton')">🚴 Peloton Row</button>
+  </div>
+
+  <!-- INPUT SECTION -->
+  <div id="input-section">
+    <div class="panel">
+      <div class="panel-label">Step 1 — The Post</div>
+      <div class="field-row">
+        <div class="field-group">
+          <label>Instagram / Twitter / TikTok URL</label>
+          <input type="url" id="post-url" placeholder="https://www.instagram.com/p/..."/>
+        </div>
+        <div class="field-group">
+          <label>Brand Name</label>
+          <input type="text" id="brand-name" placeholder="e.g. Nike, Zara, Peloton"/>
+        </div>
+      </div>
+      <div class="field-group">
+        <label>Product in the post (optional — helps with pricing)</label>
+        <input type="text" id="product-name" placeholder="e.g. Air Max 2024, Linen Blazer, Peloton Row"/>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-label">Step 2 — Paste the Unanswered Comments</div>
+      <div class="field-group">
+        <label>Copy + paste the comments from the post (one per line, include @username)</label>
+        <textarea id="comments-input" placeholder="@sneakerhead_jay: Do these come in wide width? I'm a 2E&#10;@marcus_runs: Are these true to size or should I size up?&#10;@lifeisrunning: Do you ship to Canada? What's the return policy?&#10;@dadof3_mike: My son wants these — still available in kids size 6?"></textarea>
+      </div>
+      <div class="field-group">
+        <label>Any other context (optional — e.g. colorways, price range, product details)</label>
+        <input type="text" id="extra-context" placeholder="e.g. The post is about the $150 Triple White colorway, limited stock"/>
+      </div>
+
+      <button class="btn-analyze" id="analyze-btn" onclick="runAnalysis()">GENERATE RECEIPT →</button>
+      <div class="status-bar" id="status-bar">
+        <div class="spinner"></div>
+        <span id="status-text">Analyzing comments...</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- RECEIPT OUTPUT -->
+  <div id="receipt-section">
+    <div class="edit-controls">
+      <div class="panel-label">Edit Receipt</div>
+      <p class="edit-hint">Click any text on the receipt below to edit it inline. Use the buttons to add/remove items or print.</p>
+      <div class="btn-row">
+        <button class="btn-sm" onclick="addLineItem()">+ Add item</button>
+        <button class="btn-sm" onclick="recalcTotal()">↻ Recalculate total</button>
+        <button class="btn-sm primary" onclick="window.print()">🖨 Print receipt</button>
+        <button class="btn-sm" onclick="resetAll()">← Start over</button>
+      </div>
+    </div>
+
+    <div class="receipt-wrap">
+      <div class="receipt" id="receipt">
+        <div class="stamp">NEVER REPLIED</div>
+        <div class="receipt-inner">
+
+          <div class="receipt-brand">
+            <div class="brand-name" id="r-brand" contenteditable="true">BRAND NAME</div>
+            <div class="sub">
+              <span id="r-platform" contenteditable="true">INSTAGRAM</span>
+              &nbsp;·&nbsp;
+              <span id="r-date" contenteditable="true">—</span>
+            </div>
+          </div>
+
+          <div class="receipt-meta">
+            POST URL<span id="r-url" contenteditable="true" style="max-width:160px;overflow:hidden;text-overflow:ellipsis;display:inline-block;vertical-align:bottom;white-space:nowrap;">—</span>
+            <br>RECEIPT NO.<span id="r-num" contenteditable="true">—</span>
+            <br>CASHIER<span contenteditable="true">NOT A SINGLE REPLY</span>
+          </div>
+
+          <hr class="receipt-divider"/>
+          <div class="receipt-section-label">ITEMS LOST</div>
+
+          <div id="line-items"></div>
+
+          <hr class="receipt-divider"/>
+          <div class="receipt-totals" id="r-totals"></div>
+
+          <div class="receipt-footer">
+            <div class="footer-big" id="r-footer" contenteditable="true">
+              SALE NOT COMPLETED<br>
+              CUSTOMER LEFT UNANSWERED<br>
+              REVENUE LOST TO SILENCE
+            </div>
+            <div class="footer-tiny">
+              THIS IS AN ESTIMATE BASED ON<br>
+              PUBLICLY VISIBLE UNANSWERED COMMENTS<br>
+              <span id="r-post-ref" contenteditable="true">REF: SOCIAL POST</span>
+            </div>
+          </div>
+
+          <div class="barcode">||||| ||| || ||||| || ||| ||||| ||| |||||</div>
+          <div class="barcode-text" id="r-barcode-text" contenteditable="true">LEFT-ON-READ-0000</div>
+
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const ANTHROPIC_KEY = ""; // ← paste your Anthropic API key here when self-hosting
+
+const DEMOS = {
+  nike: {
+    url: "https://www.instagram.com/p/nike-airmax2024-example/",
+    brand: "Nike",
+    product: "Air Max 2024 — Triple White, $160",
+    context: "Limited colorway drop, sizes selling fast",
+    comments: `@sneakerhead_jay: Do these come in wide width? I'm a 2E
+@fitgirl_runs: What's the weight on these? Trying to decide between this and the Pegasus
+@marcus_runs_daily: Are these true to size or should I size up? Want the triple white
+@lifeisrunning: Do you ship to Canada? And what's the return policy if they don't fit?
+@shoelover99: Is the navy colorway restocking? I missed it last time
+@dadof3_mike: My son wants these for his birthday next week — still available in kids size 6?`
+  },
+  zara: {
+    url: "https://www.instagram.com/p/zara-linenblazer-example/",
+    brand: "Zara",
+    product: "Linen Blazer Collection, $99",
+    context: "New spring drop, multiple colorways",
+    comments: `@stylebylaura: Is this available in plus sizes? I need a 2X
+@thecasualchic: What's the fabric composition? I have a wool allergy
+@officeootd: Does this come in petite? I'm 5'2" and blazers always swamp me
+@fashionista_mel: Is the cream color only online or available in store too?
+@brunch_dressed: Can I wear this to a beach wedding? What would you pair it with
+@jules_style: How does this fit compared to the wool blazer from last season?`
+  },
+  peloton: {
+    url: "https://twitter.com/onepeloton/status/peloton-row-example",
+    brand: "Peloton",
+    product: "Peloton Row — $3,195",
+    context: "New product launch, pre-order available",
+    comments: `@fitnessgeek2024: Does this work with my existing Peloton account or need a new subscription?
+@homegym_hannah: What's the weight capacity on this? Asking for a friend who's 280lbs
+@apartment_fit: How much floor space does it need? My room is 10x12 — will it fit?
+@workoutdad: Is there a financing option? Can't do the full price upfront
+@strengthcoach: Does it integrate with Apple Watch and Strava for tracking?`
+  }
+};
+
+function loadDemo(key) {
+  const d = DEMOS[key];
+  if (!d) return;
+  document.getElementById("post-url").value = d.url;
+  document.getElementById("brand-name").value = d.brand;
+  document.getElementById("product-name").value = d.product;
+  document.getElementById("extra-context").value = d.context;
+  document.getElementById("comments-input").value = d.comments;
+  document.getElementById("input-section").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+let receiptData = null;
+
+function setStatus(msg, type = "loading") {
+  const bar = document.getElementById("status-bar");
+  const text = document.getElementById("status-text");
+  bar.className = "status-bar show" + (type === "error" ? " err" : "");
+  const spinner = bar.querySelector(".spinner");
+  spinner.style.display = type === "loading" ? "block" : "none";
+  text.textContent = msg;
+}
+
+function hideStatus() {
+  document.getElementById("status-bar").className = "status-bar";
+}
+
+async function runAnalysis() {
+  const url = document.getElementById("post-url").value.trim();
+  const brand = document.getElementById("brand-name").value.trim();
+  const comments = document.getElementById("comments-input").value.trim();
+  const product = document.getElementById("product-name").value.trim();
+  const context = document.getElementById("extra-context").value.trim();
+
+  if (!comments) {
+    setStatus("Please paste at least one comment to analyze.", "error");
+    return;
+  }
+
+  document.getElementById("analyze-btn").disabled = true;
+  setStatus("Scanning for missed purchase questions...");
+
+  const platform = url.includes("instagram") ? "Instagram"
+    : url.includes("twitter") || url.includes("x.com") ? "Twitter / X"
+    : url.includes("tiktok") ? "TikTok"
+    : url.includes("facebook") ? "Facebook"
+    : "Social Media";
+
+  const systemPrompt = `You are an expert at identifying unanswered purchase-intent questions in social media comments. Given a brand's post details and comments, find which comments were purchase questions the brand ignored.
+
+Respond ONLY with raw JSON — no markdown, no backticks, no explanation. Schema:
+
+{
+  "brand": "string (use provided brand name or infer from URL)",
+  "platform": "string",
+  "missed": [
+    {
+      "username": "@username",
+      "question_short": "10-word max summary of what they asked",
+      "original_comment": "exact comment text",
+      "product": "specific product name",
+      "estimated_price_usd": number,
+      "purchase_intent": "high|medium|low",
+      "lost_note": "8 words max — why this was a sale"
+    }
+  ],
+  "total_comments": number,
+  "summary": "2 sentence max — what this missed opportunity cost"
+}
+
+For estimated_price_usd: use realistic retail prices. Shoes: $80-200. Apparel: $40-150. Fitness equipment: $500-2500. Beauty: $20-80. Electronics: $100-800. Default to mid-range.
+Only include comments that are genuine purchase or product questions. Ignore complaints, compliments, generic comments.`;
+
+  const userMsg = `Brand: ${brand || "unknown"}
+Platform: ${platform}
+Post URL: ${url || "not provided"}
+Product mentioned: ${product || "not specified"}
+Context: ${context || "none"}
+
+Comments to analyze:
+${comments}`;
+
+  try {
+    const res = await fetch("https://api.anthropic.com/v1/messages", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: "claude-sonnet-4-20250514",
+        max_tokens: 1500,
+        system: systemPrompt,
+        messages: [{ role: "user", content: userMsg }]
+      })
+    });
+
+    const data = await res.json();
+    if (data.error) throw new Error(data.error.message);
+
+    const raw = data.content.map(b => b.text || "").join("").trim().replace(/```json|```/g, "").trim();
+    const parsed = JSON.parse(raw);
+
+    if (!parsed.missed || parsed.missed.length === 0) {
+      setStatus("No clear purchase questions found. Try adding more specific comments about sizing, availability, or shipping.", "error");
+      document.getElementById("analyze-btn").disabled = false;
+      return;
+    }
+
+    receiptData = {
+      brand: parsed.brand || brand || "BRAND",
+      platform: parsed.platform || platform,
+      url: url,
+      items: parsed.missed,
+    };
+
+    hideStatus();
+    buildReceipt(receiptData);
+    document.getElementById("receipt-section").classList.add("show");
+    document.getElementById("receipt-section").scrollIntoView({ behavior: "smooth", block: "start" });
+
+  } catch (e) {
+    setStatus("Error: " + e.message + ". Check your API key or try again.", "error");
+    document.getElementById("analyze-btn").disabled = false;
+  }
+}
+
+function buildReceipt(data) {
+  const now = new Date();
+  const dateStr = now.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }).toUpperCase();
+  const receiptNum = "LOR-" + Math.floor(Math.random() * 90000 + 10000);
+
+  document.getElementById("r-brand").textContent = (data.brand || "BRAND").toUpperCase();
+  document.getElementById("r-platform").textContent = (data.platform || "INSTAGRAM").toUpperCase();
+  document.getElementById("r-date").textContent = dateStr;
+  document.getElementById("r-url").textContent = data.url ? shortenUrl(data.url) : "post link not provided";
+  document.getElementById("r-num").textContent = receiptNum;
+  document.getElementById("r-barcode-text").textContent = receiptNum;
+  document.getElementById("r-post-ref").textContent = "REF: " + receiptNum;
+
+  const container = document.getElementById("line-items");
+  container.innerHTML = "";
+
+  data.items.forEach((item, i) => {
+    container.appendChild(createLineItem(item, i));
+  });
+
+  renderTotals();
+}
+
+function createLineItem(item, idx) {
+  const div = document.createElement("div");
+  div.className = "line-item";
+  div.dataset.price = item.estimated_price_usd || 0;
+
+  const intentColor = item.purchase_intent === "high" ? "#c0392b" : item.purchase_intent === "medium" ? "#e67e22" : "#888";
+
+  div.innerHTML = `
+    <div class="line-item-header">
+      <span class="line-item-product" contenteditable="true">${item.product || "Product"}</span>
+      <button class="delete-item-btn" title="Remove item" onclick="this.closest('.line-item').remove(); recalcTotal();">✕</button>
+      <span class="line-item-price" contenteditable="true" oninput="recalcTotal()">$${Number(item.estimated_price_usd || 0).toFixed(2)}</span>
+    </div>
+    <div class="line-item-question" contenteditable="true">"${item.question_short || item.original_comment || ''}"</div>
+    <div class="line-item-note" style="color:${intentColor}">→ ${item.lost_note || "No reply. Customer gone."}</div>
+  `;
+
+  return div;
+}
+
+function addLineItem() {
+  const container = document.getElementById("line-items");
+  const item = {
+    product: "New Product",
+    estimated_price_usd: 0,
+    question_short: "Question asked, never answered",
+    lost_note: "Customer walked.",
+    purchase_intent: "medium"
+  };
+  const el = createLineItem(item, container.children.length);
+  container.appendChild(el);
+  el.querySelector(".line-item-product").focus();
+  recalcTotal();
+}
+
+function renderTotals() {
+  const items = document.querySelectorAll(".line-item");
+  let subtotal = 0;
+  items.forEach(item => {
+    const priceEl = item.querySelector(".line-item-price");
+    const val = parseFloat((priceEl.textContent || "0").replace(/[^0-9.]/g, "")) || 0;
+    subtotal += val;
+  });
+  const tax = subtotal * 0.09;
+  const total = subtotal + tax;
+
+  document.getElementById("r-totals").innerHTML = `
+    <div class="total-row"><span>SUBTOTAL (${items.length} LOST SALE${items.length !== 1 ? "S" : ""})</span><span>$${subtotal.toFixed(2)}</span></div>
+    <div class="total-row"><span>EST. TAX (9%)</span><span>$${tax.toFixed(2)}</span></div>
+    <div class="total-row grand"><span>TOTAL REVENUE LOST</span><span>$${total.toFixed(2)}</span></div>
+    <div class="total-row" style="font-size:9px;color:#c0392b;padding-top:4px;letter-spacing:0.5px;"><span>PAYMENT METHOD</span><span>SILENCE</span></div>
+  `;
+}
+
+function recalcTotal() {
+  renderTotals();
+}
+
+function resetAll() {
+  document.getElementById("receipt-section").classList.remove("show");
+  document.getElementById("analyze-btn").disabled = false;
+  document.getElementById("comments-input").value = "";
+  document.getElementById("post-url").value = "";
+  document.getElementById("brand-name").value = "";
+  document.getElementById("product-name").value = "";
+  document.getElementById("extra-context").value = "";
+  hideStatus();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+
+function shortenUrl(url) {
+  try {
+    const u = new URL(url);
+    return u.hostname.replace("www.", "") + u.pathname.slice(0, 18) + (u.pathname.length > 18 ? "..." : "");
+  } catch {
+    return url.slice(0, 30);
+  }
+}
+</script>
+</body>
+</html>
