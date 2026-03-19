@@ -650,6 +650,8 @@ const GRADIENTS = [
 
 const TIMES = ['1h','2h','3h','4h','5h','6h','8h','10h','12h','1d','2d'];
 
+const AVATAR_API = (seed) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+
 // ── IMAGE LOADER ──
 function loadImg(e, key) {
   const f = e.target.files[0];
@@ -699,6 +701,7 @@ function loadImg(e, key) {
 
 // ── ADD COMMENT ──
 function addCmt() {
+  const randomSeed = Math.random().toString(36).substring(7);
   S.comments.push({
     id: ++uid,
     username: '',
@@ -706,6 +709,7 @@ function addCmt() {
     reply: '',
     time: TIMES[Math.floor(Math.random() * TIMES.length)],
     grad: GRADIENTS[uid % GRADIENTS.length],
+    avatar: AVATAR_API(randomSeed),
   });
   renderControls();
   render();
@@ -825,7 +829,7 @@ function buildMock(withReplies) {
 
       h += `
         <div class="ig-cmt">
-          <div class="ig-cmt-av" style="background:${c.grad}">${initials}</div>
+          <div class="ig-cmt-av"><img src="${c.avatar}" alt=""></div>
           <div class="ig-cmt-body">
             <div class="ig-cmt-text"><b>${esc(uname)}</b> ${esc(txt)}</div>
             <div class="ig-cmt-meta">
