@@ -1,0 +1,1125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IG Reply Builder – Comment Hiding Flow</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+*{margin:0;padding:0;box-sizing:border-box}
+
+:root{
+  --bg:#f5f5f5;
+  --surface:#ffffff;
+  --surface2:#fafafa;
+  --border:#e0e0e0;
+  --border2:#d0d0d0;
+  --text:#1a1a1a;
+  --sub:#666;
+  --blue:#0095f6;
+  --green:#23d160;
+  --red:#ff4757;
+  --ig-gradient:linear-gradient(45deg,#f09433,#e6683c,#dc2743,#cc2366,#bc1888);
+}
+
+body{
+  font-family:'DM Sans',-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  min-height:100vh;
+  display:flex;
+  flex-direction:column;
+}
+
+/* ── TOP BAR ── */
+.bar{
+  height:52px;
+  background:#ffffff;
+  border-bottom:1px solid var(--border);
+  display:flex;
+  align-items:center;
+  padding:0 20px;
+  gap:16px;
+  flex-shrink:0;
+  z-index:50;
+}
+.bar-logo{
+  font-size:14px;
+  font-weight:700;
+  letter-spacing:-0.5px;
+  color:#000;
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.bar-logo-dot{
+  width:8px;height:8px;
+  border-radius:50%;
+  background:var(--ig-gradient);
+}
+.bar-spacer{flex:1}
+.bar-btn{
+  height:32px;
+  padding:0 14px;
+  border-radius:8px;
+  border:none;
+  font-family:inherit;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+  display:flex;align-items:center;gap:6px;
+}
+.bar-btn.ghost{background:var(--surface2);color:var(--sub);border:1px solid var(--border2)}
+.bar-btn.ghost:hover{color:var(--text);border-color:#bbb}
+.bar-btn.export{
+  background:var(--ig-gradient);
+  color:#fff;
+}
+.bar-btn.export:hover{opacity:.9}
+
+/* ── MAIN LAYOUT ── */
+.main{
+  display:flex;
+  flex:1;
+  overflow:hidden;
+  min-height:0;
+}
+
+/* ── SIDEBAR ── */
+.sidebar{
+  width:300px;
+  min-width:300px;
+  max-width:300px;
+  background:#ffffff;
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+}
+.sidebar-scroll{
+  flex:1;
+  overflow-y:auto;
+  overflow-x:hidden;
+  padding:16px;
+  display:flex;
+  flex-direction:column;
+  gap:16px;
+}
+.sidebar-scroll::-webkit-scrollbar{width:6px}
+.sidebar-scroll::-webkit-scrollbar-track{background:transparent}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover{background:#999}
+
+.card{
+  background:var(--surface2);
+  border:1px solid var(--border);
+  border-radius:12px;
+  overflow:hidden;
+}
+.card-head{
+  padding:10px 14px;
+  border-bottom:1px solid var(--border);
+  font-size:10px;
+  font-weight:700;
+  text-transform:uppercase;
+  letter-spacing:1.2px;
+  color:var(--sub);
+  display:flex;align-items:center;gap:8px;
+}
+.card-head-dot{
+  width:6px;height:6px;border-radius:50%;
+}
+.card-body{padding:14px}
+
+.upzone{
+  border:1.5px dashed var(--border2);
+  border-radius:10px;
+  padding:18px 14px;
+  text-align:center;
+  cursor:pointer;
+  transition:all .2s;
+  position:relative;
+  background:var(--surface);
+}
+.upzone input[type=file]{
+  position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;
+}
+.upzone:hover,.upzone.over{
+  border-color:var(--blue);
+  background:#f0f7ff;
+}
+.upzone-icon{font-size:22px;margin-bottom:6px}
+.upzone-text{font-size:12px;color:var(--sub);line-height:1.5}
+.upzone-text b{color:var(--blue)}
+
+.preview-img{
+  width:100%;
+  border-radius:8px;
+  display:block;
+  border:1px solid var(--border2);
+  margin-top:10px;
+}
+.preview-img-label{
+  font-size:10px;color:var(--sub);margin-top:5px;text-align:center;
+  display:flex;align-items:center;justify-content:center;gap:4px;
+}
+.preview-img-label span{color:var(--green)}
+
+.field{margin-bottom:12px}
+.field:last-child{margin-bottom:0}
+.label{
+  font-size:11px;color:var(--sub);margin-bottom:5px;display:block;font-weight:600;
+}
+.input{
+  width:100%;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:8px;
+  padding:8px 11px;
+  color:var(--text);
+  font-family:inherit;
+  font-size:13px;
+  outline:none;
+  transition:border-color .15s;
+}
+.input:focus{border-color:var(--blue)}
+.input::placeholder{color:#aaa}
+
+.cmt-block{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:10px;
+  overflow:hidden;
+  transition:all .2s;
+}
+.cmt-block.replied{border-color:#90ee90}
+.cmt-block-head{
+  padding:10px 12px;
+  display:flex;
+  align-items:center;
+  gap:8px;
+  border-bottom:1px solid var(--border);
+}
+.cmt-mini-av{
+  width:26px;height:26px;
+  border-radius:50%;
+  flex-shrink:0;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;color:#fff;
+  overflow:hidden;
+}
+.cmt-mini-av img{width:100%;height:100%;object-fit:cover}
+.cmt-block-body{padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.cmt-textarea{
+  width:100%;
+  background:var(--surface2);
+  border:1px solid var(--border2);
+  border-radius:7px;
+  padding:8px 10px;
+  color:var(--text);
+  font-family:inherit;
+  font-size:12px;
+  resize:none;
+  min-height:38px;
+  outline:none;
+  transition:border-color .15s;
+  line-height:1.5;
+}
+.cmt-textarea:focus{border-color:var(--blue)}
+.cmt-textarea.has-reply{border-color:#90ee90}
+.reply-label{
+  font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.8px;
+  color:#999;display:flex;align-items:center;gap:5px;
+}
+.reply-label-dot{width:5px;height:5px;border-radius:50%;background:var(--green)}
+.cmt-block-foot{
+  padding:8px 12px;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.badge-replied{
+  font-size:9px;font-weight:700;
+  background:#e8f8e8;color:var(--green);
+  padding:2px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.badge-hidden{
+  font-size:9px;font-weight:700;
+  background:#ffe0e0;color:var(--red);
+  padding:2px 7px;border-radius:4px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.btn-del{
+  font-size:10px;font-weight:600;
+  background:none;border:none;
+  color:#ff4757;cursor:pointer;font-family:inherit;
+  padding:3px 6px;border-radius:5px;
+  transition:background .15s;
+}
+.btn-del:hover{background:#ffe8e8}
+
+.hide-switch{
+  width:32px;
+  height:18px;
+  background:#e0e0e0;
+  border:none;
+  border-radius:9px;
+  cursor:pointer;
+  position:relative;
+  transition:background .2s;
+  padding:0;
+  flex-shrink:0;
+}
+.hide-switch::after{
+  content:'';
+  position:absolute;
+  width:14px;
+  height:14px;
+  background:#fff;
+  border-radius:50%;
+  top:2px;
+  left:2px;
+  transition:left .2s;
+  box-shadow:0 2px 4px rgba(0,0,0,.1);
+}
+.hide-switch.active{
+  background:var(--red);
+}
+.hide-switch.active::after{
+  left:16px;
+}
+
+.add-cmt{
+  width:100%;
+  background:none;
+  border:1.5px dashed var(--border2);
+  border-radius:10px;
+  padding:10px;
+  color:var(--sub);
+  font-family:inherit;
+  font-size:12px;
+  font-weight:600;
+  cursor:pointer;
+  transition:all .15s;
+}
+.add-cmt:hover{border-color:var(--blue);color:var(--blue);background:#f0f7ff}
+
+/* ── PREVIEW AREA ── */
+.previews{
+  flex:1;
+  display:flex;
+  overflow:hidden;
+  background:var(--bg);
+  gap:1px;
+}
+.pane{
+  flex:1;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  background:var(--bg);
+}
+
+.pane-head{
+  height:80px;
+  background:#ffffff;
+  border-bottom:1px solid var(--border);
+  padding:10px 14px;
+  flex-shrink:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.pane-label{
+  font-size:10px;font-weight:700;
+  text-transform:uppercase;letter-spacing:1px;
+  display:flex;align-items:center;gap:6px;
+  color:var(--sub);
+  margin-bottom:6px;
+}
+.pane-label-pill{
+  width:6px;height:6px;border-radius:50%;
+}
+.pane-label.step1 .pane-label-pill{background:#888}
+.pane-label.step2 .pane-label-pill{background:#0095f6}
+.pane-label.step3 .pane-label-pill{background:#23d160}
+
+.pane-title{
+  font-size:13px;font-weight:600;color:var(--text);
+  margin-bottom:3px;
+}
+.pane-desc{
+  font-size:11px;color:var(--sub);line-height:1.4;
+}
+
+.pane-body{
+  flex:1;
+  overflow-y:auto;
+  padding:16px;
+  display:flex;
+  justify-content:center;
+  align-items:flex-start;
+  background:var(--bg);
+}
+.pane-body::-webkit-scrollbar{width:3px}
+.pane-body::-webkit-scrollbar-thumb{background:#ddd;border-radius:2px}
+
+/* ── IG MOCK ── */
+.ig{
+  width:100%;
+  max-width:360px;
+  background:#fff;
+  border-radius:14px;
+  border:1px solid #ddd;
+  overflow:hidden;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  box-shadow:0 4px 20px rgba(0,0,0,.1);
+}
+
+.ig-header{
+  padding:11px 13px;
+  display:flex;align-items:center;gap:9px;
+  border-bottom:1px solid #f0f0f0;
+}
+.ig-av-wrap{
+  width:34px;height:34px;
+  border-radius:50%;
+  background:var(--ig-gradient);
+  padding:2px;
+  flex-shrink:0;
+}
+.ig-av-inner{
+  width:100%;height:100%;
+  border-radius:50%;
+  background:#fafafa;
+  border:2px solid #fff;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;font-weight:700;color:#000;
+}
+.ig-av-inner img{width:100%;height:100%;object-fit:cover}
+.ig-info{flex:1}
+.ig-handle{
+  font-size:13px;font-weight:600;color:#000;
+  display:flex;align-items:center;gap:3px;
+}
+.ig-vbadge{
+  display:inline-flex;
+  width:13px;height:13px;
+  background:var(--blue);
+  border-radius:50%;
+  align-items:center;justify-content:center;
+  flex-shrink:0;
+}
+.ig-vbadge svg{width:7px;height:7px;fill:#fff}
+.ig-sub{font-size:11px;color:#888;margin-top:1px}
+.ig-dots{color:#888;font-size:18px;cursor:pointer;letter-spacing:1px;line-height:1}
+
+.ig-post-img{
+  position:relative;
+  background:#f5f5f5;
+  width:100%;
+}
+.ig-post-img img{width:100%;display:block;max-height:380px;object-fit:cover}
+.ig-post-placeholder{
+  width:100%;height:220px;
+  display:flex;align-items:center;justify-content:center;
+  flex-direction:column;gap:8px;
+  color:#ccc;font-size:12px;
+}
+
+.ig-actions{
+  padding:9px 13px 5px;
+  display:flex;align-items:center;gap:13px;
+}
+.ig-icon{
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+}
+.ig-icon svg{width:22px;height:22px;stroke:#000;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ig-icon.save{margin-left:auto}
+
+.ig-likes{padding:0 13px 5px;font-size:13px;font-weight:700;color:#000}
+.ig-caption{padding:0 13px 8px;font-size:13px;color:#000;line-height:1.5}
+.ig-caption b{font-weight:700}
+
+.ig-comments{padding:0 0 8px}
+.ig-view-all{padding:2px 13px 8px;font-size:13px;color:#888;cursor:pointer}
+
+.ig-cmt{
+  padding:8px 13px;
+  display:flex;gap:9px;align-items:flex-start;
+  position:relative;
+  border-bottom:1px solid #f5f5f5;
+}
+.ig-cmt-av{
+  width:32px;height:32px;border-radius:50%;
+  flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:#fff;
+  margin-top:2px;
+}
+.ig-cmt-av img{width:100%;height:100%;object-fit:cover}
+.ig-cmt-body{flex:1;min-width:0}
+.ig-cmt-text{font-size:13px;color:#000;line-height:1.45;word-break:break-word}
+.ig-cmt-text b{font-weight:700}
+.ig-cmt-meta{display:flex;gap:10px;margin-top:3px;align-items:center;font-size:11px;color:#888}
+.ig-cmt-time{font-weight:400}
+.ig-cmt-like{font-weight:600;cursor:pointer}
+.ig-cmt-reply{font-weight:600;cursor:pointer}
+.ig-cmt-heart{margin-left:auto;font-size:12px;cursor:pointer;opacity:.6}
+
+.ig-cmt-menu{
+  position:absolute;
+  right:5px;
+  top:50%;
+  transform:translateY(-50%);
+  width:24px;
+  height:24px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  cursor:pointer;
+  font-size:14px;
+  opacity:.4;
+  transition:opacity .2s;
+}
+.ig-cmt:hover .ig-cmt-menu{
+  opacity:1;
+}
+.ig-cmt-menu-popup{
+  position:absolute;
+  right:28px;
+  top:50%;
+  transform:translateY(-50%);
+  background:#fff;
+  border:1px solid #ddd;
+  border-radius:8px;
+  padding:4px 0;
+  min-width:140px;
+  box-shadow:0 2px 8px rgba(0,0,0,.15);
+  z-index:20;
+  display:none;
+}
+.ig-cmt-menu-popup.show{
+  display:block;
+}
+.ig-cmt-menu-item{
+  padding:8px 12px;
+  font-size:12px;
+  color:#000;
+  cursor:pointer;
+  display:block;
+  width:100%;
+  border:none;
+  background:none;
+  text-align:left;
+  transition:background .1s;
+  font-family:inherit;
+  padding:8px 12px;
+}
+.ig-cmt-menu-item:hover{background:#f0f0f0}
+.ig-cmt-menu-item.hide{color:var(--red);font-weight:600}
+
+.ig-reply{
+  padding:8px 13px 8px 54px;
+  display:flex;gap:8px;align-items:flex-start;
+}
+.ig-reply-av-wrap{
+  width:26px;height:26px;
+  border-radius:50%;
+  background:var(--ig-gradient);
+  padding:1.5px;
+  flex-shrink:0;
+  margin-top:2px;
+}
+.ig-reply-av-inner{
+  width:100%;height:100%;
+  border-radius:50%;
+  background:#fafafa;
+  border:1.5px solid #fff;
+  overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:#000;
+}
+.ig-reply-av-inner img{width:100%;height:100%;object-fit:cover}
+
+.ig-divider{height:1px;background:#f0f0f0;margin:0}
+
+.ig-add-cmt{
+  padding:9px 13px;
+  border-top:1px solid #f0f0f0;
+  display:flex;align-items:center;gap:9px;
+}
+.ig-add-cmt-av{
+  width:26px;height:26px;border-radius:50%;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:700;color:#fff;
+}
+.ig-add-cmt-ph{font-size:13px;color:#bbb;flex:1}
+.ig-add-cmt-emoji{font-size:16px;cursor:pointer;opacity:.5}
+
+.ig-timestamp{padding:8px 13px;font-size:11px;color:#bbb;text-transform:uppercase;letter-spacing:.5px}
+
+.empty-pane{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:10px;color:#ddd;text-align:center;padding:40px;
+  font-size:13px;min-height:200px;
+}
+
+/* Hidden indicator */
+.hidden-indicator{
+  position:absolute;
+  top:0;right:0;
+  background:var(--red);
+  color:#fff;
+  padding:2px 6px;
+  font-size:9px;
+  font-weight:700;
+  border-radius:0 14px 0 6px;
+  text-transform:uppercase;
+  letter-spacing:.5px;
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="bar">
+  <div class="bar-logo">
+    <div class="bar-logo-dot"></div>
+    ig reply builder
+  </div>
+  <div class="bar-spacer"></div>
+  <button class="bar-btn ghost" onclick="clearAll()">↺ Reset</button>
+  <button class="bar-btn export" onclick="exportAll()">⬇ Download Comparison</button>
+</div>
+
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-scroll">
+
+      <!-- Brand -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-dot" style="background:var(--ig-gradient);background:linear-gradient(45deg,#f09433,#bc1888)"></div>
+          Brand Profile
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <div class="field">
+            <label class="label">Handle</label>
+            <input class="input" id="brandHandle" placeholder="@yourbrand" oninput="render()">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Profile Picture</label>
+            <div class="upzone" id="avZone">
+              <input type="file" accept="image/*" onchange="loadImg(event,'brandAv')">
+              <div class="upzone-icon">👤</div>
+              <div class="upzone-text"><b>Upload profile pic</b><br>or uses handle initials</div>
+            </div>
+            <div id="avPreview" style="display:none">
+              <img class="preview-img" id="avImg" src="" alt="">
+              <div class="preview-img-label"><span>✓</span> Profile pic loaded</div>
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Verified?</label>
+            <select class="input" id="brandVerified" onchange="render()">
+              <option value="1">✓ Show verified badge</option>
+              <option value="0">No badge</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Post -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-dot" style="background:#888"></div>
+          Post Content
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:10px">
+          <div class="field" style="margin:0">
+            <label class="label">Screenshot / Post Image</label>
+            <div class="upzone" id="ssZone">
+              <input type="file" accept="image/*" onchange="loadImg(event,'screenshot')">
+              <div class="upzone-icon">📸</div>
+              <div class="upzone-text"><b>Upload screenshot</b> or drag & drop</div>
+            </div>
+            <div id="ssPreview" style="display:none">
+              <img class="preview-img" id="ssImg" src="" alt="">
+              <div class="preview-img-label"><span>✓</span> Screenshot loaded</div>
+            </div>
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Caption (optional)</label>
+            <input class="input" id="postCaption" placeholder="Write a caption..." oninput="render()">
+          </div>
+          <div class="field" style="margin:0">
+            <label class="label">Likes</label>
+            <input class="input" id="postLikes" placeholder="4,291 likes" oninput="render()">
+          </div>
+        </div>
+      </div>
+
+      <!-- Comments -->
+      <div class="card">
+        <div class="card-head">
+          <div class="card-head-dot" style="background:var(--green)"></div>
+          Comments
+        </div>
+        <div class="card-body" style="display:flex;flex-direction:column;gap:8px">
+          <div id="cmtList"></div>
+          <button class="add-cmt" onclick="addCmt()">+ Add Comment</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- PREVIEW PANES -->
+  <div class="previews">
+
+    <!-- STEP 1: COMMENTER'S VIEW -->
+    <div class="pane">
+      <div class="pane-head">
+        <div class="pane-label step1">
+          <div class="pane-label-pill"></div>
+          Step 1
+        </div>
+        <div class="pane-title">Commenter's View</div>
+        <div class="pane-desc">User sees their own comment appears normally</div>
+      </div>
+      <div class="pane-body">
+        <div id="mockCommenter" class="ig"></div>
+      </div>
+    </div>
+
+    <!-- STEP 2: BRAND HIDING IT -->
+    <div class="pane">
+      <div class="pane-head">
+        <div class="pane-label step2">
+          <div class="pane-label-pill"></div>
+          Step 2
+        </div>
+        <div class="pane-title">Brand Hides Comment</div>
+        <div class="pane-desc">Click menu to hide (red indicator shows it's hidden)</div>
+      </div>
+      <div class="pane-body">
+        <div id="mockBrandView" class="ig"></div>
+      </div>
+    </div>
+
+    <!-- STEP 3: PUBLIC BRAND PAGE -->
+    <div class="pane">
+      <div class="pane-head">
+        <div class="pane-label step3">
+          <div class="pane-label-pill"></div>
+          Step 3
+        </div>
+        <div class="pane-title">Public Brand Page</div>
+        <div class="pane-desc">Everyone else sees it removed (commenter can still see theirs)</div>
+      </div>
+      <div class="pane-body">
+        <div id="mockPublic" class="ig"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script>
+
+// ── STATE ──
+const S = {
+  brandAv: null,
+  screenshot: null,
+  comments: [],
+};
+let uid = 0;
+
+const GRADIENTS = [
+  'linear-gradient(135deg,#667eea,#764ba2)',
+  'linear-gradient(135deg,#f093fb,#f5576c)',
+  'linear-gradient(135deg,#4facfe,#00f2fe)',
+  'linear-gradient(135deg,#43e97b,#38f9d7)',
+  'linear-gradient(135deg,#fa709a,#fee140)',
+  'linear-gradient(135deg,#fda085,#f6d365)',
+  'linear-gradient(135deg,#a18cd1,#fbc2eb)',
+  'linear-gradient(135deg,#fd746c,#ff9068)',
+];
+
+const TIMES = ['1h','2h','3h','4h','5h','6h','8h','10h','12h','1d','2d'];
+
+const AVATAR_API = (seed) => `https://api.dicebear.com/7.x/avataaars/svg?seed=${seed}`;
+
+// ── IMAGE LOADER ──
+function loadImg(e, key) {
+  const f = e.target.files[0];
+  if (!f) return;
+  const r = new FileReader();
+  r.onload = ev => {
+    S[key] = ev.target.result;
+    if (key === 'brandAv') {
+      document.getElementById('avImg').src = ev.target.result;
+      document.getElementById('avPreview').style.display = 'block';
+    }
+    if (key === 'screenshot') {
+      document.getElementById('ssImg').src = ev.target.result;
+      document.getElementById('ssPreview').style.display = 'block';
+    }
+    render();
+  };
+  r.readAsDataURL(f);
+}
+
+// ── DRAG & DROP ──
+['avZone','ssZone'].forEach(id => {
+  const z = document.getElementById(id);
+  z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('over'); });
+  z.addEventListener('dragleave', () => z.classList.remove('over'));
+  z.addEventListener('drop', e => {
+    e.preventDefault(); z.classList.remove('over');
+    const f = e.dataTransfer.files[0];
+    if (!f || !f.type.startsWith('image/')) return;
+    const key = id === 'avZone' ? 'brandAv' : 'screenshot';
+    const r = new FileReader();
+    r.onload = ev => {
+      S[key] = ev.target.result;
+      if (key === 'brandAv') {
+        document.getElementById('avImg').src = ev.target.result;
+        document.getElementById('avPreview').style.display = 'block';
+      }
+      if (key === 'screenshot') {
+        document.getElementById('ssImg').src = ev.target.result;
+        document.getElementById('ssPreview').style.display = 'block';
+      }
+      render();
+    };
+    r.readAsDataURL(f);
+  });
+});
+
+// ── COMMENT MANAGEMENT ──
+function addCmt() {
+  const randomSeed = Math.random().toString(36).substring(7);
+  S.comments.push({
+    id: ++uid,
+    username: '',
+    text: '',
+    reply: '',
+    hidden: false,
+    time: TIMES[Math.floor(Math.random() * TIMES.length)],
+    grad: GRADIENTS[uid % GRADIENTS.length],
+    avatar: AVATAR_API(randomSeed),
+  });
+  renderControls();
+  render();
+}
+
+function delCmt(id) {
+  S.comments = S.comments.filter(c => c.id !== id);
+  renderControls();
+  render();
+}
+
+function updCmt(id, field, val) {
+  const c = S.comments.find(c => c.id === id);
+  if (c) { c[field] = val; render(); }
+}
+
+function toggleHidden(id) {
+  const c = S.comments.find(c => c.id === id);
+  if (c) {
+    c.hidden = !c.hidden;
+    const block = document.querySelector(`.cmt-block[data-id="${id}"]`);
+    if (block) {
+      const btn = block.querySelector('.hide-switch');
+      if (btn) btn.classList.toggle('active');
+      const badge = block.querySelector('.badge-hidden');
+      if (badge) badge.style.display = c.hidden ? 'inline' : 'none';
+    }
+    render();
+  }
+}
+
+// ── RENDER SIDEBAR ──
+function renderControls() {
+  document.getElementById('cmtList').innerHTML = S.comments.map(c => `
+    <div class="cmt-block${c.reply && c.reply.trim() ? ' replied' : ''}" data-id="${c.id}" style="margin-bottom:8px">
+      <div class="cmt-block-head">
+        <div class="cmt-mini-av" style="background:${c.grad}">
+          ${c.username ? esc(c.username[0].toUpperCase()) : '?'}
+        </div>
+        <input class="input" style="flex:1;padding:5px 8px;font-size:12px"
+          placeholder="@username"
+          value="${esc(c.username)}"
+          oninput="updCmt(${c.id},'username',this.value);this.closest('.cmt-block').querySelector('.cmt-mini-av').textContent=this.value?this.value[0].toUpperCase():'?'">
+      </div>
+      <div class="cmt-block-body">
+        <textarea class="cmt-textarea" rows="2" placeholder="Their comment..."
+          oninput="updCmt(${c.id},'text',this.value)">${esc(c.text)}</textarea>
+        <div class="reply-label">
+          <div class="reply-label-dot"></div>
+          Brand Reply
+        </div>
+        <textarea class="cmt-textarea reply-ta${c.reply && c.reply.trim() ? ' has-reply' : ''}" rows="2"
+          placeholder="Type reply... (optional)"
+          oninput="updCmt(${c.id},'reply',this.value)">${esc(c.reply)}</textarea>
+      </div>
+      <div class="cmt-block-foot">
+        <span class="badge-replied" style="display:${c.reply && c.reply.trim() ? 'inline' : 'none'}">✓ replied</span>
+        <span class="badge-hidden" style="display:${c.hidden ? 'inline' : 'none'}">👁 hidden</span>
+        <span style="flex:1"></span>
+        <button class="hide-switch${c.hidden ? ' active' : ''}" onclick="toggleHidden(${c.id})"></button>
+        <button class="btn-del" onclick="delCmt(${c.id})">✕ Remove</button>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── BUILD IG MOCKS ──
+function buildMock(view) {
+  const handle = document.getElementById('brandHandle').value.trim() || 'yourbrand';
+  const caption = document.getElementById('postCaption').value.trim();
+  const likes = document.getElementById('postLikes').value.trim();
+  const verified = document.getElementById('brandVerified').value === '1';
+
+  const avContent = S.brandAv
+    ? `<img src="${S.brandAv}" alt="">`
+    : `${handle.replace('@','').substring(0,2).toUpperCase()}`;
+
+  const vBadge = verified ? `<span class="ig-vbadge"><svg viewBox="0 0 10 8"><polyline points="1,4 4,7 9,1" stroke="#fff" fill="none" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>` : '';
+
+  let h = `
+    <div class="ig-header">
+      <div class="ig-av-wrap"><div class="ig-av-inner">${avContent}</div></div>
+      <div class="ig-info">
+        <div class="ig-handle">${esc(handle)}${vBadge}</div>
+        <div class="ig-sub">Original Audio</div>
+      </div>
+      <div class="ig-dots">···</div>
+    </div>
+  `;
+
+  h += `<div class="ig-post-img">`;
+  if (S.screenshot) {
+    h += `<img src="${S.screenshot}" alt="post" style="width:100%;display:block;max-height:400px;object-fit:cover">`;
+  } else {
+    h += `<div class="ig-post-placeholder">🖼️<span>Add screenshot</span></div>`;
+  }
+  h += `</div>`;
+
+  h += `
+    <div class="ig-actions">
+      <div class="ig-icon">${heartSvg()}</div>
+      <div class="ig-icon">${commentSvg()}</div>
+      <div class="ig-icon">${shareSvg()}</div>
+      <div class="ig-icon save">${saveSvg()}</div>
+    </div>
+  `;
+
+  if (likes) h += `<div class="ig-likes">${esc(likes)} likes</div>`;
+  if (caption) h += `<div class="ig-caption"><b>${esc(handle)}</b> ${esc(caption)}</div>`;
+
+  if (S.comments.length) {
+    h += `<div class="ig-comments">`;
+    
+    // Count visible comments based on view
+    let visibleCount = S.comments.length;
+    if (view === 'public') {
+      visibleCount = S.comments.filter(c => !c.hidden).length;
+    }
+    
+    h += `<div class="ig-view-all">View all ${visibleCount} comment${visibleCount !== 1 ? 's' : ''}</div>`;
+
+    S.comments.forEach((c, idx) => {
+      // Hide comments based on view
+      if (c.hidden && view === 'public') return;
+      
+      const uname = c.username || 'user';
+      const txt = c.text || '(comment text here)';
+
+      let commentHtml = `
+        <div class="ig-cmt" data-cmt-id="${c.id}">
+      `;
+
+      // Show hidden indicator on brand view
+      if (c.hidden && view === 'brand') {
+        commentHtml += `<div class="hidden-indicator">Hidden</div>`;
+      }
+
+      commentHtml += `
+          <div class="ig-cmt-av"><img src="${c.avatar}" alt=""></div>
+          <div class="ig-cmt-body">
+            <div class="ig-cmt-text"><b>${esc(uname)}</b> ${esc(txt)}</div>
+            <div class="ig-cmt-meta">
+              <span class="ig-cmt-time">${c.time}</span>
+              <span class="ig-cmt-like">Like</span>
+              <span class="ig-cmt-reply">Reply</span>
+              <span class="ig-cmt-heart">🤍</span>
+            </div>
+          </div>
+      `;
+
+      // Menu only on brand view
+      if (view === 'brand') {
+        commentHtml += `
+          <div class="ig-cmt-menu" onclick="toggleMenu(event, ${c.id})">
+            ⋮
+            <div class="ig-cmt-menu-popup" id="menu-${c.id}">
+              <button class="ig-cmt-menu-item hide" onclick="toggleHidden(${c.id}); closeMenus()">
+                ${c.hidden ? 'Unhide' : 'Hide'} comment
+              </button>
+              <button class="ig-cmt-menu-item" onclick="closeMenus()">View insights</button>
+            </div>
+          </div>
+        `;
+      }
+
+      commentHtml += `</div>`;
+      h += commentHtml;
+
+      // Brand reply
+      if (c.reply && c.reply.trim()) {
+        h += `
+          <div class="ig-reply">
+            <div class="ig-reply-av-wrap">
+              <div class="ig-reply-av-inner">${avContent}</div>
+            </div>
+            <div class="ig-cmt-body">
+              <div class="ig-cmt-text">
+                <b>${esc(handle)}</b>${vBadge} ${esc(c.reply)}
+              </div>
+              <div class="ig-cmt-meta">
+                <span class="ig-cmt-time">Just now</span>
+                <span class="ig-cmt-like">Like</span>
+                <span class="ig-cmt-heart">🤍</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      h += `<div class="ig-divider"></div>`;
+    });
+
+    h += `</div>`;
+  } else {
+    h += `<div class="ig-comments"><div class="empty-pane">💬<br>Add comments</div></div>`;
+  }
+
+  h += `<div class="ig-timestamp">2 hours ago</div>`;
+  h += `
+    <div class="ig-add-cmt">
+      <div class="ig-add-cmt-av">😊</div>
+      <div class="ig-add-cmt-ph">Add a comment…</div>
+      <div class="ig-add-cmt-emoji">🙂</div>
+    </div>
+  `;
+
+  return h;
+}
+
+function toggleMenu(e, id) {
+  e.stopPropagation();
+  document.querySelectorAll('.ig-cmt-menu-popup.show').forEach(el => {
+    if (el.id !== `menu-${id}`) el.classList.remove('show');
+  });
+  document.getElementById(`menu-${id}`).classList.toggle('show');
+}
+
+function closeMenus() {
+  document.querySelectorAll('.ig-cmt-menu-popup.show').forEach(el => el.classList.remove('show'));
+}
+
+document.addEventListener('click', () => closeMenus());
+
+// ── RENDER ──
+function render() {
+  document.getElementById('mockCommenter').innerHTML = buildMock('commenter');
+  document.getElementById('mockBrandView').innerHTML = buildMock('brand');
+  document.getElementById('mockPublic').innerHTML = buildMock('public');
+}
+
+// ── EXPORT ──
+async function exportAll() {
+  const panes = document.querySelectorAll('.pane');
+  const wrapper = document.createElement('div');
+  wrapper.style.display = 'flex';
+  wrapper.style.gap = '12px';
+  wrapper.style.background = '#fff';
+  wrapper.style.padding = '20px';
+
+  for (let pane of panes) {
+    const section = document.createElement('div');
+    section.style.flex = '1';
+    section.style.minWidth = '0';
+
+    const head = pane.querySelector('.pane-head');
+    const body = pane.querySelector('.pane-body');
+
+    const headClone = head.cloneNode(true);
+    const bodyClone = body.cloneNode(true);
+
+    section.appendChild(headClone);
+    section.appendChild(bodyClone);
+    wrapper.appendChild(section);
+  }
+
+  document.body.appendChild(wrapper);
+
+  try {
+    const canvas = await html2canvas(wrapper, {
+      backgroundColor: '#ffffff',
+      scale: 1.8,
+      useCORS: true,
+      allowTaint: true,
+      logging: false
+    });
+
+    const a = document.createElement('a');
+    a.download = `ig-comment-flow-${Date.now()}.png`;
+    a.href = canvas.toDataURL('image/png');
+    a.click();
+  } finally {
+    document.body.removeChild(wrapper);
+  }
+}
+
+// ── CLEAR ──
+function clearAll() {
+  S.brandAv = null; S.screenshot = null; S.comments = [];
+  ['brandHandle','postCaption','postLikes'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('avPreview').style.display = 'none';
+  document.getElementById('ssPreview').style.display = 'none';
+  uid = 0;
+  renderControls();
+  render();
+}
+
+// ── HELPERS ──
+function esc(s) {
+  return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function heartSvg() { return `<svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>`; }
+function commentSvg() { return `<svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>`; }
+function shareSvg() { return `<svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>`; }
+function saveSvg() { return `<svg viewBox="0 0 24 24"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`; }
+
+// ── INIT ──
+renderControls();
+render();
+</script>
+</body>
+</html>
