@@ -27,8 +27,7 @@ body{
   font-family:'DM Sans',-apple-system,sans-serif;
   background:var(--bg);
   color:var(--text);
-  height:100vh;
-  overflow:hidden;
+  min-height:100vh;
   display:flex;
   flex-direction:column;
 }
@@ -85,12 +84,14 @@ body{
   display:flex;
   flex:1;
   overflow:hidden;
+  min-height:0;
 }
 
 /* ── SIDEBAR ── */
 .sidebar{
   width:300px;
   min-width:300px;
+  max-width:300px;
   background:#ffffff;
   border-right:1px solid var(--border);
   display:flex;
@@ -100,13 +101,16 @@ body{
 .sidebar-scroll{
   flex:1;
   overflow-y:auto;
+  overflow-x:hidden;
   padding:16px;
   display:flex;
   flex-direction:column;
   gap:16px;
 }
-.sidebar-scroll::-webkit-scrollbar{width:3px}
-.sidebar-scroll::-webkit-scrollbar-thumb{background:#ccc;border-radius:2px}
+.sidebar-scroll::-webkit-scrollbar{width:6px}
+.sidebar-scroll::-webkit-scrollbar-track{background:transparent}
+.sidebar-scroll::-webkit-scrollbar-thumb{background:#ccc;border-radius:3px}
+.sidebar-scroll::-webkit-scrollbar-thumb:hover{background:#999}
 
 .card{
   background:var(--surface2);
@@ -296,12 +300,12 @@ body{
   display:flex;align-items:center;gap:6px;
 }
 .pane-label.before{color:#6b7280}
-.pane-label.after{color:var(--green)}
+.pane-label.after{color:#0095f6}
 .pane-label-pill{
   width:7px;height:7px;border-radius:50%;
 }
 .pane-label.before .pane-label-pill{background:#6b7280}
-.pane-label.after .pane-label-pill{background:var(--green)}
+.pane-label.after .pane-label-pill{background:#0095f6}
 
 .pane-save{
   height:26px;padding:0 10px;
