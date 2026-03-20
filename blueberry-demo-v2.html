@@ -1,0 +1,843 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Blueberry</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+
+:root{
+  --berry:#3B1F6E;
+  --berry-lt:#6C42C9;
+  --berry-xs:#F0EDFB;
+  --berry-xxs:#F8F6FF;
+  --ink:#0F0F0F;
+  --ink2:#4B5563;
+  --ink3:#9CA3AF;
+  --cream:#FAFAF8;
+  --white:#FFFFFF;
+  --border:rgba(0,0,0,0.07);
+  --border-md:rgba(0,0,0,0.11);
+  --green:#16A34A;
+  --green-lt:#DCFCE7;
+  --red:#DC2626;
+  --red-lt:#FEF2F2;
+  --gold:#78350F;
+  --gold-lt:#FFFBEB;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',-apple-system,sans-serif;background:#F2F1EF;color:var(--ink)}
+
+/* ═══════════════════════════════════
+   PHONE STAGE
+═══════════════════════════════════ */
+.phone-stage{
+  background:linear-gradient(160deg,#06040f 0%,#130826 55%,#06040f 100%);
+  min-height:100vh;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:40px 16px 56px;
+}
+.stage-label{
+  font-size:11px;letter-spacing:.2em;text-transform:uppercase;
+  color:rgba(255,255,255,.28);margin-bottom:22px;
+}
+.prog{display:flex;align-items:center;gap:7px;margin-bottom:20px}
+.prog-dot{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.18);transition:all .3s}
+.prog-dot.on{background:#fff;transform:scale(1.2)}
+.prog-lbl{font-size:11px;color:rgba(255,255,255,.35);margin-left:5px}
+
+.phone{
+  width:296px;background:#1C1C1E;border-radius:52px;padding:4px;
+  box-shadow:0 40px 80px rgba(0,0,0,.55),inset 0 0 0 1px rgba(255,255,255,.06);
+}
+.phone-inner{background:#000;border-radius:49px;overflow:hidden;position:relative;height:622px}
+.notch{position:absolute;top:0;left:50%;transform:translateX(-50%);width:108px;height:28px;background:#000;border-radius:0 0 18px 18px;z-index:20}
+
+.scr{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .32s ease,transform .32s ease;transform:translateX(8px)}
+.scr.on{opacity:1;pointer-events:all;transform:none}
+.scr.out{opacity:0;transform:translateX(-8px);pointer-events:none}
+
+/* Lock */
+#s-lock{background:linear-gradient(160deg,#07050f 0%,#130828 60%,#07050f 100%);display:flex;flex-direction:column;align-items:center;padding-top:62px}
+.l-time{font-size:64px;font-weight:200;color:#fff;letter-spacing:-2px;line-height:1}
+.l-date{font-size:13px;color:rgba(255,255,255,.42);margin:4px 0 28px}
+.notif{width:265px;background:rgba(20,14,34,.88);border-radius:18px;padding:13px 14px;cursor:pointer;border:.5px solid rgba(255,255,255,.1);transition:filter .2s;-webkit-backdrop-filter:blur(20px);backdrop-filter:blur(20px)}
+.notif:hover{filter:brightness(1.1)}
+.notif:active{transform:scale(.97)}
+.n-row{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.n-icon{width:26px;height:26px;border-radius:6px;background:linear-gradient(135deg,#e1306c,#833ab4,#fd1d1d);display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.n-app{font-size:11px;color:rgba(255,255,255,.38);font-weight:500;flex:1;letter-spacing:.03em}
+.n-time{font-size:11px;color:rgba(255,255,255,.22)}
+.n-sender{font-size:13px;font-weight:600;color:#fff;margin-bottom:3px}
+.n-preview{font-size:12px;color:rgba(255,255,255,.58);line-height:1.4}
+.notif-hint{font-size:10px;color:rgba(255,255,255,.18);margin-top:18px}
+
+/* Story */
+#s-story{background:#000;display:flex;flex-direction:column}
+.s-bars{display:flex;gap:3px;padding:34px 10px 8px}
+.s-bar{flex:1;height:2px;background:rgba(255,255,255,.22);border-radius:1px;overflow:hidden}
+.s-fill{height:100%;background:#fff;width:0;border-radius:1px}
+.s-fill.run{animation:fillBar var(--d,3.5s) linear forwards}
+@keyframes fillBar{to{width:100%}}
+.s-head{display:flex;align-items:center;gap:8px;padding:0 12px;margin-bottom:10px}
+.s-av{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,#3B1F6E,#6C42C9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:11px;font-weight:600;border:2px solid rgba(255,255,255,.85);flex-shrink:0}
+.s-name{font-size:13px;font-weight:600;color:#fff}
+.s-sub{font-size:10px;color:rgba(255,255,255,.42)}
+.s-close{margin-left:auto;font-size:22px;color:rgba(255,255,255,.45);cursor:pointer;line-height:1;padding:2px 4px}
+
+.s-img{
+  margin:0 10px;border-radius:14px;
+  background:linear-gradient(145deg,#ede0ff,#d8bff5,#c0a0ec);
+  height:306px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+  position:relative;overflow:hidden;flex-shrink:0;
+}
+.s-product{width:84px;height:84px;border-radius:50%;background:rgba(59,31,110,.14);display:flex;align-items:center;justify-content:center}
+.s-product-inner{width:60px;height:60px;border-radius:50%;background:#3B1F6E;display:flex;align-items:center;justify-content:center}
+.s-product-txt{font-size:8px;font-weight:700;color:#fff;letter-spacing:.4px;text-align:center;line-height:1.3}
+.s-brand{font-size:16px;font-weight:600;color:#3B1F6E;letter-spacing:-.3px}
+.s-caption{position:absolute;bottom:11px;left:11px;right:11px;background:rgba(59,31,110,.82);border-radius:10px;padding:8px 11px;font-size:11px;color:#fff;line-height:1.45}
+.s-caption strong{color:#c4a8f8}
+
+.s-reactions{padding:8px 12px 4px;display:flex;flex-direction:column;gap:7px}
+
+.fire-row{display:flex;align-items:center;gap:10px;opacity:0;transform:translateY(5px);transition:opacity .3s,transform .3s}
+.fire-row.show{opacity:1;transform:none}
+.fire-btn{width:32px;height:32px;background:rgba(255,255,255,.1);border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:18px;line-height:1;border:.5px solid rgba(255,255,255,.18);animation:firePulse 1.4s ease infinite}
+@keyframes firePulse{0%,100%{background:rgba(255,255,255,.1)}50%{background:rgba(255,255,255,.2)}}
+.fire-lbl{font-size:11px;color:rgba(255,255,255,.45)}
+
+.dm-reply{display:flex;align-items:flex-end;gap:7px;opacity:0;transform:translateY(7px);transition:opacity .35s,transform .35s}
+.dm-reply.show{opacity:1;transform:none}
+.dm-av{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,#3B1F6E,#6C42C9);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:600;flex-shrink:0}
+.dm-bubble{background:#3B1F6E;border-radius:14px 14px 14px 3px;padding:9px 12px;font-size:12px;color:#fff;line-height:1.5;max-width:215px}
+.dm-bubble em{font-style:normal;color:#b8a0f8}
+
+.tap-link{
+  margin:7px 12px 0;
+  background:rgba(59,31,110,.3);
+  border:.5px solid rgba(180,160,248,.5);
+  border-radius:12px;padding:11px 13px;cursor:pointer;
+  display:flex;align-items:center;gap:10px;
+  opacity:0;transform:translateY(7px);
+  transition:opacity .35s,transform .35s,background .18s;
+}
+.tap-link.show{opacity:1;transform:none}
+.tap-link:hover{background:rgba(59,31,110,.45)}
+.tap-link:active{background:rgba(59,31,110,.55)}
+.tl-icon{width:34px;height:34px;border-radius:8px;background:#3B1F6E;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tl-dot{width:11px;height:11px;border-radius:50%;background:#fff}
+.tl-text{flex:1}
+.tl-domain{font-size:10px;color:#b8a0f8;font-weight:600;margin-bottom:1px}
+.tl-title{font-size:12px;color:#fff;font-weight:500}
+.tl-arrow{
+  width:28px;height:28px;border-radius:50%;
+  background:rgba(180,160,248,.25);
+  display:flex;align-items:center;justify-content:center;
+  color:#d4bfff;font-size:15px;font-weight:500;flex-shrink:0;
+  animation:arrowGlow 1.3s ease infinite;
+}
+@keyframes arrowGlow{0%,100%{background:rgba(180,160,248,.2)}50%{background:rgba(180,160,248,.4)}}
+
+.s-input-row{display:flex;gap:8px;align-items:center;padding:8px 12px 14px}
+.s-input{flex:1;height:34px;background:rgba(255,255,255,.1);border:.5px solid rgba(255,255,255,.18);border-radius:17px;padding:0 13px;font-size:12px;color:#fff;outline:none;font-family:inherit}
+.s-input::placeholder{color:rgba(255,255,255,.32)}
+.s-emoji{font-size:20px;cursor:pointer;padding:3px;border-radius:50%;background:rgba(255,255,255,.1);transition:background .15s}
+.s-emoji:active{background:rgba(255,255,255,.22)}
+
+/* ═══════════════════════════════════
+   WEBSITE
+═══════════════════════════════════ */
+#website{display:none;width:100%}
+#website.show{display:block}
+
+/* Nav */
+.w-nav{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;height:56px;
+  background:rgba(250,250,248,.96);
+  border-bottom:.5px solid var(--border-md);
+  position:sticky;top:0;z-index:100;
+  -webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+}
+.w-logo{font-size:17px;font-weight:600;color:var(--berry);letter-spacing:-.4px}
+.w-logo em{font-style:normal;color:var(--berry-lt)}
+.w-links{display:flex;gap:20px;font-size:13px;color:var(--ink2)}
+.w-links span{cursor:pointer;transition:color .15s}.w-links span:hover{color:var(--berry)}
+.w-nav-cta{background:var(--berry);color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit}
+
+/* Brand ticker */
+.w-ticker{background:var(--berry);height:32px;overflow:hidden;display:flex;align-items:center}
+.w-ticker-inner{display:flex;animation:scrollTick 48s linear infinite;white-space:nowrap;align-items:center}
+@keyframes scrollTick{to{transform:translateX(-50%)}}
+.w-brand{font-size:11px;font-weight:500;letter-spacing:.04em;color:rgba(255,255,255,.78);padding:0 20px}
+.w-sep{color:rgba(255,255,255,.2);font-size:10px;flex-shrink:0}
+
+/* Activity ticker */
+.w-activity{background:var(--ink);height:33px;overflow:hidden;display:flex;align-items:center}
+.w-act-inner{display:flex;animation:scrollTick 42s linear infinite;white-space:nowrap}
+.w-act-item{display:inline-flex;align-items:center;gap:8px;padding:0 24px;font-size:12px;color:rgba(255,255,255,.7)}
+.w-live{width:6px;height:6px;border-radius:50%;background:#6EF7B7;animation:liveBlink 1.8s ease infinite;flex-shrink:0}
+@keyframes liveBlink{0%,100%{opacity:1}50%{opacity:.2}}
+.w-act-bold{font-weight:500;color:#fff}
+
+/* Hero */
+.w-hero{background:var(--white);border-bottom:.5px solid var(--border-md);padding:52px 28px 48px}
+.w-hero-in{max-width:1060px;margin:0 auto;display:grid;grid-template-columns:1fr 380px;gap:64px;align-items:center}
+.w-badge{display:inline-flex;align-items:center;gap:7px;background:var(--berry-xs);border-radius:20px;padding:4px 14px 4px 5px;margin-bottom:18px}
+.w-badge-av{width:22px;height:22px;border-radius:50%;background:var(--berry);display:flex;align-items:center;justify-content:center;color:#fff;font-size:9px;font-weight:600}
+.w-badge-txt{font-size:11px;color:var(--berry-lt);font-weight:500}
+.w-h1{font-size:clamp(2.2rem,4vw,3.4rem);font-weight:600;color:var(--ink);line-height:1.1;letter-spacing:-.04em;margin-bottom:14px}
+.w-h1 em{font-style:normal;color:var(--berry)}
+.w-sub{font-size:15px;color:var(--ink2);line-height:1.7;margin-bottom:24px;max-width:440px;font-weight:300}
+.w-btns{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+.w-btn-p{background:var(--berry);color:#fff;border:none;border-radius:9px;padding:12px 22px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity .15s}
+.w-btn-p:hover{opacity:.88}
+.w-btn-g{background:transparent;color:var(--berry);border:.5px solid var(--berry-lt);border-radius:9px;padding:12px 22px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.w-trust{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink3)}
+.w-trust-dot{width:6px;height:6px;border-radius:50%;background:var(--green)}
+
+/* Demo card */
+.demo-card{background:var(--white);border:.5px solid var(--border-md);border-radius:20px;padding:16px 14px 14px;box-shadow:0 8px 32px rgba(59,31,110,.08)}
+.demo-notch{width:48px;height:4px;border-radius:2px;background:var(--border-md);margin:0 auto 12px}
+.demo-lbl{font-size:10px;color:var(--ink3);text-align:center;margin-bottom:6px;letter-spacing:.03em}
+.demo-msg{font-size:12px;line-height:1.5;padding:9px 12px;border-radius:14px;margin:4px 0;opacity:0;transform:translateY(5px);transition:opacity .4s,transform .4s}
+.demo-out{background:var(--berry);color:#fff;margin-left:28px;border-radius:14px 14px 3px 14px}
+.demo-in{background:#F3F4F6;color:var(--ink);margin-right:28px;border-radius:14px 14px 14px 3px}
+.demo-dots{display:flex;align-items:center;gap:3px;padding:8px 12px;margin-right:28px;opacity:0;transition:opacity .25s}
+.demo-dots span{width:5px;height:5px;border-radius:50%;background:var(--ink3);animation:dotBounce .9s ease infinite;display:inline-block}
+.demo-dots span:nth-child(2){animation-delay:.12s}
+.demo-dots span:nth-child(3){animation-delay:.24s}
+@keyframes dotBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-3px)}}
+.demo-converted{font-size:10px;color:var(--berry-lt);font-weight:500;text-align:center;margin-top:10px;letter-spacing:.05em;text-transform:uppercase;opacity:0;transition:opacity .5s}
+
+/* Stats */
+.w-stats{display:grid;grid-template-columns:repeat(4,1fr);border-top:.5px solid var(--border-md);border-bottom:.5px solid var(--border-md)}
+.w-stat{background:var(--white);padding:24px 16px;text-align:center;border-right:.5px solid var(--border-md)}
+.w-stat:last-child{border-right:none}
+.w-stat-n{font-size:2rem;font-weight:600;color:var(--berry);letter-spacing:-.04em;line-height:1}
+.w-stat-l{font-size:12px;color:var(--ink3);margin-top:4px;line-height:1.3}
+
+/* Customers */
+.w-customers{background:var(--ink);padding:28px}
+.w-cust-in{max-width:1060px;margin:0 auto}
+.w-cust-label{font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:rgba(255,255,255,.28);text-align:center;margin-bottom:18px}
+.w-cust-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:rgba(255,255,255,.06);border-radius:10px;overflow:hidden}
+.w-cc{background:var(--ink);padding:20px}
+.w-cc.feat{background:#0d1526}
+.w-cc-badge{display:inline-block;background:var(--berry);color:#fff;font-size:10px;padding:2px 8px;border-radius:20px;margin-bottom:8px;font-weight:500;letter-spacing:.04em}
+.w-cc-name{font-size:15px;font-weight:500;color:#fff;margin-bottom:4px}
+.w-cc-desc{font-size:12px;color:rgba(255,255,255,.38);line-height:1.5;font-weight:300;margin-bottom:8px}
+.w-cc-stat{display:flex;align-items:baseline;gap:6px}
+.w-cc-n{font-size:26px;font-weight:600;color:var(--berry-lt);letter-spacing:-.04em;line-height:1}
+.w-cc-l{font-size:11px;color:rgba(255,255,255,.3)}
+
+/* Section base */
+.w-sec{padding:52px 28px}
+.w-sec-in{max-width:1060px;margin:0 auto}
+.w-eyebrow{font-size:10px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--berry-lt);margin-bottom:12px}
+.w-sh{font-size:clamp(1.6rem,3vw,2.2rem);font-weight:600;color:var(--ink);line-height:1.15;letter-spacing:-.03em;margin-bottom:10px}
+.w-body{font-size:14px;color:var(--ink2);line-height:1.75;font-weight:300;margin-bottom:28px;max-width:500px}
+
+/* ── RECEIPT SECTION ── */
+.receipt-wrap{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start}
+.receipt-lede{padding-top:8px}
+.receipt-quote{font-size:1.3rem;font-weight:500;color:var(--ink);line-height:1.4;letter-spacing:-.02em;margin-bottom:16px;font-style:italic}
+.receipt-quote::before{content:'"';color:var(--berry-lt)}
+.receipt-quote::after{content:'"';color:var(--berry-lt)}
+.receipt-p{font-size:14px;color:var(--ink2);line-height:1.75;font-weight:300;margin-bottom:10px}
+.receipt-italic{font-size:13px;color:var(--ink3);font-style:italic;margin-bottom:20px}
+.receipt-card{
+  background:#FDFCF7;border:.5px solid #DDD9C8;border-radius:10px;
+  padding:24px;font-family:'Courier New',monospace;
+  box-shadow:0 4px 24px rgba(0,0,0,.06);
+}
+.rc-head{text-align:center;margin-bottom:14px}
+.rc-brand{font-family:'Inter',sans-serif;font-size:15px;font-weight:600;color:var(--ink)}
+.rc-sub{font-size:10px;color:var(--ink3);margin-top:2px}
+.rc-div{border:none;border-top:1px dashed #C8C3B0;margin:10px 0}
+.rc-row{display:flex;justify-content:space-between;font-size:12px;padding:4px 0;color:var(--ink2)}
+.rc-row.hdr{color:var(--ink3);font-size:10px;text-transform:uppercase}
+.rc-row.miss{color:#DC2626}
+.rc-row.total{font-weight:700;font-size:14px;color:var(--ink)}
+.rc-stamp{display:inline-block;border:2px solid #DC2626;color:#DC2626;padding:3px 14px;border-radius:3px;font-size:11px;font-weight:700;letter-spacing:.14em;transform:rotate(-2.5deg);margin-top:4px}
+.rc-foot{font-size:9px;color:var(--ink3);margin-top:6px}
+
+/* ── TURING SECTION ── */
+.turing-intro{max-width:600px;margin:0 auto 32px;text-align:center}
+.turing-card{background:var(--white);border:.5px solid var(--border-md);border-radius:12px;padding:24px;max-width:620px;margin:0 auto 12px}
+.t-prompt{font-size:11px;color:var(--ink3);margin-bottom:10px;letter-spacing:.02em}
+.t-msg{font-size:15px;line-height:1.7;color:var(--ink)}
+.t-reveal{
+  font-size:13px;color:var(--ink2);padding:12px 16px;
+  background:var(--berry-xxs);border-radius:8px;
+  border-left:3px solid var(--berry-lt);
+  margin-bottom:12px;display:none;line-height:1.65;
+}
+.t-reveal.show{display:block}
+.t-choices{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;max-width:620px;margin-left:auto;margin-right:auto}
+.t-btn{
+  padding:12px;border:.5px solid var(--border-md);border-radius:8px;
+  background:var(--white);font-size:13px;font-family:inherit;cursor:pointer;
+  color:var(--ink);transition:border-color .15s,background .15s;
+}
+.t-btn:hover{border-color:var(--berry-lt);color:var(--berry)}
+.t-btn.correct{background:var(--berry-xs);border-color:var(--berry-lt);color:var(--berry)}
+.t-btn.wrong{background:var(--red-lt);border-color:#FCA5A5;color:var(--red)}
+.t-score-box{background:var(--white);border:.5px solid var(--border-md);border-radius:10px;padding:16px;text-align:center;max-width:620px;margin:0 auto}
+.t-score-n{font-size:2.2rem;font-weight:600;color:var(--berry);letter-spacing:-.04em;line-height:1}
+.t-score-l{font-size:13px;color:var(--ink2);margin-top:4px}
+.t-dots{display:flex;gap:6px;justify-content:center;margin-bottom:16px}
+.t-dot{width:7px;height:7px;border-radius:50%;background:var(--border-md);transition:background .2s}
+.t-dot.done{background:var(--berry)}.t-dot.active{background:var(--berry);opacity:.4}
+.t-next{display:flex;justify-content:center;margin-top:10px}
+.t-next-btn{padding:9px 24px;border:none;border-radius:8px;font-size:13px;font-family:inherit;cursor:pointer;background:var(--berry);color:#fff}
+
+/* ── HOW IT WORKS ── */
+.hiw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;margin-top:32px}
+.hiw-card{border:.5px solid var(--border-md);border-radius:12px;padding:22px;background:var(--white)}
+.hiw-num{font-size:2rem;font-weight:600;color:var(--berry);opacity:.12;line-height:1;margin-bottom:12px;letter-spacing:-.04em}
+.hiw-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:6px}
+.hiw-p{font-size:13px;color:var(--ink2);line-height:1.65;font-weight:300}
+
+/* ── CAMPAIGNS ── */
+.campaign-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-top:8px}
+.camp-card{background:var(--white);border:.5px solid var(--border-md);border-radius:12px;padding:20px;display:flex;gap:14px;align-items:flex-start;cursor:pointer;transition:border-color .15s}
+.camp-card:hover{border-color:var(--berry-lt)}
+.camp-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0}
+.camp-title{font-size:14px;font-weight:500;color:var(--ink);margin-bottom:4px}
+.camp-desc{font-size:12px;color:var(--ink2);line-height:1.55}
+.camp-badge{display:inline-block;font-size:10px;padding:2px 9px;border-radius:20px;margin-top:8px;font-weight:500}
+
+/* ── TESTIMONIALS ── */
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:8px}
+.testi-card{background:var(--white);border:.5px solid var(--border-md);border-radius:12px;padding:22px}
+.testi-card.feat{border-color:var(--berry-lt);background:var(--berry-xs)}
+.testi-brand{font-size:10px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px}
+.testi-n{font-size:2rem;font-weight:600;color:var(--berry);letter-spacing:-.04em;line-height:1;margin-bottom:2px}
+.testi-nl{font-size:11px;color:var(--ink3);margin-bottom:14px}
+.testi-q{font-size:14px;font-style:italic;line-height:1.6;color:var(--ink);margin-bottom:12px}
+.testi-who{font-size:12px;color:var(--ink2)}.testi-who strong{font-weight:500;color:var(--ink)}
+
+/* ── DIFF ── */
+.diff-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.diff-card{border:.5px solid var(--border-md);border-radius:12px;padding:24px;background:var(--white)}
+.diff-card.ours{border-color:var(--berry-lt);background:var(--berry-xs)}
+.diff-tag{display:inline-block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;padding:3px 9px;border-radius:4px;margin-bottom:14px;font-weight:600}
+.diff-tag.theirs{background:#F3F4F6;color:var(--ink3)}
+.diff-tag.us{background:var(--berry);color:#fff}
+.diff-title{font-size:15px;font-weight:500;color:var(--ink);margin-bottom:16px}
+.diff-row{display:flex;align-items:flex-start;gap:8px;padding:8px 0;border-bottom:.5px solid var(--border);font-size:13px;color:var(--ink2)}
+.diff-row:last-child{border-bottom:none}
+.diff-ic{width:16px;height:16px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:9px;flex-shrink:0;margin-top:1px}
+.diff-x{background:#FEE2E2;color:var(--red)}
+.diff-ck{background:var(--berry-xs);color:var(--berry)}
+
+/* ── CTA ── */
+.w-cta{background:var(--berry);padding:64px 28px;text-align:center}
+.w-cta-ey{font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:14px}
+.w-cta-h{font-size:clamp(1.8rem,3.5vw,2.8rem);font-weight:600;color:#fff;line-height:1.2;letter-spacing:-.03em;margin-bottom:10px}
+.w-cta-sub{font-size:15px;color:rgba(255,255,255,.6);margin-bottom:28px;font-weight:300}
+.w-cta-btns{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}
+.w-cta-p{background:#fff;color:var(--berry);border:none;border-radius:9px;padding:13px 26px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.w-cta-g{background:transparent;color:#fff;border:.5px solid rgba(255,255,255,.35);border-radius:9px;padding:13px 26px;font-size:14px;font-weight:500;cursor:pointer;font-family:inherit}
+.w-cta-meta{margin-top:20px;font-size:12px;color:rgba(255,255,255,.28)}
+
+/* Footer */
+.w-footer{background:var(--ink);padding:40px 28px 24px}
+.w-ft-in{max-width:1060px;margin:0 auto}
+.w-ft-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:40px;margin-bottom:32px}
+.w-ft-logo{font-size:17px;font-weight:600;color:#fff;letter-spacing:-.3px;margin-bottom:8px}
+.w-ft-logo em{font-style:normal;color:var(--berry-lt)}
+.w-ft-tag{font-size:12px;color:rgba(255,255,255,.3);line-height:1.65;max-width:190px;margin-bottom:8px}
+.w-ft-badge{font-size:11px;color:rgba(255,255,255,.18)}
+.w-ft-col h4{font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:rgba(255,255,255,.25);margin-bottom:14px;font-weight:500}
+.w-ft-col ul{list-style:none;display:flex;flex-direction:column;gap:8px}
+.w-ft-col ul li{font-size:13px;color:rgba(255,255,255,.42);cursor:pointer;transition:color .15s}.w-ft-col ul li:hover{color:#fff}
+.w-ft-bot{border-top:.5px solid rgba(255,255,255,.07);padding-top:16px;display:flex;justify-content:space-between;font-size:12px;color:rgba(255,255,255,.2)}
+.w-ft-links{display:flex;gap:16px}
+
+@media(max-width:760px){
+  .w-hero-in,.receipt-wrap,.hiw-grid,.campaign-grid,.testi-grid,.diff-grid,.w-ft-grid,.w-cust-grid{grid-template-columns:1fr!important}
+  .w-stats{grid-template-columns:1fr 1fr}
+  .w-links{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- ════════ PHONE STAGE ════════ -->
+<div class="phone-stage">
+  <div class="stage-label">blueberry · interactive demo</div>
+
+  <div class="prog">
+    <div class="prog-dot on" id="pd0"></div>
+    <div class="prog-dot" id="pd1"></div>
+    <div class="prog-dot" id="pd2"></div>
+    <span class="prog-lbl" id="p-lbl">tap the notification</span>
+  </div>
+
+  <div class="phone">
+    <div class="notch"></div>
+    <div class="phone-inner">
+
+      <!-- Lock screen -->
+      <div class="scr on" id="s-lock">
+        <div style="height:100%;display:flex;flex-direction:column;align-items:center;padding-top:64px;background:linear-gradient(160deg,#07050f,#12082a 55%,#07050f)">
+          <div class="l-time">9:41</div>
+          <div class="l-date">Monday, March 17</div>
+          <div class="notif" onclick="goStory()">
+            <div class="n-row">
+              <div class="n-icon">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><circle cx="17.5" cy="6.5" r="1" fill="#fff" stroke="none"/></svg>
+              </div>
+              <span class="n-app">Instagram</span>
+              <span class="n-time">now</span>
+            </div>
+            <div class="n-sender">Rhode Skin replied to your story</div>
+            <div class="n-preview">They saw your reaction — tap to read their reply...</div>
+          </div>
+          <div class="notif-hint">tap to open</div>
+        </div>
+      </div>
+
+      <!-- Story screen -->
+      <div class="scr" id="s-story">
+        <div style="background:#000;height:100%;display:flex;flex-direction:column">
+          <div class="s-bars">
+            <div class="s-bar"><div class="s-fill" id="sb0" style="--d:2.8s"></div></div>
+            <div class="s-bar"><div class="s-fill" id="sb1" style="--d:3.2s"></div></div>
+            <div class="s-bar"><div class="s-fill" id="sb2" style="--d:3s"></div></div>
+          </div>
+          <div class="s-head">
+            <div class="s-av">RS</div>
+            <div>
+              <div class="s-name">Rhode Skin</div>
+              <div class="s-sub">replied to your story</div>
+            </div>
+            <div class="s-close" onclick="goLock()">×</div>
+          </div>
+          <div class="s-img">
+            <div class="s-product">
+              <div class="s-product-inner">
+                <div class="s-product-txt">GLAZING<br>MILK</div>
+              </div>
+            </div>
+            <div class="s-brand">Rhode Skin</div>
+            <div class="s-caption">New drop — <strong>Glazing Milk SPF 30</strong><br>Barrier-loving. Sensitive skin approved.</div>
+          </div>
+
+          <div class="s-reactions">
+            <!-- Fire click -->
+            <div class="fire-row" id="fire-row">
+              <div class="fire-btn">🔥</div>
+              <div class="fire-lbl">you reacted to this story</div>
+            </div>
+
+            <!-- Brand reply -->
+            <div class="dm-reply" id="dm-reply">
+              <div class="dm-av">RS</div>
+              <div class="dm-bubble"><em>Sarah!</em> Love that 🔥 — we have something for you, check it out →</div>
+            </div>
+
+            <!-- Tap link -->
+            <div class="tap-link" id="tap-link" onclick="goWeb()">
+              <div class="tl-icon"><div class="tl-dot"></div></div>
+              <div class="tl-text">
+                <div class="tl-domain">blueberry.social</div>
+                <div class="tl-title">See what we found about you</div>
+              </div>
+              <div class="tl-arrow">↗</div>
+            </div>
+          </div>
+
+          <div class="s-input-row" style="margin-top:auto">
+            <input class="s-input" placeholder="Reply to Rhode Skin..." readonly>
+            <div class="s-emoji">🔥</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ════════ WEBSITE ════════ -->
+<div id="website">
+
+  <nav class="w-nav">
+    <div class="w-logo">blue<em>berry</em></div>
+    <div class="w-links"><span>Product</span><span>Customers</span><span>Pricing</span><span>Resources</span></div>
+    <button class="w-nav-cta">Book a demo</button>
+  </nav>
+
+  <div class="w-ticker"><div class="w-ticker-inner" id="brand-ticker"></div></div>
+  <div class="w-activity"><div class="w-act-inner" id="act-ticker"></div></div>
+
+  <!-- Hero -->
+  <div class="w-hero">
+    <div class="w-hero-in">
+      <div>
+        <div class="w-badge">
+          <div class="w-badge-av">S</div>
+          <span class="w-badge-txt">this reply was made for you, Sarah</span>
+        </div>
+        <h1 class="w-h1">Never get ghosted by a brand<br><em>you love again.</em></h1>
+        <p class="w-sub">That DM from Rhode just happened because Blueberry researched who reacted to their story — and wrote a reply that proved they actually noticed you. Not a template. Not a bot. They raised their hand first.</p>
+        <div class="w-btns">
+          <button class="w-btn-p">Get my receipt →</button>
+          <button class="w-btn-g">Watch 2-min demo</button>
+        </div>
+        <div class="w-trust"><div class="w-trust-dot"></div><span>Official Meta Tech Partner · Instagram · Facebook · TikTok</span></div>
+      </div>
+      <div class="demo-card">
+        <div class="demo-notch"></div>
+        <div class="demo-lbl">Blueberry just sent this</div>
+        <div class="demo-msg demo-out" id="dm1">Hey Maya — saw your comment on the SPF Glow post. You hike every weekend, right? This was made for you.</div>
+        <div class="demo-dots" id="dm-dots"><span></span><span></span><span></span></div>
+        <div class="demo-msg demo-in" id="dm2">Wait how did you know that 😭 yes please!</div>
+        <div class="demo-msg demo-out" id="dm3">We pay attention 🫐 — use MAYA15 for 15% off</div>
+        <div class="demo-converted" id="dm-conv">Converted in 4 min · powered by Blueberry</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="w-stats">
+    <div class="w-stat"><div class="w-stat-n">10×</div><div class="w-stat-l">Avg. ROI in 2 weeks</div></div>
+    <div class="w-stat"><div class="w-stat-n">280K</div><div class="w-stat-l">Followers reached per brand</div></div>
+    <div class="w-stat"><div class="w-stat-n">&lt;15m</div><div class="w-stat-l">Time to go live</div></div>
+    <div class="w-stat"><div class="w-stat-n">100%</div><div class="w-stat-l">Warm audience, always</div></div>
+  </div>
+
+  <!-- Customers -->
+  <div class="w-customers">
+    <div class="w-cust-in">
+      <div class="w-cust-label">Powering leading consumer brands</div>
+      <div class="w-cust-grid">
+        <div class="w-cc feat"><div class="w-cc-badge">Featured customer</div><div class="w-cc-name">Golden State Warriors</div><div class="w-cc-desc">Personalizing fan engagement at scale across 5M+ social followers</div><div class="w-cc-stat"><div class="w-cc-n">8×</div><div class="w-cc-l">fan engagement lift</div></div></div>
+        <div class="w-cc"><div class="w-cc-name">Mellow Sleep</div><div class="w-cc-desc">Turning comment Q&As into direct sales</div><div class="w-cc-stat"><div class="w-cc-n">12×</div><div class="w-cc-l">ROI first month</div></div></div>
+        <div class="w-cc"><div class="w-cc-name">Impact Dog Crates</div><div class="w-cc-desc">Replacing automation with conversations that convert</div><div class="w-cc-stat"><div class="w-cc-n">10×</div><div class="w-cc-l">ROI in 2 weeks</div></div></div>
+        <div class="w-cc"><div class="w-cc-name">immi</div><div class="w-cc-desc">Scaling on-brand engagement across organic and paid</div><div class="w-cc-stat"><div class="w-cc-n">70%</div><div class="w-cc-l">faster response</div></div></div>
+        <div class="w-cc"><div class="w-cc-name">Spindrift</div><div class="w-cc-desc">Converting comment engagement into DTC sales</div><div class="w-cc-stat"><div class="w-cc-n">100%</div><div class="w-cc-l">comment coverage</div></div></div>
+        <div class="w-cc"><div class="w-cc-name">Alo Yoga</div><div class="w-cc-desc">Building 1:1 relationships with engaged followers</div><div class="w-cc-stat"><div class="w-cc-n">5×</div><div class="w-cc-l">DM conversion lift</div></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Receipt -->
+  <div class="w-sec" style="background:var(--cream);border-bottom:.5px solid var(--border-md)">
+    <div class="w-sec-in">
+      <div class="receipt-wrap">
+        <div class="receipt-lede">
+          <div class="w-eyebrow">The revenue receipt</div>
+          <div class="receipt-quote">Your comment section is a revenue channel. Most brands treat it like a suggestion box.</div>
+          <p class="receipt-p">Paste any Instagram post URL. Blueberry calculates what personalized outreach would have converted — person by person, comment by comment.</p>
+          <p class="receipt-italic">Most brands find $5K–$20K per post, uncollected.</p>
+          <button class="w-btn-p" style="margin-top:4px">Get my receipt →</button>
+        </div>
+        <div class="receipt-card">
+          <div class="rc-head">
+            <div class="rc-brand">@summerskinco</div>
+            <div class="rc-sub">Revenue receipt · March 17, 2026</div>
+          </div>
+          <div class="rc-div"></div>
+          <div class="rc-row hdr"><span>Engagement type</span><span>Value missed</span></div>
+          <div class="rc-row miss"><span>1,284 comments not replied to</span><span>−$2,140</span></div>
+          <div class="rc-row miss"><span>892 DM-eligible commenters</span><span>−$4,460</span></div>
+          <div class="rc-row miss"><span>67 product questions unanswered</span><span>−$938</span></div>
+          <div class="rc-row miss"><span>Negative comments unmoderated</span><span>−$620</span></div>
+          <div class="rc-div"></div>
+          <div class="rc-row total"><span>Total missed this month</span><span>$8,158</span></div>
+          <div style="text-align:center;margin-top:12px">
+            <div class="rc-stamp">UNCOLLECTED</div>
+            <div class="rc-foot">blueberrysocial.com</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div class="w-sec" style="background:var(--white);border-bottom:.5px solid var(--border-md)">
+    <div class="w-sec-in">
+      <div class="w-eyebrow">How it works</div>
+      <div class="w-sh">Like hiring 1,000 social media marketers.</div>
+      <div class="hiw-grid">
+        <div class="hiw-card"><div class="hiw-num">01</div><div class="hiw-title">Deep-research every customer</div><div class="hiw-p">Blueberry visits profiles, watches content, and builds a rich picture of each engager — interests, habits, buying signals — for truly personal engagement.</div></div>
+        <div class="hiw-card"><div class="hiw-num">02</div><div class="hiw-title">Write a reply from scratch</div><div class="hiw-p">Not a template. A real message written specifically for that one person, in your brand voice, referencing what they actually said or did.</div></div>
+        <div class="hiw-card"><div class="hiw-num">03</div><div class="hiw-title">Reply to every comment</div><div class="hiw-p">Product questions, reactions, feedback — all handled in your voice. Automated or with human review. Nothing goes unanswered.</div></div>
+        <div class="hiw-card"><div class="hiw-num">04</div><div class="hiw-title">Convert at the right moment</div><div class="hiw-p">Identifies high-intent customers and reaches out when they're ready to buy — not a moment too early or too late.</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Turing Test — woven in as an interactive break -->
+  <div class="w-sec" style="background:var(--berry-xxs);border-bottom:.5px solid var(--border-md)">
+    <div class="w-sec-in">
+      <div class="turing-intro">
+        <div class="w-eyebrow" style="text-align:center">The Turing test</div>
+        <div class="w-sh" style="text-align:center">Can you tell which one Blueberry wrote?</div>
+        <p style="font-size:14px;color:var(--ink2);line-height:1.7;font-weight:300">84% of people can't — because Blueberry doesn't write templates. It writes replies. Take the test and see if you can spot it.</p>
+      </div>
+      <div class="t-dots" id="t-dots"></div>
+      <div class="turing-card">
+        <div class="t-prompt" id="t-prompt"></div>
+        <div class="t-msg" id="t-msg"></div>
+      </div>
+      <div class="t-reveal" id="t-reveal"></div>
+      <div class="t-choices">
+        <button class="t-btn" id="t-human" onclick="tGuess('human')">Written by a human</button>
+        <button class="t-btn" id="t-ai" onclick="tGuess('ai')">Written by Blueberry AI</button>
+      </div>
+      <div class="t-score-box">
+        <div class="t-score-n" id="t-score">–</div>
+        <div class="t-score-l" id="t-score-l">Answer above to start</div>
+      </div>
+      <div class="t-next" id="t-next" style="display:none">
+        <button class="t-next-btn" onclick="tNext()">Next →</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Campaigns -->
+  <div class="w-sec" style="background:var(--white);border-bottom:.5px solid var(--border-md)">
+    <div class="w-sec-in">
+      <div class="w-eyebrow">Campaign types</div>
+      <div class="w-sh">What brands run on Blueberry.</div>
+      <p class="w-body">Every campaign starts from the same place: people who already engaged with you. Not cold. Not spray-and-pray. Warmth meeting warmth.</p>
+      <div class="campaign-grid">
+        <div class="camp-card"><div class="camp-icon" style="background:var(--berry-xs)">🚀</div><div><div class="camp-title">Product launch DM</div><div class="camp-desc">Reply personally to everyone who commented on your launch post. Turn reactions into revenue before they cool off.</div><span class="camp-badge" style="background:var(--berry-xs);color:var(--berry-lt)">most popular</span></div></div>
+        <div class="camp-card"><div class="camp-icon" style="background:var(--green-lt)">💚</div><div><div class="camp-title">Loyalty recognition</div><div class="camp-desc">Find your longest-following customers and acknowledge them — personally, specifically, in a way that makes them feel legendary.</div><span class="camp-badge" style="background:var(--green-lt);color:var(--green)">highest ROI</span></div></div>
+        <div class="camp-card"><div class="camp-icon" style="background:var(--gold-lt)">💰</div><div><div class="camp-title">Purchase intent recovery</div><div class="camp-desc">Catch the "is this worth it?" comments before they go buy from someone else. A personal reply converts at 6.8%.</div><span class="camp-badge" style="background:var(--gold-lt);color:var(--gold)">revenue driver</span></div></div>
+        <div class="camp-card"><div class="camp-icon" style="background:#FDF2F8">⭐</div><div><div class="camp-title">Story reaction campaign</div><div class="camp-desc">The flow you just experienced. Someone reacts to your story → Blueberry researches them → you reply like you knew them.</div><span class="camp-badge" style="background:#FDF2F8;color:#9D174D">new</span></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Testimonials -->
+  <div class="w-sec" style="background:var(--cream);border-bottom:.5px solid var(--border-md)">
+    <div class="w-sec-in">
+      <div class="w-eyebrow">Customer stories</div>
+      <div class="w-sh">Real results, real brands.</div>
+      <div class="testi-grid">
+        <div class="testi-card feat"><div class="testi-brand">Golden State Warriors</div><div class="testi-n">8×</div><div class="testi-nl">Fan engagement lift</div><div class="testi-q">"Every DM feels personal because it is. Real conversations with fans at scale — something impossible before."</div><div class="testi-who"><strong>Digital Engagement Team</strong> · Golden State Warriors</div></div>
+        <div class="testi-card"><div class="testi-brand">Impact Dog Crates</div><div class="testi-n">10×</div><div class="testi-nl">ROI in 2 weeks</div><div class="testi-q">"Revenue generation on autopilot. The cost versus value is a complete no-brainer."</div><div class="testi-who"><strong>Dyllan Barnes</strong> · Head of Strategic Growth</div></div>
+        <div class="testi-card"><div class="testi-brand">immi</div><div class="testi-n">70%</div><div class="testi-nl">Faster response time</div><div class="testi-q">"With Blueberry, it sounds like us. Not a script. Not a bot. Us."</div><div class="testi-who"><strong>CX Lead</strong> · immi</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Why Blueberry diff -->
+  <div class="w-sec" style="background:var(--white);border-bottom:.5px solid var(--border-md)">
+    <div class="w-sec-in">
+      <div class="w-eyebrow">Why Blueberry</div>
+      <div class="w-sh">Not just another bot.</div>
+      <p class="w-body">Every other tool reaches people who've never heard of you. Blueberry only reaches people who already raised their hand.</p>
+      <div class="diff-grid">
+        <div class="diff-card"><div class="diff-tag theirs">Other tools</div><div class="diff-title">Mass automation</div>
+          <div class="diff-row"><div class="diff-ic diff-x">✕</div><span>Targets anyone matching a keyword</span></div>
+          <div class="diff-row"><div class="diff-ic diff-x">✕</div><span>Same template sent to thousands</span></div>
+          <div class="diff-row"><div class="diff-ic diff-x">✕</div><span>Cold audiences convert at 0.5–2%</span></div>
+          <div class="diff-row"><div class="diff-ic diff-x">✕</div><span>No voice training — sounds robotic</span></div>
+          <div class="diff-row"><div class="diff-ic diff-x">✕</div><span>Comments ignored entirely</span></div>
+        </div>
+        <div class="diff-card ours"><div class="diff-tag us">Blueberry</div><div class="diff-title">Warm, personalized outreach</div>
+          <div class="diff-row"><div class="diff-ic diff-ck">✓</div><span>Only reaches people who engaged with you</span></div>
+          <div class="diff-row"><div class="diff-ic diff-ck">✓</div><span>Every message written for that one person</span></div>
+          <div class="diff-row"><div class="diff-ic diff-ck">✓</div><span>Warm audiences convert 5–10× better</span></div>
+          <div class="diff-row"><div class="diff-ic diff-ck">✓</div><span>Trained on your exact voice and brand</span></div>
+          <div class="diff-row"><div class="diff-ic diff-ck">✓</div><span>Auto-replies every comment, instantly</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CTA -->
+  <div class="w-cta">
+    <div class="w-cta-ey">blueberry</div>
+    <div class="w-cta-h">Your storefront window<br>is always on.</div>
+    <div class="w-cta-sub">Most brands leave it dark. The ones that don't keep customers forever.</div>
+    <div class="w-cta-btns">
+      <button class="w-cta-p">Get my receipt →</button>
+      <button class="w-cta-g">Book a demo</button>
+    </div>
+    <div class="w-cta-meta">Official Meta Tech Partner · &lt;15 min to go live · No dev work required</div>
+  </div>
+
+  <!-- Footer -->
+  <div class="w-footer"><div class="w-ft-in">
+    <div class="w-ft-grid">
+      <div><div class="w-ft-logo">blue<em>berry</em></div><div class="w-ft-tag">Only the people who already raised their hand.</div><div class="w-ft-badge">Official Meta Tech Partner</div></div>
+      <div class="w-ft-col"><h4>Product</h4><ul><li>Comment replies</li><li>DM campaigns</li><li>Smart targeting</li><li>Analytics</li></ul></div>
+      <div class="w-ft-col"><h4>Company</h4><ul><li>About</li><li>Careers</li><li>Blog</li><li>Press</li></ul></div>
+      <div class="w-ft-col"><h4>Resources</h4><ul><li>Case studies</li><li>Guides</li><li>Help centre</li><li>API docs</li></ul></div>
+    </div>
+    <div class="w-ft-bot"><span>© 2026 Blueberry Social Inc.</span><div class="w-ft-links"><span>Privacy</span><span>Terms</span><span>Security</span></div></div>
+  </div></div>
+
+</div><!-- /website -->
+
+<script>
+// ── PROGRESS ──────────────────────────────
+var storyLaunched=false;
+function setProg(n){
+  [0,1,2].forEach(function(i){document.getElementById('pd'+i).classList.toggle('on',i===n)});
+  document.getElementById('p-lbl').textContent=['tap the notification','tap the link to enter','explore blueberry'][n];
+}
+
+// ── SCREEN TRANSITIONS ────────────────────
+function goLock(){
+  ['s-story'].forEach(function(id){document.getElementById(id).classList.remove('on');document.getElementById(id).classList.add('out')});
+  setTimeout(function(){
+    document.getElementById('s-lock').classList.add('on');
+    document.getElementById('s-story').classList.remove('out');
+    storyLaunched=false;
+    document.getElementById('website').classList.remove('show');
+    document.getElementById('website').style.display='none';
+  },340);
+  setProg(0);
+}
+function goStory(){
+  document.getElementById('s-lock').classList.remove('on');document.getElementById('s-lock').classList.add('out');
+  setTimeout(function(){
+    document.getElementById('s-story').classList.add('on');
+    document.getElementById('s-lock').classList.remove('out');
+    if(!storyLaunched){storyLaunched=true;runStory();}
+  },300);
+  setProg(1);
+}
+function goWeb(){
+  setProg(2);
+  var w=document.getElementById('website');
+  w.style.display='block';w.style.opacity='0';w.style.transform='translateY(18px)';
+  w.style.transition='opacity .45s ease,transform .45s ease';
+  requestAnimationFrame(function(){requestAnimationFrame(function(){
+    w.style.opacity='1';w.style.transform='translateY(0)';
+    w.classList.add('show');
+    setTimeout(function(){w.scrollIntoView({behavior:'smooth',block:'start'})},120);
+  })});
+  runHeroDemo();
+}
+
+// ── STORY ANIMATION ───────────────────────
+function runStory(){
+  document.getElementById('sb0').classList.add('run');
+  setTimeout(function(){document.getElementById('fire-row').classList.add('show')},700);
+  setTimeout(function(){
+    document.getElementById('sb0').style.animation='none';
+    document.getElementById('sb0').style.width='100%';
+    document.getElementById('sb1').classList.add('run');
+  },2800);
+  setTimeout(function(){document.getElementById('dm-reply').classList.add('show')},3500);
+  setTimeout(function(){document.getElementById('tap-link').classList.add('show')},4400);
+  setTimeout(function(){
+    document.getElementById('sb1').style.animation='none';
+    document.getElementById('sb1').style.width='100%';
+    document.getElementById('sb2').classList.add('run');
+  },6000);
+}
+
+// ── HERO DEMO ─────────────────────────────
+function runHeroDemo(){
+  var seq=[
+    {id:'dm1',t:500},{id:'dm-dots',t:1800,hide:false},{id:'dm-dots',t:3400,hide:true},
+    {id:'dm2',t:3600},{id:'dm3',t:5200},{id:'dm-conv',t:7000}
+  ];
+  seq.forEach(function(s){
+    setTimeout(function(){
+      var el=document.getElementById(s.id);if(!el)return;
+      if(s.hide)el.style.opacity='0';
+      else{el.style.opacity='1';if(el.style.transform!==undefined)el.style.transform='none';}
+    },s.t);
+  });
+}
+
+// ── BRAND TICKER ──────────────────────────
+var brands=['Golden State Warriors','Rhode Skin','Mellow Sleep','Impact Dog Crates','immi','Spindrift','Alo Yoga','Olipop','Liquid Death','Gymshark','Reformation','Glossier'];
+(function(){
+  var el=document.getElementById('brand-ticker');
+  var row=document.createElement('div');row.className='w-ticker-inner';row.style.animation='scrollTick 48s linear infinite';row.style.whiteSpace='nowrap';row.style.display='flex';row.style.alignItems='center';
+  [].concat(brands,brands,brands,brands).forEach(function(b){
+    var s=document.createElement('span');s.className='w-brand';s.textContent=b;row.appendChild(s);
+    var d=document.createElement('span');d.className='w-sep';d.textContent='·';row.appendChild(d);
+  });
+  el.appendChild(row);
+})();
+
+// ── ACTIVITY TICKER ───────────────────────
+var acts=[{h:'@rhode',a:'Replied to 208 story reactions'},{h:'@goldenstatewarriors',a:'Sent 312 personalized fan DMs'},{h:'@mellowsleep',a:'Converted 44 DMs to orders'},{h:'@impactdogcrates',a:'11 DMs became orders today'},{h:'@spindrift',a:'Replied to 189 comments'},{h:'@olipopco',a:'Sent 91 personalized DMs'}];
+(function(){
+  var el=document.getElementById('act-ticker');
+  [].concat(acts,acts).forEach(function(t,i){
+    var d=document.createElement('div');d.className='w-act-item';
+    d.innerHTML=(i===0?'<div class="w-live"></div>':'<span style="width:4px;height:4px;border-radius:50%;background:rgba(255,255,255,.22);flex-shrink:0"></span>')+'<span class="w-act-bold">'+t.h+'</span><span>'+t.a+'</span>';
+    el.appendChild(d);
+  });
+})();
+
+// ── TURING TEST ───────────────────────────
+var tQs=[
+  {prompt:'Brand: @spindrift · "does this mix well with vodka?"',msg:'"Ha — we love that you\'re asking the important questions! Spindrift mixes beautifully with spirits. The lemon is a crowd favorite for a vodka soda upgrade. Report back 🍋"',answer:'ai',explain:'Blueberry wrote this. Casual humor, specific recommendation, and the "report back" close show it reading the person\'s tone — not a template move.'},
+  {prompt:'Brand: @impactdogcrates · "my rescue pup chewed through two other crates"',msg:'"Oh no — been there. Impact crates are literally built for this. Military-grade welds, heavy duty doors. Your escape artist has finally met their match. DM us for sizing help."',answer:'human',explain:'A human wrote this. The "been there" empathy and "escape artist" phrasing are human tells — though Blueberry writes very similarly. Most people guess wrong on this one.'},
+  {prompt:'Brand: @mellowsleep · "I have the worst insomnia, nothing works"',msg:'"That sounds genuinely exhausting — and we mean that. Mellow was formulated for people who\'ve tried everything. Magnesium glycinate + L-theanine works differently than melatonin. Want a sample on us?"',answer:'ai',explain:'Blueberry. Emotional validation first, specific product detail matching the exact complaint, then a low-friction offer. This is the Blueberry pattern.'},
+  {prompt:'Brand: @alobrands · "these are so expensive, can\'t justify it"',msg:'"Totally get it — Alo is an investment. Our community often treats it as cost-per-wear: these leggings typically last 3–5 years. Sale section usually has options around $60–70 👀"',answer:'ai',explain:'Blueberry. Reframed the objection as value, gave a concrete number, light CTA without being pushy. Classic Blueberry close.'},
+];
+var tState={i:0,correct:0,answered:false};
+
+(function initTuring(){
+  var dots=document.getElementById('t-dots');
+  tQs.forEach(function(_,i){var d=document.createElement('div');d.className='t-dot'+(i===0?' active':'');d.id='t-d'+i;dots.appendChild(d);});
+  loadTuring();
+})();
+
+function loadTuring(){
+  var q=tQs[tState.i];
+  document.getElementById('t-prompt').textContent=q.prompt;
+  document.getElementById('t-msg').textContent=q.msg;
+  document.getElementById('t-reveal').classList.remove('show');
+  document.getElementById('t-human').className='t-btn';
+  document.getElementById('t-ai').className='t-btn';
+  document.getElementById('t-next').style.display='none';
+  tState.answered=false;
+  tQs.forEach(function(_,i){
+    var d=document.getElementById('t-d'+i);
+    if(d)d.className='t-dot'+(i<tState.i?' done':i===tState.i?' active':'');
+  });
+  if(tState.i===0&&tState.correct===0){
+    document.getElementById('t-score').textContent='–';
+    document.getElementById('t-score-l').textContent='Answer above to start';
+  }
+}
+
+function tGuess(g){
+  if(tState.answered)return;
+  tState.answered=true;
+  var q=tQs[tState.i],ok=(g===q.answer);
+  if(ok)tState.correct++;
+  var hBtn=document.getElementById('t-human'),aBtn=document.getElementById('t-ai');
+  (g==='human'?hBtn:aBtn).className='t-btn '+(ok?'correct':'wrong');
+  (q.answer==='human'?hBtn:aBtn).className='t-btn correct';
+  document.getElementById('t-reveal').textContent=(ok?'Correct. ':'Wrong. ')+q.explain;
+  document.getElementById('t-reveal').classList.add('show');
+  document.getElementById('t-score').textContent=tState.correct+'/'+(tState.i+1);
+  var isLast=tState.i+1>=tQs.length;
+  document.getElementById('t-score-l').textContent=isLast?'Final — '+Math.round(tState.correct/tQs.length*100)+'% accuracy':'correct so far';
+  document.getElementById('t-next').style.display='flex';
+  if(isLast)document.querySelector('.t-next-btn').textContent='See final score →';
+}
+
+function tNext(){
+  if(tState.i+1>=tQs.length){
+    document.getElementById('t-next').style.display='none';
+    document.getElementById('t-score-l').textContent='Final: '+tState.correct+'/'+tQs.length+' — '+Math.round(tState.correct/tQs.length*100)+'% accuracy';
+    return;
+  }
+  tState.i++;
+  loadTuring();
+}
+</script>
+</body>
+</html>
