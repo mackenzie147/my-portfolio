@@ -410,6 +410,30 @@
             cursor: pointer;
         }
 
+        .nav-box:nth-child(2) {
+            border-left: 4px solid #a8c5e0;
+        }
+
+        .nav-box:nth-child(3) {
+            border-left: 4px solid #b4d3b2;
+        }
+
+        .nav-box:nth-child(4) {
+            border-left: 4px solid #f4dc9a;
+        }
+
+        .nav-box:nth-child(2) strong {
+            color: #a8c5e0;
+        }
+
+        .nav-box:nth-child(3) strong {
+            color: #b4d3b2;
+        }
+
+        .nav-box:nth-child(4) strong {
+            color: #f4dc9a;
+        }
+
         @media (max-width: 768px) {
             .nav-box {
                 padding: 6px 10px;
@@ -470,7 +494,124 @@
             margin-left: 18px;
         }
 
-        /* Contact footer */
+        /* Ad spots section - yellow border */
+        .causes-box.ad-spots-box {
+            border-left: 4px solid #f4dc9a;
+        }
+
+        /* Ad spots section */
+        .ad-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 25px;
+        }
+
+        @media (max-width: 968px) {
+            .ad-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ad-container-small {
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+        }
+
+        @media (max-width: 1000px) {
+            .ad-container-small {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .ad-container-small {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .ad-spot {
+            border: 1px solid #e0e0e0;
+            padding: 16px;
+            background: white;
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .ad-spot-small {
+            padding: 12px;
+        }
+
+        .ad-spot:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .ad-spot img,
+        .ad-spot video {
+            width: 100%;
+            height: auto;
+            display: block;
+            border-radius: 2px;
+            margin-bottom: 8px;
+        }
+
+        .ad-spot-small img,
+        .ad-spot-small video {
+            height: 100px;
+            object-fit: cover;
+            margin-bottom: 8px;
+        }
+
+        .ad-spot-label {
+            font-size: 11px;
+            color: #999;
+            margin-bottom: 6px;
+            font-style: italic;
+        }
+
+        .ad-spot-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c2c2c;
+            margin-bottom: 4px;
+        }
+
+        .ad-spot-small .ad-spot-title {
+            font-size: 12px;
+        }
+
+        .ad-spot-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+
+        .ad-spot-small .ad-spot-description {
+            font-size: 11px;
+        }
+
+        .featured-ad {
+            border-left: 4px solid #ffb3c1;
+        }
+
+        .shame-ad {
+            border-left: 4px solid #f4a261;
+            background: #fffbf5;
+        }
+
+        .shame-ad .ad-spot-title {
+            color: #f4a261;
+        }
+
+        .countdown {
+            font-size: 11px;
+            color: #a8c5e0;
+            margin-top: 8px;
+            font-style: italic;
+        }
+
         .contact-footer {
             margin-top: 50px;
             padding-top: 25px;
@@ -660,6 +801,15 @@
                 </a>
             </div>
 
+            <!-- Featured Ad - Original -->
+            <div class="causes-box" style="border-left: 4px solid #ffb3c1;">
+                <h3>featured!!</h3>
+                <ul>
+                    <li><a href="https://mackenziesharp.substack.com/" target="_blank">Subscribe to my Substack!</a></li>
+                </ul>
+            </div>
+
+            <!-- Causes section -->
             <div class="causes-box">
                 <h3>causes to check out!</h3>
                 <ul>
@@ -672,11 +822,57 @@
                 </ul>
             </div>
 
-            <div class="causes-box" style="border-left: 4px solid #ffb3c1;">
-                <h3>featured!!</h3>
-                <ul>
-                    <li><a href="https://mackenziesharp.substack.com/" target="_blank">Subscribe to my Substack!</a></li>
-                </ul>
+            <!-- Ad Spots with subheader -->
+            <div class="causes-box ad-spots-box">
+                <h3>ad spots</h3>
+                <p style="font-size: 11px; color: #999; margin-bottom: 12px; font-style: italic;">i didn't work in advertising for nothing</p>
+                <div class="ad-container ad-container-small">
+                    <div class="ad-spot ad-spot-small">
+                        <img src="tricky-pulled-over.jpg" alt="Patrick getting pulled over">
+                        <div class="ad-spot-title">sponsored by tricky</div>
+                    </div>
+
+                    <div class="ad-spot ad-spot-small">
+                        <video controls style="object-fit: cover;">
+                            <source src="kent-tiktok.mp4" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                        <div class="ad-spot-title">sponsored by kent</div>
+                    </div>
+
+                    <div class="ad-spot ad-spot-small">
+                        <img src="rafi-secretariat.jpg" alt="Secretariat">
+                        <div class="ad-spot-title">sponsored by rafi</div>
+                        <div class="countdown" id="rafi-countdown">80 months remaining</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Ad Inquiry Box -->
+            <div class="causes-box" style="border-left: 4px solid #b4d3b2;">
+                <h3>rent ad space!</h3>
+                <p style="font-size: 12px; color: #666; margin-bottom: 8px;">want to rent this space? email me to feature your project, friend, or band for the month.</p>
+                <p style="font-size: 12px;"><a href="mailto:mackenziesharp5@gmail.com">mackenziesharp5@gmail.com</a></p>
+            </div>
+
+            <!-- Shame Box & Support -->
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 25px;">
+                <!-- Shame Corner -->
+                <div class="causes-box" style="border-left: 4px solid #f4a261; margin-bottom: 0;">
+                    <h3 style="color: #f4a261; font-size: 15px;">shame corner</h3>
+                    <div style="font-size: 11px; color: #666;">
+                        <p style="margin-bottom: 6px;">currently vacant</p>
+                        <p><a href="mailto:mackenziesharp5@gmail.com" style="color: #f4a261; font-size: 11px;">let me know</a></p>
+                    </div>
+                </div>
+
+                <!-- Support Section -->
+                <div class="causes-box" style="border-left: 4px solid #ffb3c1; margin-bottom: 0;">
+                    <h3 style="color: #ffb3c1; font-size: 15px;">support!</h3>
+                    <ul style="margin-left: 0; margin-bottom: 0;">
+                        <li style="margin-bottom: 4px;"><a href="https://boythrob.com/" target="_blank">boythrob</a></li>
+                    </ul>
+                </div>
             </div>
         </div>
     </div>
@@ -771,6 +967,28 @@
         
         // Initial random direction on page load
         updateDirection();
+
+        // Countdown timer for Rafi's featured spot - starts at 80 months and counts down
+        let rafiMonthsRemaining = 80;
+        
+        function updateRafiCountdown() {
+            const countdownEl = document.getElementById('rafi-countdown');
+            if (countdownEl && rafiMonthsRemaining > 0) {
+                const monthText = rafiMonthsRemaining === 1 ? 'month' : 'months';
+                countdownEl.textContent = `${rafiMonthsRemaining} ${monthText} remaining`;
+            }
+        }
+
+        // Initial countdown display
+        updateRafiCountdown();
+        
+        // Decrement by 1 month every 30 days (approximately)
+        // 30 days = 2592000000 milliseconds
+        setInterval(() => {
+            rafiMonthsRemaining--;
+            if (rafiMonthsRemaining < 0) rafiMonthsRemaining = 0;
+            updateRafiCountdown();
+        }, 2592000000);
     </script>
 </body>
 </html>
