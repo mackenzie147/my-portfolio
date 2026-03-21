@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FlightBet — Will It Land?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0a08;
+  --bg2: #111110;
+  --bg3: #1a1a17;
+  --border: #2a2a26;
+  --gold: #f0b429;
+  --gold-dim: #8a6a1a;
+  --amber: #e07b00;
+  --red: #e03c3c;
+  --green: #3cb878;
+  --blue: #5b9cf6;
+  --text: #e8e4d8;
+  --text-dim: #7a7870;
+  --text-mid: #b0ac9e;
+  --flap-bg: #0f0f0c;
+  --flap-border: #222220;
+  --font-board: 'Share Tech Mono', monospace;
+  --font-display: 'Bebas Neue', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+}
+body.light {
+  --bg: #f5f0e8;
+  --bg2: #ece7da;
+  --bg3: #e0dace;
+  --border: #cdc8b8;
+  --text: #1a1a14;
+  --text-dim: #8a8678;
+  --text-mid: #4a4840;
+  --flap-bg: #e8e3d6;
+  --flap-border: #c8c3b0;
+  --gold: #b87a00;
+  --gold-dim: #8a5e00;
+  --amber: #c56a00;
+  --red: #c03030;
+  --green: #2a8a58;
+  --blue: #3a7ae0;
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--font-body); min-height:100vh; overflow-x:hidden; }
+
+/* NAV */
+nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:0 24px; height:52px;
+  background:var(--bg2); border-bottom:1px solid var(--border);
+  position:sticky; top:0; z-index:100;
+}
+.nav-logo {
+  font-family:var(--font-display); font-size:26px; letter-spacing:2px;
+  color:var(--gold); cursor:pointer;
+}
+.nav-logo span { color:var(--text-dim); font-size:14px; font-family:var(--font-board); vertical-align:middle; margin-left:8px; }
+.nav-right { display:flex; gap:10px; align-items:center; }
+.nav-btn {
+  background:none; border:1px solid var(--border); color:var(--text-mid);
+  padding:5px 14px; border-radius:4px; cursor:pointer; font-size:12px;
+  font-family:var(--font-body); transition:all .15s;
+}
+.nav-btn:hover { border-color:var(--gold); color:var(--gold); }
+.nav-btn.primary { background:var(--gold); border-color:var(--gold); color:#000; font-weight:600; }
+.nav-btn.primary:hover { background:var(--amber); }
+#theme-toggle { font-size:16px; padding:5px 10px; cursor:pointer; background:none; border:1px solid var(--border); border-radius:4px; }
+#theme-toggle:hover { border-color:var(--gold); }
+
+/* TICKER */
+.ticker-wrap {
+  background:var(--bg3); border-bottom:1px solid var(--border);
+  height:28px; overflow:hidden; position:relative;
+}
+.ticker-wrap::before, .ticker-wrap::after {
+  content:''; position:absolute; top:0; width:60px; height:100%; z-index:2;
+}
+.ticker-wrap::before { left:0; background:linear-gradient(90deg, var(--bg3), transparent); }
+.ticker-wrap::after { right:0; background:linear-gradient(-90deg, var(--bg3), transparent); }
+.ticker {
+  display:flex; white-space:nowrap; animation:ticker 40s linear infinite;
+  height:100%; align-items:center;
+}
+.ticker-item {
+  font-family:var(--font-board); font-size:11px; color:var(--text-mid);
+  padding:0 32px;
+}
+.ticker-item .t-up { color:var(--green); }
+.ticker-item .t-dn { color:var(--red); }
+@keyframes ticker { from { transform:translateX(0) } to { transform:translateX(-50%) } }
+
+/* AIRPORT HEADER */
+.airport-bar {
+  padding:16px 24px 0;
+  display:flex; align-items:flex-end; justify-content:space-between; flex-wrap:wrap; gap:12px;
+}
+.airport-name { font-family:var(--font-display); font-size:48px; letter-spacing:3px; color:var(--text); line-height:1; }
+.airport-iata { color:var(--gold); }
+.airport-sub { font-size:13px; color:var(--text-dim); font-family:var(--font-board); margin-top:4px; }
+.airport-meta { display:flex; gap:16px; align-items:center; padding-bottom:4px; }
+.source-badge {
+  font-family:var(--font-board); font-size:10px; padding:3px 8px;
+  border-radius:2px; letter-spacing:1px;
+}
+.source-badge.live { background:rgba(60,184,120,.15); color:var(--green); border:1px solid rgba(60,184,120,.3); }
+.source-badge.mock { background:rgba(240,180,41,.1); color:var(--gold-dim); border:1px solid rgba(240,180,41,.2); }
+.source-badge.loading { background:rgba(90,150,246,.1); color:var(--blue); border:1px solid rgba(90,150,246,.2); }
+
+/* AIRPORT PICKER */
+.airport-picker { display:flex; gap:6px; flex-wrap:wrap; padding:10px 24px 0; }
+.ap-btn {
+  font-family:var(--font-board); font-size:11px; padding:4px 10px;
+  background:var(--bg3); border:1px solid var(--border); color:var(--text-mid);
+  border-radius:3px; cursor:pointer; transition:all .15s; letter-spacing:1px;
+}
+.ap-btn:hover { border-color:var(--gold-dim); color:var(--gold); }
+.ap-btn.active { background:rgba(240,180,41,.1); border-color:var(--gold); color:var(--gold); }
+
+/* FILTERS */
+.filters-bar {
+  padding:10px 24px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  border-bottom:1px solid var(--border);
+}
+.filter-btn {
+  font-size:11px; padding:4px 12px; border-radius:20px; cursor:pointer;
+  background:none; border:1px solid var(--border); color:var(--text-dim);
+  font-family:var(--font-body); transition:all .15s;
+}
+.filter-btn:hover { border-color:var(--text-mid); color:var(--text-mid); }
+.filter-btn.active { background:var(--gold); border-color:var(--gold); color:#000; font-weight:600; }
+.filter-sep { width:1px; height:16px; background:var(--border); margin:0 4px; }
+.sort-label { font-size:11px; color:var(--text-dim); font-family:var(--font-board); }
+.sort-btn {
+  font-size:11px; padding:4px 10px; border-radius:3px; cursor:pointer;
+  background:none; border:1px solid var(--border); color:var(--text-dim);
+  font-family:var(--font-board); transition:all .15s;
+}
+.sort-btn:hover, .sort-btn.active { border-color:var(--text-mid); color:var(--text); }
+
+/* BOARD HEADER */
+.board-header {
+  display:grid;
+  grid-template-columns: 90px 1fr 90px 80px 90px 80px 60px;
+  gap:0; padding:6px 24px;
+  font-family:var(--font-board); font-size:10px; color:var(--text-dim);
+  letter-spacing:1px; border-bottom:1px solid var(--border);
+  background:var(--bg2);
+}
+
+/* FLIGHT ROW */
+.flight-row {
+  display:grid;
+  grid-template-columns: 90px 1fr 90px 80px 90px 80px 60px;
+  gap:0; padding:0 24px; height:52px; align-items:center;
+  border-bottom:1px solid var(--flap-border);
+  cursor:pointer; transition:background .1s; position:relative;
+}
+.flight-row:hover { background:var(--bg3); }
+.flight-row.selected { background:rgba(240,180,41,.05); border-left:2px solid var(--gold); }
+
+.cell { display:flex; flex-direction:column; gap:1px; }
+.cell-mono { font-family:var(--font-board); font-size:14px; color:var(--text); letter-spacing:1px; }
+.cell-sub { font-size:10px; color:var(--text-dim); font-family:var(--font-board); }
+
+/* Time display */
+.time-main { font-family:var(--font-display); font-size:22px; letter-spacing:1px; color:var(--text); line-height:1; }
+.time-revised { font-family:var(--font-board); font-size:11px; color:var(--red); }
+
+/* Status badge */
+.status-badge {
+  font-family:var(--font-board); font-size:10px; letter-spacing:1px;
+  padding:2px 7px; border-radius:2px; white-space:nowrap; display:inline-block;
+}
+.status-OnTime   { background:rgba(60,184,120,.12); color:var(--green); border:1px solid rgba(60,184,120,.25); }
+.status-Delayed  { background:rgba(224,60,60,.12);  color:var(--red);   border:1px solid rgba(224,60,60,.25); }
+.status-Boarding { background:rgba(240,180,41,.12); color:var(--gold);  border:1px solid rgba(240,180,41,.25); }
+.status-Departed { background:rgba(90,150,246,.08); color:var(--text-dim); border:1px solid var(--border); }
+.status-Cancelled{ background:rgba(224,60,60,.08);  color:var(--red);   border:1px solid rgba(224,60,60,.15); text-decoration:line-through; }
+
+/* Odds bar */
+.odds-cell { display:flex; flex-direction:column; gap:3px; }
+.odds-pct { font-family:var(--font-display); font-size:22px; line-height:1; }
+.odds-pct.low { color:var(--green); }
+.odds-pct.mid { color:var(--amber); }
+.odds-pct.high { color:var(--red); }
+.odds-bar-outer { height:3px; background:var(--border); border-radius:2px; width:60px; }
+.odds-bar-inner { height:100%; border-radius:2px; transition:width .5s; }
+.odds-bar-inner.low { background:var(--green); }
+.odds-bar-inner.mid { background:var(--amber); }
+.odds-bar-inner.high { background:var(--red); }
+
+/* Volume */
+.vol-cell { font-family:var(--font-board); font-size:12px; color:var(--text-dim); }
+
+/* DETAIL PANEL */
+.detail-panel {
+  position:fixed; right:0; top:52px; bottom:0; width:360px;
+  background:var(--bg2); border-left:1px solid var(--border);
+  display:none; flex-direction:column; overflow-y:auto;
+  z-index:50; transition:transform .2s;
+}
+.detail-panel.open { display:flex; }
+.detail-close {
+  position:absolute; top:12px; right:12px;
+  background:none; border:1px solid var(--border); color:var(--text-dim);
+  width:28px; height:28px; border-radius:4px; cursor:pointer; font-size:16px;
+  display:flex; align-items:center; justify-content:center;
+}
+.detail-close:hover { border-color:var(--text-mid); color:var(--text); }
+.detail-head {
+  padding:20px 20px 16px;
+  border-bottom:1px solid var(--border);
+}
+.detail-flight { font-family:var(--font-display); font-size:36px; letter-spacing:2px; color:var(--gold); line-height:1; }
+.detail-route { font-size:13px; color:var(--text-mid); margin-top:4px; }
+.detail-times { display:grid; grid-template-columns:1fr 1fr; gap:12px; padding:16px 20px; border-bottom:1px solid var(--border); }
+.dt-block label { font-size:10px; color:var(--text-dim); font-family:var(--font-board); letter-spacing:1px; display:block; margin-bottom:4px; }
+.dt-block .dt-val { font-family:var(--font-display); font-size:28px; line-height:1; }
+.dt-block .dt-val.delayed { color:var(--red); }
+
+/* Bet panel */
+.bet-panel { padding:16px 20px; }
+.bet-title { font-size:11px; color:var(--text-dim); font-family:var(--font-board); letter-spacing:1px; margin-bottom:12px; }
+.yes-no-row { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
+.yn-btn {
+  padding:12px; border-radius:4px; cursor:pointer; font-size:12px;
+  font-family:var(--font-board); letter-spacing:1px; border:1px solid var(--border);
+  background:none; color:var(--text-mid); transition:all .15s; text-align:center;
+}
+.yn-btn.selected-yes { background:rgba(224,60,60,.15); border-color:var(--red); color:var(--red); }
+.yn-btn.selected-no  { background:rgba(60,184,120,.15); border-color:var(--green); color:var(--green); }
+.yn-btn:hover { border-color:var(--text-mid); }
+.amount-row { display:flex; gap:6px; margin-bottom:8px; flex-wrap:wrap; }
+.preset-btn {
+  font-family:var(--font-board); font-size:11px; padding:5px 10px;
+  background:var(--bg3); border:1px solid var(--border); color:var(--text-mid);
+  border-radius:3px; cursor:pointer; transition:all .15s;
+}
+.preset-btn:hover, .preset-btn.selected { border-color:var(--gold); color:var(--gold); }
+.amount-input {
+  flex:1; min-width:80px; background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); padding:5px 10px; border-radius:3px; font-family:var(--font-board);
+  font-size:13px; outline:none;
+}
+.amount-input:focus { border-color:var(--gold); }
+.payout-row { display:flex; justify-content:space-between; font-size:12px; color:var(--text-dim); font-family:var(--font-board); margin-bottom:12px; }
+.payout-val { color:var(--text); }
+.bet-submit {
+  width:100%; padding:11px; background:var(--gold); border:none; color:#000;
+  font-family:var(--font-display); font-size:18px; letter-spacing:2px;
+  border-radius:4px; cursor:pointer; transition:background .15s;
+}
+.bet-submit:hover { background:var(--amber); }
+.bet-submit:disabled { opacity:.4; cursor:not-allowed; }
+.bet-msg { font-size:11px; color:var(--text-dim); font-family:var(--font-board); margin-top:8px; text-align:center; }
+
+/* Prob bar */
+.prob-section { padding:0 20px 16px; border-bottom:1px solid var(--border); }
+.prob-label { display:flex; justify-content:space-between; font-size:10px; color:var(--text-dim); font-family:var(--font-board); letter-spacing:1px; margin-bottom:6px; }
+.prob-bar-outer { height:8px; background:var(--border); border-radius:4px; overflow:hidden; }
+.prob-bar-inner { height:100%; border-radius:4px; transition:width .6s; background:linear-gradient(90deg, var(--green), var(--amber), var(--red)); }
+
+/* Activity feed */
+.activity-feed { padding:12px 20px; flex:1; }
+.af-title { font-size:10px; color:var(--text-dim); font-family:var(--font-board); letter-spacing:1px; margin-bottom:10px; }
+.af-item { display:flex; gap:8px; margin-bottom:8px; align-items:flex-start; }
+.af-dot { width:6px; height:6px; border-radius:50%; margin-top:5px; flex-shrink:0; }
+.af-dot.yes { background:var(--red); }
+.af-dot.no  { background:var(--green); }
+.af-text { font-size:11px; color:var(--text-dim); line-height:1.4; font-family:var(--font-body); }
+.af-text strong { color:var(--text-mid); }
+
+/* AUTH MODAL */
+.modal-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.75); z-index:200;
+  display:none; align-items:center; justify-content:center;
+}
+.modal-overlay.open { display:flex; }
+.modal {
+  background:var(--bg2); border:1px solid var(--border); border-radius:6px;
+  width:340px; padding:28px; position:relative;
+}
+.modal-title { font-family:var(--font-display); font-size:28px; letter-spacing:2px; color:var(--gold); margin-bottom:4px; }
+.modal-sub { font-size:12px; color:var(--text-dim); font-family:var(--font-board); margin-bottom:20px; }
+.modal-input {
+  width:100%; background:var(--bg3); border:1px solid var(--border);
+  color:var(--text); padding:9px 12px; border-radius:4px; font-family:var(--font-body);
+  font-size:13px; outline:none; margin-bottom:10px;
+}
+.modal-input:focus { border-color:var(--gold); }
+.modal-submit {
+  width:100%; padding:10px; background:var(--gold); border:none; color:#000;
+  font-family:var(--font-display); font-size:18px; letter-spacing:2px;
+  border-radius:4px; cursor:pointer; margin-bottom:12px;
+}
+.modal-submit:hover { background:var(--amber); }
+.modal-switch { font-size:12px; color:var(--text-dim); text-align:center; cursor:pointer; }
+.modal-switch span { color:var(--gold); text-decoration:underline; cursor:pointer; }
+.modal-close { position:absolute; top:10px; right:12px; background:none; border:none; color:var(--text-dim); font-size:18px; cursor:pointer; }
+.modal-err { font-size:11px; color:var(--red); font-family:var(--font-board); margin-bottom:8px; }
+
+/* PORTFOLIO PAGE */
+.portfolio-page { display:none; padding:24px; }
+.portfolio-page.open { display:block; }
+.p-header { font-family:var(--font-display); font-size:36px; letter-spacing:3px; color:var(--text); margin-bottom:20px; }
+.p-stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:12px; margin-bottom:24px; }
+.p-stat {
+  background:var(--bg3); border:1px solid var(--border); padding:14px 16px; border-radius:4px;
+}
+.p-stat label { font-size:10px; color:var(--text-dim); font-family:var(--font-board); letter-spacing:1px; display:block; margin-bottom:6px; }
+.p-stat .p-val { font-family:var(--font-display); font-size:28px; color:var(--text); }
+.p-stat .p-val.pos { color:var(--green); }
+.p-stat .p-val.neg { color:var(--red); }
+.p-section-title { font-size:11px; color:var(--text-dim); font-family:var(--font-board); letter-spacing:2px; margin-bottom:10px; }
+.pos-row {
+  display:grid; grid-template-columns:80px 1fr 80px 80px 80px 100px;
+  gap:8px; align-items:center; padding:10px 0; border-bottom:1px solid var(--flap-border);
+  font-size:12px; font-family:var(--font-board);
+}
+.pos-row.header { color:var(--text-dim); font-size:10px; letter-spacing:1px; }
+.resolve-btn {
+  font-size:10px; padding:3px 8px; background:none; border:1px solid var(--border);
+  color:var(--text-dim); border-radius:3px; cursor:pointer; font-family:var(--font-board);
+}
+.resolve-btn:hover { border-color:var(--gold); color:var(--gold); }
+.leaderboard { margin-top:24px; }
+.lb-row {
+  display:flex; align-items:center; gap:12px; padding:8px 0;
+  border-bottom:1px solid var(--flap-border); font-size:12px; font-family:var(--font-board);
+}
+.lb-rank { width:24px; color:var(--text-dim); }
+.lb-rank.top { color:var(--gold); }
+.lb-name { flex:1; color:var(--text-mid); }
+.lb-name.me { color:var(--gold); }
+.lb-bal { color:var(--text); }
+
+/* YYZ POPUP */
+.yyp-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.82); z-index:300;
+  display:none; align-items:center; justify-content:center;
+}
+.yyp-overlay.open { display:flex; }
+.yyp {
+  background:var(--bg2); border:1px solid var(--border); border-radius:6px;
+  width:360px; overflow:hidden; position:relative;
+}
+.yyp-board {
+  background:#080806; padding:16px 20px;
+  border-bottom:2px solid var(--gold);
+  position:relative; overflow:hidden;
+}
+.yyp-board-header {
+  display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;
+}
+.yyp-code { font-family:var(--font-display); font-size:48px; color:var(--gold); letter-spacing:4px; line-height:1; }
+.yyp-name { font-family:var(--font-board); font-size:10px; color:var(--text-dim); text-align:right; }
+.yyp-status-row { display:flex; align-items:center; gap:8px; }
+.yyp-delayed { font-family:var(--font-display); font-size:22px; color:var(--red); letter-spacing:2px; }
+.yyp-dot { width:8px; height:8px; border-radius:50%; background:var(--red); animation:blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+.yyp-snow { position:absolute; top:0; left:0; right:0; bottom:0; pointer-events:none; overflow:hidden; }
+.snowflake { position:absolute; color:rgba(255,255,255,.5); font-size:12px; animation:fall linear infinite; }
+@keyframes fall { from{transform:translateY(-20px) rotate(0)} to{transform:translateY(120px) rotate(360deg)} }
+.yyp-body { padding:16px 20px 20px; }
+.yyp-emoji { font-size:36px; display:block; margin-bottom:10px; animation:wobble 2s ease-in-out infinite; }
+@keyframes wobble { 0%,100%{transform:rotate(-5deg)} 50%{transform:rotate(5deg)} }
+.yyp-headline { font-family:var(--font-display); font-size:20px; color:var(--text); letter-spacing:1px; line-height:1.2; margin-bottom:8px; }
+.yyp-copy { font-size:13px; color:var(--text-mid); line-height:1.5; margin-bottom:14px; }
+.yyp-stats { display:flex; gap:16px; margin-bottom:16px; }
+.yyp-stat { text-align:center; }
+.yyp-stat .yv { font-family:var(--font-board); font-size:14px; color:var(--gold); }
+.yyp-stat .yl { font-size:9px; color:var(--text-dim); font-family:var(--font-board); margin-top:2px; }
+.yyp-cta {
+  width:100%; padding:10px; background:var(--gold); border:none; color:#000;
+  font-family:var(--font-display); font-size:18px; letter-spacing:2px;
+  border-radius:4px; cursor:pointer; margin-bottom:8px;
+}
+.yyp-cta:hover { background:var(--amber); }
+.yyp-dismiss { width:100%; padding:7px; background:none; border:1px solid var(--border); color:var(--text-dim); border-radius:4px; cursor:pointer; font-size:12px; font-family:var(--font-board); }
+.yyp-dismiss:hover { border-color:var(--text-mid); color:var(--text-mid); }
+
+/* Misc */
+.board-body { transition:opacity .3s; }
+.board-body.loading { opacity:.4; }
+.loading-bar { height:2px; background:linear-gradient(90deg, var(--gold), var(--amber), var(--gold)); background-size:200% 100%; animation:shimmer 1.5s infinite; display:none; }
+.loading-bar.active { display:block; }
+@keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+.balance-chip {
+  font-family:var(--font-board); font-size:11px; color:var(--gold);
+  padding:4px 10px; border:1px solid var(--gold-dim); border-radius:12px;
+  letter-spacing:1px;
+}
+@media(max-width:800px){
+  .flight-row, .board-header { grid-template-columns: 70px 1fr 70px 60px 70px; }
+  .flight-row > *:nth-child(7),
+  .board-header > *:nth-child(7) { display:none; }
+  .detail-panel { width:100%; }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo" onclick="showBoard()">FLIGHTBET <span>v0.1</span></div>
+  <div class="nav-right">
+    <button id="theme-toggle" onclick="toggleTheme()">☀︎</button>
+    <div id="balance-chip" class="balance-chip" style="display:none"></div>
+    <button class="nav-btn" id="portfolio-btn" onclick="showPortfolio()" style="display:none">PORTFOLIO</button>
+    <button class="nav-btn" id="board-btn" onclick="showBoard()" style="display:none">BOARD</button>
+    <button class="nav-btn" id="logout-btn" onclick="logout()" style="display:none">LOGOUT</button>
+    <button class="nav-btn" id="login-btn" onclick="openModal('login')">LOG IN</button>
+    <button class="nav-btn primary" id="signup-btn" onclick="openModal('signup')">SIGN UP</button>
+  </div>
+</nav>
+
+<!-- LOADING BAR -->
+<div class="loading-bar" id="loading-bar"></div>
+
+<!-- TICKER -->
+<div class="ticker-wrap">
+  <div class="ticker" id="ticker"></div>
+</div>
+
+<!-- BOARD PAGE -->
+<div id="board-page">
+  <div class="airport-bar">
+    <div>
+      <div class="airport-name"><span class="airport-iata" id="airport-iata">SFO</span> — <span id="airport-city">San Francisco</span></div>
+      <div class="airport-sub" id="airport-sub">DEPARTURES · PREDICTION MARKET</div>
+    </div>
+    <div class="airport-meta">
+      <div class="source-badge loading" id="source-badge">LOADING</div>
+      <div style="font-family:var(--font-board);font-size:10px;color:var(--text-dim)" id="fetch-time"></div>
+    </div>
+  </div>
+
+  <div class="airport-picker" id="airport-picker"></div>
+
+  <div class="filters-bar">
+    <button class="filter-btn active" data-filter="all" onclick="setFilter('all',this)">ALL</button>
+    <button class="filter-btn" data-filter="active" onclick="setFilter('active',this)">ACTIVE</button>
+    <button class="filter-btn" data-filter="highrisk" onclick="setFilter('highrisk',this)">HIGH RISK</button>
+    <button class="filter-btn" data-filter="boarding" onclick="setFilter('boarding',this)">BOARDING</button>
+    <button class="filter-btn" data-filter="delayed" onclick="setFilter('delayed',this)">DELAYED</button>
+    <div class="filter-sep"></div>
+    <span class="sort-label">SORT:</span>
+    <button class="sort-btn active" onclick="setSort('time',this)">TIME</button>
+    <button class="sort-btn" onclick="setSort('odds',this)">DELAY %</button>
+    <button class="sort-btn" onclick="setSort('vol',this)">VOLUME</button>
+  </div>
+
+  <div class="board-header">
+    <div>FLIGHT</div>
+    <div>DESTINATION</div>
+    <div>SCHED</div>
+    <div>STATUS</div>
+    <div>DELAY ODDS</div>
+    <div>GATE</div>
+    <div>VOL</div>
+  </div>
+
+  <div class="board-body" id="board-body"></div>
+</div>
+
+<!-- PORTFOLIO PAGE -->
+<div class="portfolio-page" id="portfolio-page">
+  <div class="p-header">PORTFOLIO</div>
+  <div class="p-stats" id="p-stats"></div>
+  <div class="p-section-title">ACTIVE POSITIONS</div>
+  <div id="positions-list"></div>
+  <div class="leaderboard" id="leaderboard-section">
+    <div class="p-section-title" style="margin-top:24px">LEADERBOARD</div>
+    <div id="leaderboard-list"></div>
+  </div>
+</div>
+
+<!-- DETAIL PANEL -->
+<div class="detail-panel" id="detail-panel">
+  <button class="detail-close" onclick="closeDetail()">✕</button>
+  <div class="detail-head">
+    <div class="detail-flight" id="d-flight"></div>
+    <div class="detail-route" id="d-route"></div>
+  </div>
+  <div class="detail-times">
+    <div class="dt-block">
+      <label>SCHEDULED</label>
+      <div class="dt-val" id="d-sched"></div>
+    </div>
+    <div class="dt-block">
+      <label>REVISED</label>
+      <div class="dt-val" id="d-revised"></div>
+    </div>
+  </div>
+  <div class="prob-section">
+    <div class="prob-label">
+      <span>ON TIME</span>
+      <span id="d-prob-pct">—</span>
+      <span>DELAYED</span>
+    </div>
+    <div class="prob-bar-outer">
+      <div class="prob-bar-inner" id="d-prob-bar" style="width:0%"></div>
+    </div>
+  </div>
+  <div class="bet-panel">
+    <div class="bet-title">PLACE BET · WILL THIS FLIGHT BE DELAYED?</div>
+    <div class="yes-no-row">
+      <button class="yn-btn" id="yes-btn" onclick="selectSide('YES')">YES — DELAY<br><small id="yes-cost">@ $0.00</small></button>
+      <button class="yn-btn" id="no-btn" onclick="selectSide('NO')">NO — ON TIME<br><small id="no-cost">@ $0.00</small></button>
+    </div>
+    <div class="amount-row">
+      <button class="preset-btn" onclick="setAmount(10)">$10</button>
+      <button class="preset-btn" onclick="setAmount(25)">$25</button>
+      <button class="preset-btn" onclick="setAmount(50)">$50</button>
+      <button class="preset-btn" onclick="setAmount(100)">$100</button>
+      <input class="amount-input" id="bet-amount" type="number" min="1" value="25" oninput="updatePayout()">
+    </div>
+    <div class="payout-row">
+      <span>POTENTIAL PAYOUT</span>
+      <span class="payout-val" id="payout-val">—</span>
+    </div>
+    <button class="bet-submit" id="bet-submit-btn" onclick="placeBet()">BET</button>
+    <div class="bet-msg" id="bet-msg"></div>
+  </div>
+  <div class="activity-feed">
+    <div class="af-title">LIVE ACTIVITY</div>
+    <div id="activity-list"></div>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div class="modal-title" id="modal-title">SIGN UP</div>
+    <div class="modal-sub" id="modal-sub">$1,000 play money. no credit card.</div>
+    <div class="modal-err" id="modal-err" style="display:none"></div>
+    <input class="modal-input" id="auth-email" type="email" placeholder="email">
+    <input class="modal-input" id="auth-pass" type="password" placeholder="password">
+    <button class="modal-submit" id="modal-submit" onclick="authSubmit()">CREATE ACCOUNT</button>
+    <div class="modal-switch" id="modal-switch">Already have an account? <span onclick="switchMode()">Log in</span></div>
+  </div>
+</div>
+
+<!-- YYZ POPUP -->
+<div class="yyp-overlay" id="yyp-overlay">
+  <div class="yyp">
+    <div class="yyp-board">
+      <div class="yyp-snow" id="yyp-snow"></div>
+      <div class="yyp-board-header">
+        <div class="yyp-code">YYZ</div>
+        <div class="yyp-name">TORONTO PEARSON<br>INTL AIRPORT</div>
+      </div>
+      <div class="yyp-status-row">
+        <div class="yyp-dot"></div>
+        <div class="yyp-delayed">DELAYED</div>
+      </div>
+    </div>
+    <div class="yyp-body">
+      <span class="yyp-emoji" id="yyp-emoji">❄️</span>
+      <div class="yyp-headline" id="yyp-headline">IT SNOWED AGAIN</div>
+      <div class="yyp-copy" id="yyp-copy">Loading...</div>
+      <div class="yyp-stats">
+        <div class="yyp-stat"><div class="yv">94%</div><div class="yl">DELAY ODDS</div></div>
+        <div class="yyp-stat"><div class="yv" id="yyp-temp">-2°C</div><div class="yl">SHOCKING</div></div>
+        <div class="yyp-stat"><div class="yv">∞</div><div class="yl">TIM HORTONS QUEUE</div></div>
+      </div>
+      <button class="yyp-cta" onclick="yyzCta()">BET ON YOUR FLIGHT</button>
+      <button class="yyp-dismiss" onclick="dismissYyz()">been there, sadly</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ─── STATE ──────────────────────────────────────────────────────────────────
+const AIRPORTS = {
+  SFO:{ city:'San Francisco', name:'San Francisco Intl' },
+  LAX:{ city:'Los Angeles', name:'Los Angeles Intl' },
+  JFK:{ city:'New York', name:'John F. Kennedy' },
+  ORD:{ city:'Chicago', name:"O'Hare Intl" },
+  ATL:{ city:'Atlanta', name:'Hartsfield-Jackson' },
+  DEN:{ city:'Denver', name:'Denver Intl' },
+  SEA:{ city:'Seattle', name:'Sea-Tac Intl' },
+  MIA:{ city:'Miami', name:'Miami Intl' },
+  BOS:{ city:'Boston', name:'Logan Intl' },
+  YYZ:{ city:'Toronto', name:'Toronto Pearson' },
+};
+
+let state = {
+  airport: 'SFO',
+  flights: [],
+  odds: {},           // flightNumber -> delay%
+  volumes: {},        // flightNumber -> fake volume
+  selectedFlight: null,
+  selectedSide: null,
+  filter: 'all',
+  sort: 'time',
+  user: null,
+  positions: [],
+  authMode: 'signup',
+};
+
+// ─── ODDS DRIFT ──────────────────────────────────────────────────────────────
+function initOdds(flights) {
+  flights.forEach(f => {
+    if (!state.odds[f.flightNumber]) {
+      // Base odds on delay status + some randomness
+      let base = f.status === 'Delayed' ? 65 + Math.random()*25 :
+                 f.status === 'Cancelled' ? 99 :
+                 f.status === 'Boarding' ? 8 + Math.random()*12 :
+                 f.status === 'Departed' ? 100 : // resolved
+                 10 + Math.random()*40;
+      state.odds[f.flightNumber] = Math.min(99, Math.max(1, base));
+    }
+    if (!state.volumes[f.flightNumber]) {
+      state.volumes[f.flightNumber] = Math.floor(Math.random()*8000)+500;
+    }
+  });
+}
+
+function driftOdds() {
+  Object.keys(state.odds).forEach(fn => {
+    const delta = (Math.random()-0.5)*3;
+    state.odds[fn] = Math.min(99, Math.max(1, state.odds[fn]+delta));
+    state.volumes[fn] += Math.floor(Math.random()*80);
+  });
+  renderBoard();
+  updateTicker();
+  if (state.selectedFlight) updateDetailOdds();
+}
+
+// ─── API FETCH ───────────────────────────────────────────────────────────────
+// When running locally as plain HTML (no Vercel), we fetch relative /api/flights
+// which will 404 — we catch that and use mock data from the server's fallback.
+// When deployed on Vercel, /api/flights is the real serverless function.
+async function fetchFlights(airport) {
+  const loadingBar = document.getElementById('loading-bar');
+  const badge = document.getElementById('source-badge');
+  loadingBar.classList.add('active');
+  badge.className = 'source-badge loading';
+  badge.textContent = 'LOADING';
+  document.getElementById('board-body').classList.add('loading');
+
+  try {
+    const resp = await fetch(`/api/flights?airport=${airport}`);
+    if (!resp.ok) throw new Error('API unavailable');
+    const data = await resp.json();
+
+    state.flights = data.flights;
+    initOdds(data.flights);
+
+    badge.className = `source-badge ${data.source === 'live' ? 'live' : 'mock'}`;
+    badge.textContent = data.source === 'live' ? '● LIVE' : '◌ MOCK DATA';
+    document.getElementById('fetch-time').textContent =
+      data.source === 'live' ? `fetched ${new Date().toLocaleTimeString()}` : 'set RAPIDAPI_KEY to go live';
+
+  } catch(e) {
+    // Fallback: generate client-side mock
+    state.flights = generateClientMock(airport);
+    initOdds(state.flights);
+    badge.className = 'source-badge mock';
+    badge.textContent = '◌ DEMO DATA';
+    document.getElementById('fetch-time').textContent = 'deploy to Vercel + add API key for live data';
+  }
+
+  loadingBar.classList.remove('active');
+  document.getElementById('board-body').classList.remove('loading');
+  renderBoard();
+}
+
+function generateClientMock(airport) {
+  const now = new Date();
+  const airlines = ['AC','WS','UA','AA','DL','B6','WN','F9','NK','AS'];
+  const dests = [
+    {c:'Toronto',i:'YYZ'},{c:'Los Angeles',i:'LAX'},{c:'New York',i:'JFK'},
+    {c:'Chicago',i:'ORD'},{c:'Atlanta',i:'ATL'},{c:'Denver',i:'DEN'},
+    {c:'Seattle',i:'SEA'},{c:'Miami',i:'MIA'},{c:'Boston',i:'BOS'},
+    {c:'London',i:'LHR'},{c:'Paris',i:'CDG'},{c:'Tokyo',i:'NRT'},
+    {c:'Vancouver',i:'YVR'},{c:'Montreal',i:'YUL'},{c:'Phoenix',i:'PHX'},
+  ];
+  const statuses = ['OnTime','OnTime','OnTime','Delayed','Delayed','Boarding','Departed'];
+  const airlineNames = {AC:'Air Canada',WS:'WestJet',UA:'United',AA:'American',DL:'Delta',B6:'JetBlue',WN:'Southwest',F9:'Frontier',NK:'Spirit',AS:'Alaska'};
+  const gates = ['A','B','C','D','E','F'];
+
+  return Array.from({length:20},(_,i)=>{
+    const al = airlines[Math.floor(Math.random()*airlines.length)];
+    const dst = dests[Math.floor(Math.random()*dests.length)];
+    const st = statuses[Math.floor(Math.random()*statuses.length)];
+    const mins = i*18 + Math.floor(Math.random()*10) - 30;
+    const delayMins = st==='Delayed' ? (Math.floor(Math.random()*6)+1)*15 : 0;
+    const sched = new Date(now.getTime()+mins*60000);
+    const revised = new Date(sched.getTime()+delayMins*60000);
+    return {
+      flightNumber:`${al}${Math.floor(Math.random()*900)+100}`,
+      airline: airlineNames[al]||al,
+      airlineCode:al,
+      destination: dst.c,
+      destinationIata: dst.i,
+      scheduledTime: sched.toISOString(),
+      revisedTime: revised.toISOString(),
+      delayMinutes: delayMins,
+      status: st,
+      gate: `${gates[Math.floor(Math.random()*gates.length)]}${Math.floor(Math.random()*30)+1}`,
+      terminal: Math.floor(Math.random()*3)+1,
+      isMock:true,
+    };
+  }).sort((a,b)=>new Date(a.scheduledTime)-new Date(b.scheduledTime));
+}
+
+// ─── RENDER ──────────────────────────────────────────────────────────────────
+function fmtTime(iso) {
+  if (!iso) return '--:--';
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit',hour12:false});
+}
+
+function filteredFlights() {
+  let f = [...state.flights];
+  switch(state.filter) {
+    case 'active':   f = f.filter(x=>!['Departed','Cancelled'].includes(x.status)); break;
+    case 'highrisk': f = f.filter(x=>(state.odds[x.flightNumber]||0)>50); break;
+    case 'boarding': f = f.filter(x=>x.status==='Boarding'); break;
+    case 'delayed':  f = f.filter(x=>x.status==='Delayed'||x.delayMinutes>0); break;
+  }
+  switch(state.sort) {
+    case 'odds': f.sort((a,b)=>(state.odds[b.flightNumber]||0)-(state.odds[a.flightNumber]||0)); break;
+    case 'vol':  f.sort((a,b)=>(state.volumes[b.flightNumber]||0)-(state.volumes[a.flightNumber]||0)); break;
+    default:     f.sort((a,b)=>new Date(a.scheduledTime)-new Date(b.scheduledTime));
+  }
+  return f;
+}
+
+function renderBoard() {
+  const body = document.getElementById('board-body');
+  const flights = filteredFlights();
+  if (!flights.length) {
+    body.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-dim);font-family:var(--font-board)">NO FLIGHTS MATCH FILTER</div>';
+    return;
+  }
+  body.innerHTML = flights.map(f => {
+    const odds = state.odds[f.flightNumber] || 20;
+    const oddsClass = odds > 60 ? 'high' : odds > 35 ? 'mid' : 'low';
+    const vol = state.volumes[f.flightNumber] || 0;
+    const volFmt = vol > 1000 ? `$${(vol/1000).toFixed(1)}k` : `$${vol}`;
+    const isSel = state.selectedFlight?.flightNumber === f.flightNumber;
+    return `
+    <div class="flight-row${isSel?' selected':''}" onclick="selectFlight('${f.flightNumber}')">
+      <div class="cell">
+        <div class="cell-mono">${f.flightNumber}</div>
+        <div class="cell-sub">${f.airline.slice(0,12)}</div>
+      </div>
+      <div class="cell">
+        <div style="font-size:15px;font-weight:500;color:var(--text)">${f.destination}</div>
+        <div class="cell-sub">${f.destinationIata} · T${f.terminal||'?'}</div>
+      </div>
+      <div class="cell">
+        <div class="time-main">${fmtTime(f.scheduledTime)}</div>
+        ${f.delayMinutes>0?`<div class="time-revised">+${f.delayMinutes}m</div>`:''}
+      </div>
+      <div><span class="status-badge status-${f.status}">${f.status.toUpperCase()}</span></div>
+      <div class="odds-cell">
+        <div class="odds-pct ${oddsClass}">${odds.toFixed(0)}%</div>
+        <div class="odds-bar-outer"><div class="odds-bar-inner ${oddsClass}" style="width:${odds}%"></div></div>
+      </div>
+      <div class="cell-mono" style="font-size:13px">${f.gate||'TBD'}</div>
+      <div class="vol-cell">${volFmt}</div>
+    </div>`;
+  }).join('');
+}
+
+// ─── TICKER ──────────────────────────────────────────────────────────────────
+function updateTicker() {
+  const items = Object.entries(state.odds).slice(0,12).map(([fn,odds])=>{
+    const dir = Math.random()>.5;
+    return `<div class="ticker-item">${fn} DELAY <span class="${dir?'t-up':'t-dn'}">${odds.toFixed(0)}%</span></div>`;
+  });
+  // Double for infinite scroll
+  const ticker = document.getElementById('ticker');
+  const html = [...items,...items].join('');
+  ticker.innerHTML = html;
+}
+
+// ─── AIRPORT PICKER ──────────────────────────────────────────────────────────
+function renderAirportPicker() {
+  const el = document.getElementById('airport-picker');
+  el.innerHTML = Object.keys(AIRPORTS).map(code=>
+    `<button class="ap-btn${state.airport===code?' active':''}" onclick="switchAirport('${code}')">${code}</button>`
+  ).join('');
+}
+
+async function switchAirport(code) {
+  state.airport = code;
+  state.selectedFlight = null;
+  state.odds = {};
+  state.volumes = {};
+  closeDetail();
+  document.getElementById('airport-iata').textContent = code;
+  document.getElementById('airport-city').textContent = AIRPORTS[code].city;
+  renderAirportPicker();
+  await fetchFlights(code);
+}
+
+// ─── GEOLOCATION ─────────────────────────────────────────────────────────────
+function geoDetect() {
+  if (!navigator.geolocation) return;
+  // Map rough coords to airports
+  const airportCoords = {
+    SFO:[37.62,-122.38], LAX:[33.94,-118.41], JFK:[40.64,-73.78],
+    ORD:[41.97,-87.91], ATL:[33.64,-84.43], DEN:[39.86,-104.67],
+    SEA:[47.44,-122.30], MIA:[25.80,-80.29], BOS:[42.36,-71.01],
+    YYZ:[43.68,-79.63],
+  };
+  navigator.geolocation.getCurrentPosition(pos=>{
+    const {latitude:lat, longitude:lng} = pos.coords;
+    let nearest = 'SFO', minDist = Infinity;
+    Object.entries(airportCoords).forEach(([code,[alat,alng]])=>{
+      const d = Math.sqrt((lat-alat)**2+(lng-alng)**2);
+      if (d<minDist){minDist=d;nearest=code;}
+    });
+    if (nearest !== state.airport) switchAirport(nearest);
+  }, ()=>{});
+}
+
+// ─── FLIGHT DETAIL ───────────────────────────────────────────────────────────
+function selectFlight(fn) {
+  const f = state.flights.find(x=>x.flightNumber===fn);
+  if (!f) return;
+  state.selectedFlight = f;
+  state.selectedSide = null;
+  document.getElementById('detail-panel').classList.add('open');
+
+  document.getElementById('d-flight').textContent = f.flightNumber;
+  document.getElementById('d-route').textContent = `${f.airline} · ${AIRPORTS[state.airport]?.city||state.airport} → ${f.destination}`;
+  document.getElementById('d-sched').textContent = fmtTime(f.scheduledTime);
+  const revEl = document.getElementById('d-revised');
+  revEl.textContent = fmtTime(f.revisedTime);
+  revEl.className = `dt-val${f.delayMinutes>0?' delayed':''}`;
+
+  updateDetailOdds();
+  document.getElementById('yes-btn').className = 'yn-btn';
+  document.getElementById('no-btn').className = 'yn-btn';
+  document.getElementById('bet-msg').textContent = '';
+  updatePayout();
+  renderActivity(f);
+  renderBoard();
+}
+
+function updateDetailOdds() {
+  const f = state.selectedFlight;
+  if (!f) return;
+  const odds = state.odds[f.flightNumber] || 20;
+  document.getElementById('d-prob-pct').textContent = `${odds.toFixed(0)}%`;
+  document.getElementById('d-prob-bar').style.width = `${odds}%`;
+  const yesCost = (odds/100).toFixed(2);
+  const noCost = ((100-odds)/100).toFixed(2);
+  document.getElementById('yes-cost').textContent = `@ $${yesCost}`;
+  document.getElementById('no-cost').textContent = `@ $${noCost}`;
+  updatePayout();
+}
+
+function closeDetail() {
+  document.getElementById('detail-panel').classList.remove('open');
+  state.selectedFlight = null;
+  renderBoard();
+}
+
+function selectSide(side) {
+  state.selectedSide = side;
+  document.getElementById('yes-btn').className = `yn-btn${side==='YES'?' selected-yes':''}`;
+  document.getElementById('no-btn').className = `yn-btn${side==='NO'?' selected-no':''}`;
+  updatePayout();
+}
+
+function setAmount(n) {
+  document.getElementById('bet-amount').value = n;
+  updatePayout();
+}
+
+function updatePayout() {
+  const f = state.selectedFlight;
+  if (!f) return;
+  const odds = state.odds[f.flightNumber] || 20;
+  const amount = parseFloat(document.getElementById('bet-amount').value)||0;
+  let payout = 0;
+  if (state.selectedSide==='YES') payout = amount / (odds/100);
+  if (state.selectedSide==='NO')  payout = amount / ((100-odds)/100);
+  document.getElementById('payout-val').textContent = amount ? `$${payout.toFixed(2)}` : '—';
+}
+
+function placeBet() {
+  if (!state.user) { openModal('signup'); return; }
+  if (!state.selectedSide) { document.getElementById('bet-msg').textContent='SELECT YES OR NO'; return; }
+  const amount = parseFloat(document.getElementById('bet-amount').value)||0;
+  if (amount <= 0) { document.getElementById('bet-msg').textContent='ENTER AMOUNT'; return; }
+  if (amount > state.user.balance) { document.getElementById('bet-msg').textContent='INSUFFICIENT BALANCE'; return; }
+
+  const f = state.selectedFlight;
+  const odds = state.odds[f.flightNumber];
+  const cost = state.selectedSide==='YES' ? odds/100 : (100-odds)/100;
+  const payout = amount / cost;
+
+  state.user.balance -= amount;
+  state.user.staked = (state.user.staked||0) + amount;
+  state.positions.push({
+    flightNumber: f.flightNumber,
+    destination: f.destination,
+    side: state.selectedSide,
+    amount,
+    odds: state.odds[f.flightNumber],
+    potentialPayout: payout,
+    status:'active',
+    ts: Date.now(),
+  });
+  saveUser();
+  updateBalanceChip();
+  document.getElementById('bet-msg').textContent = `✓ BET PLACED · $${amount} on ${state.selectedSide}`;
+  document.getElementById('bet-msg').style.color = 'var(--green)';
+  setTimeout(()=>{
+    document.getElementById('bet-msg').textContent='';
+    document.getElementById('bet-msg').style.color='';
+  }, 3000);
+}
+
+function renderActivity(f) {
+  const names = ['alexj','taylor_sf','anon_8821','flyergirl','gateb22','quietbro','mack_yyc','ordlife'];
+  const items = Array.from({length:6},()=>{
+    const side = Math.random()>.5?'YES':'NO';
+    const amt = [5,10,25,50,100][Math.floor(Math.random()*5)];
+    const name = names[Math.floor(Math.random()*names.length)];
+    const mins = Math.floor(Math.random()*60)+1;
+    return `<div class="af-item">
+      <div class="af-dot ${side.toLowerCase()}"></div>
+      <div class="af-text"><strong>${name}</strong> bet $${amt} ${side} · ${mins}m ago</div>
+    </div>`;
+  }).join('');
+  document.getElementById('activity-list').innerHTML = items;
+}
+
+// ─── AUTH ────────────────────────────────────────────────────────────────────
+function openModal(mode) {
+  state.authMode = mode;
+  document.getElementById('modal-title').textContent = mode==='signup'?'SIGN UP':'LOG IN';
+  document.getElementById('modal-sub').textContent = mode==='signup'?'$1,000 play money. no credit card.':'welcome back.';
+  document.getElementById('modal-submit').textContent = mode==='signup'?'CREATE ACCOUNT':'LOG IN';
+  document.getElementById('modal-switch').innerHTML = mode==='signup'?
+    'Already have an account? <span onclick="switchMode()">Log in</span>' :
+    'No account? <span onclick="switchMode()">Sign up</span>';
+  document.getElementById('modal-err').style.display='none';
+  document.getElementById('modal-overlay').classList.add('open');
+}
+function closeModal() { document.getElementById('modal-overlay').classList.remove('open'); }
+function switchMode() { openModal(state.authMode==='signup'?'login':'signup'); }
+
+function authSubmit() {
+  const email = document.getElementById('auth-email').value.trim();
+  const pass = document.getElementById('auth-pass').value;
+  const err = document.getElementById('modal-err');
+  if (!email || !pass) { err.textContent='Fill in both fields.'; err.style.display='block'; return; }
+  if (pass.length < 4) { err.textContent='Password must be at least 4 chars.'; err.style.display='block'; return; }
+
+  const key = `fb_user_${email}`;
+  if (state.authMode==='signup') {
+    if (localStorage.getItem(key)) { err.textContent='Account already exists.'; err.style.display='block'; return; }
+    const user = { email, pass, balance:1000, staked:0, pnl:0, wins:0, losses:0, ts:Date.now() };
+    localStorage.setItem(key, JSON.stringify(user));
+    state.user = user;
+  } else {
+    const saved = localStorage.getItem(key);
+    if (!saved) { err.textContent='No account found.'; err.style.display='block'; return; }
+    const user = JSON.parse(saved);
+    if (user.pass !== pass) { err.textContent='Wrong password.'; err.style.display='block'; return; }
+    state.user = user;
+  }
+  state.positions = JSON.parse(localStorage.getItem(`fb_pos_${email}`)||'[]');
+  closeModal();
+  updateAuthUI();
+}
+
+function logout() {
+  saveUser();
+  state.user = null;
+  state.positions = [];
+  updateAuthUI();
+  showBoard();
+}
+
+function saveUser() {
+  if (!state.user) return;
+  localStorage.setItem(`fb_user_${state.user.email}`, JSON.stringify(state.user));
+  localStorage.setItem(`fb_pos_${state.user.email}`, JSON.stringify(state.positions));
+}
+
+function updateAuthUI() {
+  const loggedIn = !!state.user;
+  document.getElementById('login-btn').style.display = loggedIn?'none':'';
+  document.getElementById('signup-btn').style.display = loggedIn?'none':'';
+  document.getElementById('logout-btn').style.display = loggedIn?'':'none';
+  document.getElementById('portfolio-btn').style.display = loggedIn?'':'none';
+  document.getElementById('board-btn').style.display = loggedIn?'':'none';
+  document.getElementById('balance-chip').style.display = loggedIn?'':'none';
+  updateBalanceChip();
+}
+
+function updateBalanceChip() {
+  if (!state.user) return;
+  document.getElementById('balance-chip').textContent = `$${state.user.balance.toFixed(0)}`;
+}
+
+// ─── PORTFOLIO ───────────────────────────────────────────────────────────────
+function showPortfolio() {
+  document.getElementById('board-page').style.display = 'none';
+  document.getElementById('portfolio-page').classList.add('open');
+  closeDetail();
+  renderPortfolio();
+}
+
+function showBoard() {
+  document.getElementById('board-page').style.display = '';
+  document.getElementById('portfolio-page').classList.remove('open');
+}
+
+function renderPortfolio() {
+  const u = state.user;
+  if (!u) return;
+  const totalStaked = state.positions.filter(p=>p.status==='active').reduce((s,p)=>s+p.amount,0);
+  const unrealized = state.positions.filter(p=>p.status==='active').reduce((s,p)=>{
+    const curr = state.odds[p.flightNumber]||20;
+    const newPayout = p.side==='YES' ? p.amount/(curr/100) : p.amount/((100-curr)/100);
+    return s + (newPayout - p.amount);
+  },0);
+
+  document.getElementById('p-stats').innerHTML = `
+    <div class="p-stat"><label>BALANCE</label><div class="p-val">$${u.balance.toFixed(0)}</div></div>
+    <div class="p-stat"><label>STAKED</label><div class="p-val">$${(u.staked||0).toFixed(0)}</div></div>
+    <div class="p-stat"><label>UNREALIZED P&L</label><div class="p-val ${unrealized>=0?'pos':'neg'}">${unrealized>=0?'+':''}$${unrealized.toFixed(0)}</div></div>
+    <div class="p-stat"><label>WIN RATE</label><div class="p-val">${u.wins+u.losses > 0 ? Math.round(u.wins/(u.wins+u.losses)*100)+'%' : '—'}</div></div>
+  `;
+
+  if (!state.positions.length) {
+    document.getElementById('positions-list').innerHTML = '<div style="color:var(--text-dim);font-family:var(--font-board);font-size:12px;padding:16px 0">NO POSITIONS YET — GO BET ON A FLIGHT</div>';
+  } else {
+    document.getElementById('positions-list').innerHTML = `
+      <div class="pos-row header"><div>FLIGHT</div><div>DEST</div><div>SIDE</div><div>AMOUNT</div><div>PAYOUT</div><div></div></div>
+      ${state.positions.map((p,i)=>`
+        <div class="pos-row">
+          <div style="color:var(--gold)">${p.flightNumber}</div>
+          <div style="color:var(--text-mid)">${p.destination}</div>
+          <div style="color:${p.side==='YES'?'var(--red)':'var(--green)'}">${p.side}</div>
+          <div>$${p.amount}</div>
+          <div>$${p.potentialPayout.toFixed(0)}</div>
+          <div>${p.status==='active'?`<button class="resolve-btn" onclick="resolvePosition(${i})">RESOLVE</button>`:
+            `<span style="color:${p.won?'var(--green)':'var(--red)'}">${p.won?'WON':'LOST'}</span>`}</div>
+        </div>`).join('')}`;
+  }
+
+  // Leaderboard
+  const fakeUsers = [
+    {name:'flymaster_atl',bal:3842},{name:'gateb22_anon',bal:2901},{name:'delayislam',bal:2540},
+    {name:u.email.split('@')[0],bal:u.balance,me:true},{name:'ordlifer99',bal:1890},
+    {name:'yyz_survivor',bal:1420},{name:'missed_conn',bal:990},
+  ].sort((a,b)=>b.bal-a.bal).slice(0,7);
+
+  document.getElementById('leaderboard-list').innerHTML = fakeUsers.map((lb,i)=>`
+    <div class="lb-row">
+      <div class="lb-rank${i<3?' top':''}">${i+1}</div>
+      <div class="lb-name${lb.me?' me':''}">${lb.name}${lb.me?' ← you':''}</div>
+      <div class="lb-bal">$${lb.bal.toFixed(0)}</div>
+    </div>`).join('');
+}
+
+function resolvePosition(i) {
+  const p = state.positions[i];
+  const odds = state.odds[p.flightNumber]||20;
+  // Simulate outcome based on current odds
+  const won = p.side==='YES' ? Math.random()<odds/100 : Math.random()>(odds/100);
+  state.positions[i].status = 'resolved';
+  state.positions[i].won = won;
+  if (won) {
+    state.user.balance += p.potentialPayout;
+    state.user.wins = (state.user.wins||0)+1;
+  } else {
+    state.user.losses = (state.user.losses||0)+1;
+  }
+  state.user.pnl = (state.user.pnl||0) + (won ? p.potentialPayout-p.amount : -p.amount);
+  saveUser();
+  updateBalanceChip();
+  renderPortfolio();
+}
+
+// ─── FILTERS / SORT ──────────────────────────────────────────────────────────
+function setFilter(f, btn) {
+  state.filter = f;
+  document.querySelectorAll('.filter-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+
+function setSort(s, btn) {
+  state.sort = s;
+  document.querySelectorAll('.sort-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderBoard();
+}
+
+// ─── THEME ───────────────────────────────────────────────────────────────────
+function toggleTheme() {
+  document.body.classList.toggle('light');
+  const isLight = document.body.classList.contains('light');
+  document.getElementById('theme-toggle').textContent = isLight ? '☾' : '☀︎';
+  localStorage.setItem('fb_theme', isLight?'light':'dark');
+}
+
+// ─── YYZ POPUP ───────────────────────────────────────────────────────────────
+const YYZ_SCENARIOS = [
+  { emoji:'❄️', headline:'IT SNOWED AGAIN', copy:"Pearson engineers are reportedly 'looking into' the concept of winter. Gate D74. Your connection in Chicago: gone. Gerald at the information desk knows where gate F74 is, but only Gerald." },
+  { emoji:'✈️', headline:'THE PLANE IS HERE.\nTHE CREW IS NOT.', copy:"The aircraft is visible from the window. Beautiful, really. The crew is somewhere in the terminal. Customer service is optimistic. Your estimated departure is now listed as 'Evening.'" },
+  { emoji:'🧊', headline:'DE-ICING PROCEDURE\nINITIATED', copy:"Standard 40-minute de-icing has commenced. It snowed 2mm. You will not make your connection in Chicago. The de-icing fluid smells vaguely of regret." },
+  { emoji:'🔧', headline:'A SMALL MAINTENANCE\nTHING, ACTUALLY', copy:"It is a small part. The part is coming from Mississauga. There is traffic on the 427. Tim Hortons Timbits are available at Gate F12 if you'd like to wait in a different way." },
+  { emoji:'🌫️', headline:'REDUCED VISIBILITY\n(IT ALSO SNOWED)', copy:"Fog has descended on Pearson. It also snowed earlier, separately. The gate agent has stopped making eye contact. Hot take: the Timmies here slaps harder than Arrivals." },
+];
+
+function showYyz() {
+  if (localStorage.getItem('fb_yyzdismissed')) return;
+  const s = YYZ_SCENARIOS[Math.floor(Math.random()*YYZ_SCENARIOS.length)];
+  document.getElementById('yyp-emoji').textContent = s.emoji;
+  document.getElementById('yyp-headline').textContent = s.headline;
+  document.getElementById('yyp-copy').textContent = s.copy;
+  document.getElementById('yyp-temp').textContent = `${Math.floor(Math.random()*6-8)}°C`;
+
+  // Snowflakes
+  const snow = document.getElementById('yyp-snow');
+  snow.innerHTML = Array.from({length:12},(_,i)=>{
+    const left = Math.random()*100;
+    const delay = Math.random()*3;
+    const dur = 2+Math.random()*2;
+    return `<div class="snowflake" style="left:${left}%;animation-delay:${delay}s;animation-duration:${dur}s">❄</div>`;
+  }).join('');
+
+  document.getElementById('yyp-overlay').classList.add('open');
+}
+
+function dismissYyz() {
+  localStorage.setItem('fb_yyzdismissed','1');
+  document.getElementById('yyp-overlay').classList.remove('open');
+}
+
+function yyzCta() {
+  document.getElementById('yyp-overlay').classList.remove('open');
+  openModal('signup');
+}
+
+// ─── INIT ────────────────────────────────────────────────────────────────────
+async function init() {
+  // Theme
+  if (localStorage.getItem('fb_theme')==='light') {
+    document.body.classList.add('light');
+    document.getElementById('theme-toggle').textContent = '☾';
+  }
+
+  // Check saved session
+  const savedEmail = localStorage.getItem('fb_session');
+  if (savedEmail) {
+    const saved = localStorage.getItem(`fb_user_${savedEmail}`);
+    if (saved) {
+      state.user = JSON.parse(saved);
+      state.positions = JSON.parse(localStorage.getItem(`fb_pos_${savedEmail}`)||'[]');
+      updateAuthUI();
+    }
+  }
+
+  renderAirportPicker();
+  document.getElementById('airport-iata').textContent = state.airport;
+  document.getElementById('airport-city').textContent = AIRPORTS[state.airport].city;
+
+  await fetchFlights(state.airport);
+  updateTicker();
+  geoDetect();
+
+  // Drift odds every 4.5s
+  setInterval(driftOdds, 4500);
+
+  // Refresh flights every 3 minutes
+  setInterval(()=>fetchFlights(state.airport), 3*60*1000);
+
+  // YYZ popup after 1.2s
+  setTimeout(showYyz, 1200);
+}
+
+// Save session on login
+const _orig = updateAuthUI;
+function updateAuthUI() {
+  _orig.call(this);
+  if (state.user) localStorage.setItem('fb_session', state.user.email);
+  else localStorage.removeItem('fb_session');
+}
+
+init();
+</script>
+</body>
+</html>
