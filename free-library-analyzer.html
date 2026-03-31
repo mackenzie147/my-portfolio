@@ -703,19 +703,27 @@ analyzeBtn.addEventListener('click', async () => {
         max_tokens:1500,
         messages:[{role:'user', content:[
           {type:'image', source:{type:'base64', media_type:currentImgType, data:currentImgBase64}},
-          {type:'text', text:`You are an expert analyst who looks at photos containing books and infers everything possible about the place and context from visual evidence.
+          {type:'text', text:`You are an expert analyst who looks at photos containing books and infers the specific location and context from visual evidence. You reason like a detective — you commit to the most specific conclusion the evidence supports, you do not hedge when the clues point clearly somewhere.
+
+CRITICAL RULES:
+- If you can read a brand name, sign, or label that is geographically specific (e.g. "Philz Coffee" which is a Bay Area chain, "In-N-Out", a specific newspaper, a regional chain), USE IT. That is high-confidence location evidence. Do not ignore readable text.
+- If multiple clues point to the same city or neighborhood, commit to it with high confidence. Do not retreat to "English-speaking country" when clues say San Francisco.
+- Readable signage outweighs architectural ambiguity. Always.
+- Tech books (Adobe, Premiere, Photoshop, Illustrator, coding manuals) in a cafe in an English-speaking city with Bay Area chain signage = almost certainly SF Bay Area.
+- Be specific. "San Francisco, Mission District" beats "US city". If you can name the neighborhood, do it.
+- Only use low confidence if the photo genuinely has no distinguishing visual information at all.
 
 Analyze this photo carefully. It could be a little free library, a cafe, bookshop, hostel, home, bar, library, office, or any other place with books.
 
-Look at: architectural style, indoor vs outdoor setting, furniture and decor style, vegetation, street elements, people and what they're doing, book spines and titles, book languages, shelf organization, general vibe and aesthetic.
+First, mentally list every piece of text you can read in the image. Then list every geographic clue (architecture, plants, street furniture, interior style, flooring, furniture). Then reason from those clues to the most specific location you can justify.
 
 Respond ONLY in this exact JSON, no markdown, no backticks:
 {
   "location": {
-    "city": "city or region name",
+    "city": "specific city name — not 'English-speaking country', not 'US or UK', a real city or neighborhood",
     "neighborhood": "specific neighborhood if identifiable, else empty string",
     "confidence": "high or medium or low",
-    "reason": "one sentence of primary visual evidence for the location guess"
+    "reason": "one sentence citing the specific clues that led to this conclusion — name any readable text you spotted"
   },
   "venue": {
     "type": "little free library / cafe / bookshop / hostel / bar / home / library / hotel lobby / office / other",
@@ -730,18 +738,19 @@ Respond ONLY in this exact JSON, no markdown, no backticks:
   "language": {
     "primary": "dominant language on book spines (e.g. English, Japanese, German, mixed)",
     "confidence": "high or medium or low",
-    "description": "what you can see on the spines"
+    "description": "what you can see on the spines, including any specific titles"
   },
   "genre": {
-    "vibe": "short label (e.g. 'literary fiction heavy', 'eclectic / anything goes', 'self-help and business', 'sci-fi and fantasy', 'academic', 'travel and adventure')",
+    "vibe": "short label (e.g. 'literary fiction heavy', 'eclectic / anything goes', 'self-help and business', 'sci-fi and fantasy', 'academic', 'travel and adventure', 'tech and design heavy')",
     "confidence": "high or medium or low",
-    "description": "what the collection composition suggests"
+    "description": "what the collection composition suggests about who uses this place"
   },
-  "books": ["any readable title 1", "any readable title 2"],
+  "books": ["every readable title or author you can make out"],
   "clues": [
-    "specific visual clue and what it tells you",
-    "another clue",
-    "another clue"
+    "every piece of readable text and what it tells you geographically",
+    "interior style clue and what it suggests",
+    "book collection clue and what it suggests",
+    "any other clue"
   ],
   "alternatives": [
     {"location": "alternative city or neighborhood", "probability": "20%"},
