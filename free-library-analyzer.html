@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>little free library analyzer</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #fff;
+    color: #111;
+    font-family: 'Courier Prime', 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.6;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem 6rem;
+  }
+
+  a { color: #111; }
+  a:hover { color: #888; }
+  hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
+
+  .tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px solid #ddd; }
+  .tab-btn {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.85rem;
+    background: none; border: none;
+    border-bottom: 2px solid transparent;
+    padding: 0.5rem 1.2rem 0.5rem 0;
+    cursor: pointer; color: #aaa;
+    margin-bottom: -1px; letter-spacing: 0.02em;
+    transition: color 0.15s;
+  }
+  .tab-btn.active { color: #111; border-bottom-color: #111; }
+  .tab-btn:hover { color: #555; }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  .upload-zone {
+    border: 1px dashed #aaa;
+    padding: 2.5rem 1.5rem;
+    text-align: center; cursor: pointer;
+    position: relative; transition: background 0.15s;
+    margin-bottom: 1.5rem;
+  }
+  .upload-zone:hover, .upload-zone.dragover { background: #f9f9f9; border-color: #555; }
+  .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
+  .upload-zone .upload-main { font-size: 0.9rem; margin-bottom: 0.2rem; }
+  .upload-zone .upload-sub { font-size: 0.75rem; color: #aaa; }
+
+  .preview-section { display: none; }
+  .preview-section.visible { display: block; }
+
+  .img-and-btn { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1.5rem; }
+  .img-wrap img { width: 200px; display: block; border: 1px solid #ddd; }
+  .img-controls { display: flex; flex-direction: column; gap: 0.5rem; padding-top: 0.25rem; }
+  .img-controls .label { font-size: 0.75rem; color: #888; }
+
+  button {
+    font-family: 'Courier Prime', monospace;
+    font-size: 0.8rem; background: #111; color: #fff;
+    border: none; padding: 0.5rem 1rem; cursor: pointer;
+    letter-spacing: 0.03em; transition: background 0.15s; white-space: nowrap;
+  }
+  button:hover { background: #333; }
+  button:disabled { background: #aaa; cursor: wait; }
+  button.secondary { background: #fff; color: #888; border: 1px solid #ddd; }
+  button.secondary:hover { color: #111; border-color: #aaa; }
+
+  .dot-anim::after {
+    content: ''; animation: dots 1.5s steps(4, end) infinite;
+  }
+  @keyframes dots {
+    0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'}
+  }
+
+  .loading { display: none; font-size: 0.85rem; color: #888; margin-bottom: 1rem; }
+  .loading.active { display: block; }
+  .error { display: none; font-size: 0.85rem; color: #c00; border-left: 2px solid #c00; padding-left: 0.75rem; margin-bottom: 1rem; }
+  .error.visible { display: block; }
+  .results { display: none; }
+  .results.visible { display: block; }
+
+  .result-location { margin-bottom: 1rem; }
+  .result-location .big { font-size: 1.2rem; font-weight: bold; }
+  .confidence {
+    display: inline-block; font-size: 0.68rem;
+    background: #111; color: #fff;
+    padding: 0.1rem 0.4rem; margin-left: 0.5rem;
+    vertical-align: middle; position: relative; top: -2px; letter-spacing: 0.05em;
+  }
+  .confidence.medium { background: #888; }
+  .confidence.low { background: #ccc; color: #555; }
+  .result-location .neighborhood { font-size: 0.85rem; color: #555; margin-top: 0.1rem; }
+
+  .clues { margin-bottom: 1.25rem; }
+  .clues-label { font-size: 0.75rem; color: #888; margin-bottom: 0.4rem; }
+  .clue { font-size: 0.85rem; padding-left: 1.2rem; position: relative; margin-bottom: 0.2rem; color: #333; }
+  .clue::before { content: '→'; position: absolute; left: 0; color: #bbb; }
+
+  .alternatives { font-size: 0.8rem; color: #888; margin-bottom: 1rem; }
+  .alternatives-label { margin-bottom: 0.3rem; }
+  .alt-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
+  .alt-tag { border: 1px solid #ddd; padding: 0.15rem 0.5rem; font-size: 0.75rem; color: #666; }
+  .alt-tag .pct { color: #bbb; margin-left: 0.3rem; }
+
+  .save-row { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; }
+  .save-status { font-size: 0.75rem; color: #888; }
+  .save-status.ok { color: #2a7a2a; }
+  .save-status.err { color: #c00; }
+
+  /* MAP */
+  .map-stats { display: flex; gap: 2rem; margin-bottom: 1.25rem; font-size: 0.8rem; }
+  .map-stat .num { font-weight: bold; font-size: 1.1rem; color: #111; }
+  .map-stat .lbl { color: #aaa; font-size: 0.72rem; }
+
+  .map-wrap {
+    position: relative; width: 100%;
+    border: 1px solid #ddd; background: #dde8f0;
+    margin-bottom: 1.5rem; overflow: hidden;
+  }
+  #worldMap { display: block; width: 100%; height: auto; }
+  .map-pin-group { cursor: pointer; }
+  .map-tooltip {
+    position: absolute; background: #fff; border: 1px solid #ddd;
+    padding: 0.4rem 0.6rem; font-size: 0.72rem;
+    font-family: 'Courier Prime', monospace;
+    pointer-events: none; display: none; z-index: 10;
+    max-width: 180px; line-height: 1.4;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
+  }
+  .map-tooltip.visible { display: block; }
+  .map-credit { position: absolute; bottom: 4px; right: 6px; font-size: 0.6rem; color: #bbb; font-family: 'Courier Prime', monospace; }
+
+  .library-list { display: flex; flex-direction: column; }
+  .library-card {
+    border: 1px solid #eee; border-bottom: none;
+    padding: 0.9rem 1rem;
+    display: flex; gap: 1rem; align-items: flex-start;
+    cursor: pointer; transition: background 0.1s;
+  }
+  .library-card:last-child { border-bottom: 1px solid #eee; }
+  .library-card:hover { background: #fafafa; }
+  .library-card.selected { background: #f5f5f5; border-left: 2px solid #111; }
+
+  .card-thumb { width: 56px; height: 56px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; display: block; }
+  .card-thumb-placeholder { width: 56px; height: 56px; background: #f0f0f0; border: 1px solid #ddd; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+  .card-body { flex: 1; min-width: 0; }
+  .card-location { font-weight: bold; font-size: 0.88rem; margin-bottom: 0.1rem; }
+  .card-meta { font-size: 0.72rem; color: #888; }
+  .card-books { font-size: 0.78rem; color: #555; font-style: italic; }
+  .card-conf { font-size: 0.65rem; background: #111; color: #fff; padding: 0.08rem 0.35rem; letter-spacing: 0.05em; white-space: nowrap; align-self: flex-start; margin-top: 0.2rem; }
+  .card-conf.medium { background: #888; }
+  .card-conf.low { background: #ccc; color: #555; }
+
+  .detail-panel { display: none; border: 1px solid #ddd; padding: 1.25rem; margin-bottom: 1.5rem; background: #fafafa; position: relative; }
+  .detail-panel.visible { display: block; }
+  .detail-close { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: #aaa; font-size: 1rem; cursor: pointer; padding: 0; }
+  .detail-close:hover { color: #111; background: none; }
+  .detail-inner { display: flex; gap: 1.25rem; }
+  .detail-img { width: 120px; height: 120px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
+  .detail-img-placeholder { width: 120px; height: 120px; background: #f0f0f0; border: 1px solid #ddd; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
+  .detail-info { flex: 1; min-width: 0; }
+  .detail-location { font-weight: bold; font-size: 1rem; margin-bottom: 0.15rem; }
+  .detail-sub { font-size: 0.78rem; color: #888; margin-bottom: 0.4rem; }
+  .detail-books { font-size: 0.82rem; color: #555; font-style: italic; margin-bottom: 0.4rem; }
+  .detail-clue { font-size: 0.78rem; color: #555; padding-left: 1rem; position: relative; margin-bottom: 0.15rem; }
+  .detail-clue::before { content: '→'; position: absolute; left: 0; color: #ccc; }
+
+  .empty-map { text-align: center; padding: 3rem 1rem; color: #aaa; font-size: 0.85rem; }
+  .map-loading { text-align: center; padding: 1rem; color: #aaa; font-size: 0.8rem; }
+
+  .note-box { border: 1px solid #eee; padding: 1rem 1.25rem; font-size: 0.8rem; color: #666; margin-bottom: 1.5rem; line-height: 1.7; }
+  .note-label { font-size: 0.68rem; letter-spacing: 0.1em; text-transform: uppercase; color: #bbb; margin-bottom: 0.4rem; }
+
+  .footnote { margin-top: 3rem; font-size: 0.75rem; color: #bbb; border-top: 1px solid #eee; padding-top: 1rem; }
+  .footnote a { color: #bbb; }
+
+  @media (max-width: 480px) {
+    .img-and-btn { flex-direction: column; }
+    .img-wrap img { width: 100%; }
+    .detail-inner { flex-direction: column; }
+    .map-stats { gap: 1rem; }
+  }
+</style>
+</head>
+<body>
+
+<p style="font-size:0.8rem; color:#aaa; margin-bottom:1.5rem;">← <a href="https://personal-website.dev">mackenzie sharp</a></p>
+
+<h1 style="margin-bottom:0.2rem;">little free library analyzer</h1>
+<div style="font-size:0.85rem; color:#888; margin-bottom:1.75rem;">upload a photo → get a location guess + add it to the community map</div>
+
+<div class="tabs">
+  <button class="tab-btn active" onclick="switchTab('analyze')">analyze a library</button>
+  <button class="tab-btn" onclick="switchTab('map')">community map</button>
+  <button class="tab-btn" onclick="switchTab('about')">about</button>
+</div>
+
+<!-- ANALYZE -->
+<div class="tab-panel active" id="tab-analyze">
+  <p style="font-size:0.85rem; margin-bottom:0.75rem;">
+    upload a photo of a little free library and i'll guess where it is based on what's visible —
+    architecture, plants, street furniture, general vibe. works for specific sf neighborhoods and globally.
+  </p>
+  <p style="font-size:0.85rem; margin-bottom:1.25rem;">
+    if the guess is right (or close enough), you can add it to the <span style="text-decoration:underline; cursor:pointer;" onclick="switchTab('map')">community map</span>.
+  </p>
+
+  <div class="upload-zone" id="uploadZone">
+    <input type="file" accept="image/*" id="fileInput">
+    <div class="upload-main">drop a photo here, or click to upload</div>
+    <div class="upload-sub">jpg / png / webp</div>
+  </div>
+
+  <div class="preview-section" id="previewSection">
+    <div class="img-and-btn">
+      <div class="img-wrap"><img id="previewImg" src="" alt="your library photo"></div>
+      <div class="img-controls">
+        <div class="label">your photo ↑</div>
+        <button id="analyzeBtn">analyze →</button>
+        <button class="secondary" id="resetBtn">try another</button>
+      </div>
+    </div>
+
+    <div class="loading" id="loadingState">
+      <span class="dot-anim" id="loadingMsg">reading the clues</span>
+    </div>
+    <div class="error" id="errorState"></div>
+
+    <div class="results" id="resultsDiv">
+      <div class="result-location">
+        <span class="big" id="cityResult"></span><span class="confidence" id="confidenceBadge"></span>
+        <div class="neighborhood" id="neighborhoodResult"></div>
+      </div>
+      <div class="clues">
+        <div class="clues-label">what gave it away:</div>
+        <div id="cluesList"></div>
+      </div>
+      <div class="alternatives">
+        <div class="alternatives-label">also possibly:</div>
+        <div class="alt-list" id="altList"></div>
+      </div>
+      <div id="booksSection" style="margin-bottom:1rem; display:none;">
+        <div class="clues-label">books spotted:</div>
+        <div id="booksList" style="font-size:0.85rem; font-style:italic; color:#555;"></div>
+      </div>
+      <hr>
+      <div style="margin-top:0.75rem;">
+        <div style="font-size:0.78rem; color:#888; margin-bottom:0.5rem;">is this right? add it to the community map:</div>
+        <div class="save-row">
+          <button id="saveToMapBtn">add to map →</button>
+          <span class="save-status" id="saveStatus"></span>
+        </div>
+      </div>
+      <div style="margin-top:0.75rem;">
+        <button class="secondary" id="analyzeAgainBtn">analyze another →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- MAP -->
+<div class="tab-panel" id="tab-map">
+  <p style="font-size:0.85rem; margin-bottom:1.25rem; color:#555;">
+    every library uploaded and confirmed. click any 📚 pin to see the photo, books, and confidence level.
+  </p>
+
+  <div class="map-stats">
+    <div class="map-stat"><div class="num" id="statTotal">—</div><div class="lbl">libraries mapped</div></div>
+    <div class="map-stat"><div class="num" id="statCities">—</div><div class="lbl">cities</div></div>
+    <div class="map-stat"><div class="num" id="statLastUpdated">—</div><div class="lbl">last updated</div></div>
+  </div>
+
+  <div class="map-wrap" id="mapWrap">
+    <svg id="worldMap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
+      <rect width="1000" height="500" fill="#dde8f0"/>
+      <g id="countries" fill="#c8d4c0" stroke="#b8c4b0" stroke-width="0.5">
+        <path d="M95,80 L180,75 L220,85 L240,110 L230,140 L210,160 L190,180 L170,210 L150,230 L130,245 L110,240 L95,220 L80,200 L70,175 L65,150 L70,120 Z"/>
+        <path d="M200,30 L240,25 L265,35 L270,55 L255,70 L230,75 L210,65 L200,50 Z"/>
+        <path d="M60,75 L95,70 L95,80 L80,95 L60,90 Z"/>
+        <path d="M130,245 L150,230 L170,240 L175,260 L165,280 L150,290 L135,285 L125,270 Z"/>
+        <path d="M165,285 L185,270 L210,275 L225,295 L235,330 L240,370 L230,410 L210,430 L185,440 L165,430 L150,410 L145,380 L148,345 L155,315 L160,290 Z"/>
+        <path d="M430,70 L470,65 L500,70 L510,85 L505,100 L490,110 L475,115 L460,110 L445,105 L435,95 L430,80 Z"/>
+        <path d="M460,40 L490,35 L505,50 L500,70 L470,65 L460,55 Z"/>
+        <path d="M415,70 L430,65 L435,75 L428,85 L418,82 Z"/>
+        <path d="M375,45 L395,42 L400,52 L390,60 L377,57 Z"/>
+        <path d="M435,130 L475,120 L510,125 L535,145 L545,175 L548,210 L540,250 L525,290 L505,320 L480,340 L455,345 L435,335 L420,310 L415,280 L418,245 L422,210 L425,175 L428,150 Z"/>
+        <path d="M510,70 L580,60 L650,55 L720,60 L780,70 L820,85 L840,105 L835,130 L820,150 L800,165 L775,175 L750,180 L720,185 L690,180 L660,175 L630,170 L600,165 L570,155 L545,145 L525,130 L510,110 L505,90 Z"/>
+        <path d="M630,165 L660,160 L675,175 L670,205 L655,225 L635,230 L620,215 L615,195 L618,175 Z"/>
+        <path d="M710,175 L740,165 L760,175 L765,195 L750,210 L730,215 L715,205 L708,190 Z"/>
+        <path d="M800,100 L815,95 L820,108 L808,115 L798,110 Z"/>
+        <path d="M810,115 L825,110 L828,122 L815,127 L808,120 Z"/>
+        <path d="M740,230 L765,225 L775,235 L768,248 L750,250 L738,242 Z"/>
+        <path d="M778,238 L800,233 L808,243 L800,253 L782,252 Z"/>
+        <path d="M760,300 L820,290 L860,295 L880,315 L885,345 L875,375 L850,395 L820,405 L790,400 L765,385 L752,360 L750,330 L753,308 Z"/>
+        <path d="M895,375 L908,368 L912,382 L904,392 L895,388 Z"/>
+        <path d="M900,393 L912,388 L916,400 L907,410 L897,405 Z"/>
+        <path d="M510,55 L580,45 L660,40 L740,42 L800,48 L840,58 L840,75 L820,70 L750,65 L670,60 L590,58 L510,65 Z"/>
+        <path d="M540,130 L575,125 L595,135 L598,155 L585,165 L560,165 L545,155 L538,143 Z"/>
+        <path d="M545,270 L555,262 L560,275 L555,292 L545,295 L540,283 Z"/>
+        <path d="M192,210 L202,207 L205,214 L198,218 L191,216 Z"/>
+        <path d="M95,70 L180,60 L220,65 L230,78 L220,85 L180,75 L95,80 Z"/>
+        <path d="M785,175 L798,170 L802,180 L794,188 L784,185 Z"/>
+      </g>
+      <g stroke="#c0cfd8" stroke-width="0.3" fill="none">
+        <line x1="83" y1="0" x2="83" y2="500"/><line x1="167" y1="0" x2="167" y2="500"/>
+        <line x1="250" y1="0" x2="250" y2="500"/><line x1="333" y1="0" x2="333" y2="500"/>
+        <line x1="417" y1="0" x2="417" y2="500"/><line x1="500" y1="0" x2="500" y2="500"/>
+        <line x1="583" y1="0" x2="583" y2="500"/><line x1="667" y1="0" x2="667" y2="500"/>
+        <line x1="750" y1="0" x2="750" y2="500"/><line x1="833" y1="0" x2="833" y2="500"/>
+        <line x1="917" y1="0" x2="917" y2="500"/>
+        <line x1="0" y1="83" x2="1000" y2="83"/><line x1="0" y1="167" x2="1000" y2="167"/>
+        <line x1="0" y1="250" x2="1000" y2="250" stroke="#b0c0c8" stroke-width="0.8"/>
+        <line x1="0" y1="333" x2="1000" y2="333"/><line x1="0" y1="417" x2="1000" y2="417"/>
+      </g>
+      <g id="pinLayer"></g>
+    </svg>
+    <div class="map-tooltip" id="mapTooltip"></div>
+    <div class="map-credit">equirectangular projection</div>
+  </div>
+
+  <div class="detail-panel" id="detailPanel">
+    <button class="detail-close" onclick="closeDetail()">✕</button>
+    <div class="detail-inner">
+      <div id="detailImgWrap"></div>
+      <div class="detail-info">
+        <div class="detail-location" id="detailLocation"></div>
+        <div class="detail-sub" id="detailSub"></div>
+        <div class="detail-books" id="detailBooks"></div>
+        <div id="detailClues"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="map-loading" id="mapLoading">loading libraries<span class="dot-anim"></span></div>
+  <div class="library-list" id="libraryList"></div>
+  <div class="empty-map" id="emptyMapMsg" style="display:none;">no libraries yet. analyze one and add it to the map →</div>
+</div>
+
+<!-- ABOUT -->
+<div class="tab-panel" id="tab-about">
+  <div style="font-size:0.85rem; margin-bottom:1.5rem; line-height:1.8;">
+    <p style="margin-bottom:0.75rem;">
+      this is a side project. you know those wooden book boxes people put outside their houses?
+      i got curious whether you could figure out where one was just from a photo. turns out: kind of yes.
+    </p>
+    <p style="margin-bottom:0.75rem;">
+      it looks at background architecture, plants, sidewalk style, street furniture, and the library box itself
+      (paint, stickers, construction quality). victorian rowhouses read differently than noe valley bungalows.
+      succulents mean california. that kind of thing.
+    </p>
+    <p>
+      the community map grows whenever someone uploads a library and confirms the location.
+      eventually the goal is to have a proper sf map with every little free library in the city tagged.
+    </p>
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">on training a custom model — and when it becomes worth it</div>
+    this currently uses a general-purpose vision model zero-shot. it works surprisingly well because it already knows
+    what victorian architecture, bay area succulents, and german street signs look like. but a dedicated model
+    trained specifically on little free library photos would eventually outperform it — especially for fine-grained
+    tasks like distinguishing cole valley from inner sunset, or reading the book signal.
+    <br><br>
+    here is roughly what different dataset sizes unlock:
+    <br><br>
+    <strong>~200–500 photos</strong> — not enough. a fine-tuned classifier at this scale will probably underperform
+    zero-shot vision on location guessing because it has not seen enough geographic variety. the general model wins here.
+    this is also where the project currently lives, which is why the current approach is correct.
+    <br><br>
+    <strong>~500–2,000 photos</strong> — starting to get interesting, especially if well-labeled by neighborhood.
+    you could train a classifier competitive for SF-specific tasks (mission vs. noe valley) where the general model
+    is weakest. accuracy probably 60–70% on neighborhood-level guesses. this is also the threshold where
+    "books as location signal" becomes testable — do noe valley libraries skew literary fiction?
+    does the mission skew spanish-language? you need the data to find out.
+    <br><br>
+    <strong>~2,000–10,000 photos</strong> — worth fine-tuning properly. neighborhood-level accuracy climbs.
+    you have enough to start training on the book signal alongside the visual one.
+    this is the range where a dedicated model starts to feel justified over the API cost.
+    <br><br>
+    <strong>10,000+</strong> — now you have something. city-level accuracy globally, neighborhood-level in SF,
+    and enough labeled book data to say something real about the correlation between what is on the shelf
+    and where the library is. worth exploring a small vision-language model (CLIP variant) rather than just a classifier.
+    <br><br>
+    for now: zero-shot is the right call. revisit when this hits 2,000 confirmed uploads.
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">a note on the training data, courtesy of patrick</div>
+    the model has been exposed to approximately 5 little libraries from china and other hostels.
+    these are, as patrick correctly noted, pretty easy to guess — the signs are in chinese.
+    this means the model may be overconfident on chinese-language photos while being appropriately
+    humble about distinguishing cole valley from inner sunset. working on it.
+  </div>
+
+  <div class="note-box">
+    <div class="note-label">sf neighborhood specificity</div>
+    trained (loosely) on the following distinction logic: mission district (murals, painted ladies, dense),
+    noe valley (quieter, bungalows, craftsman), cole valley (near the park, quaint), castro (victorian rowhouses),
+    haight-ashbury, potrero hill, glen park, bernal heights, inner/outer sunset, inner/outer richmond,
+    pacific heights, nob hill. if it gets your neighborhood wrong, upload more photos.
+  </div>
+
+  <p style="font-size:0.85rem; color:#888;">
+    <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit and this
+    project is not affiliated with them in any way. this is just a side project.
+  </p>
+</div>
+
+<div class="footnote">
+  built by <a href="https://personal-website.dev">mackenzie sharp</a> ·
+  <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit
+</div>
+
+<!-- Firebase SDK (CDN, loads in real browser fine) -->
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
+import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js';
+
+// ─── FIREBASE CONFIG ──────────────────────────────────────────────────────────
+const firebaseConfig = {
+  apiKey: "AIzaSyA4cjH7C2gSfe4UfOn8_AXHDNqmlakkhqg",
+  authDomain: "library-ceb2f.firebaseapp.com",
+  projectId: "library-ceb2f",
+  storageBucket: "library-ceb2f.firebasestorage.app",
+  messagingSenderId: "466545129114",
+  appId: "1:466545129114:web:4f31880fdef03ad2081123",
+  measurementId: "G-QTVCXYHB5B"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const storage = getStorage(app);
+
+// ─── MAP PROJECTION ───────────────────────────────────────────────────────────
+const MAP_W = 1000, MAP_H = 500;
+function project(lat, lng) {
+  return { x: ((lng + 180) / 360) * MAP_W, y: ((90 - lat) / 180) * MAP_H };
+}
+
+// ─── CITY COORDS ──────────────────────────────────────────────────────────────
+const CITY_COORDS = {
+  'san francisco':[37.775,-122.419],'sf':[37.775,-122.419],
+  'noe valley':[37.750,-122.433],'mission district':[37.760,-122.415],
+  'mission':[37.760,-122.415],'castro':[37.762,-122.435],
+  'haight':[37.769,-122.447],'cole valley':[37.766,-122.450],
+  'potrero':[37.759,-122.400],'bernal':[37.740,-122.415],
+  'glen park':[37.733,-122.434],'sunset':[37.754,-122.485],
+  'richmond':[37.779,-122.483],'pacific heights':[37.793,-122.436],
+  'new york':[40.712,-74.006],'brooklyn':[40.678,-73.944],
+  'los angeles':[34.052,-118.244],'chicago':[41.878,-87.630],
+  'portland':[45.523,-122.676],'seattle':[47.606,-122.332],
+  'austin':[30.267,-97.743],'boston':[42.360,-71.059],
+  'london':[51.507,-0.128],'berlin':[52.520,13.405],
+  'paris':[48.857,2.347],'amsterdam':[52.370,4.895],
+  'barcelona':[41.390,2.154],'rome':[41.902,12.496],
+  'tokyo':[35.690,139.692],'kyoto':[35.011,135.768],
+  'seoul':[37.566,126.978],'beijing':[39.905,116.391],
+  'shanghai':[31.224,121.469],'sydney':[-33.869,151.209],
+  'melbourne':[-37.814,144.963],'toronto':[43.651,-79.347],
+  'vancouver':[49.283,-123.120],'montreal':[45.508,-73.554],
+  'mexico city':[19.433,-99.133],'buenos aires':[-34.604,-58.382],
+  'cape town':[-33.924,18.424],'nairobi':[-1.292,36.821],
+  'mumbai':[19.076,72.878],'singapore':[1.352,103.820],
+};
+
+function getCoordsForLocation(city, neighborhood) {
+  const s = ((neighborhood||'') + ' ' + (city||'')).toLowerCase();
+  for (const [key, coords] of Object.entries(CITY_COORDS)) {
+    if (s.includes(key)) return [...coords];
+  }
+  return [10 + (Math.random()-0.5)*60, (Math.random()-0.5)*300];
+}
+
+function jitter(c) {
+  return [c[0] + (Math.random()-0.5)*0.4, c[1] + (Math.random()-0.5)*0.4];
+}
+
+// ─── STATE ────────────────────────────────────────────────────────────────────
+let libraries = [];
+let currentResult = null, currentFile = null, currentImgBase64 = null, currentImgType = null;
+let selectedId = null, loadingInterval;
+
+const LOADING_MSGS = [
+  'reading the clues','checking the architecture','inspecting the plants',
+  'consulting the street signs','cross-referencing the paint','triangulating vibes',
+];
+
+// ─── TABS ─────────────────────────────────────────────────────────────────────
+window.switchTab = function(name) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  ['analyze','map','about'].forEach((n,i) => {
+    if (n === name) document.querySelectorAll('.tab-btn')[i].classList.add('active');
+  });
+  if (name === 'map') loadAndRenderMap();
+};
+
+// ─── ANALYZE ──────────────────────────────────────────────────────────────────
+const fileInput       = document.getElementById('fileInput');
+const uploadZone      = document.getElementById('uploadZone');
+const previewSection  = document.getElementById('previewSection');
+const previewImg      = document.getElementById('previewImg');
+const analyzeBtn      = document.getElementById('analyzeBtn');
+const resetBtn        = document.getElementById('resetBtn');
+const analyzeAgainBtn = document.getElementById('analyzeAgainBtn');
+const loadingState    = document.getElementById('loadingState');
+const loadingMsg      = document.getElementById('loadingMsg');
+const errorState      = document.getElementById('errorState');
+const resultsDiv      = document.getElementById('resultsDiv');
+const saveToMapBtn    = document.getElementById('saveToMapBtn');
+const saveStatus      = document.getElementById('saveStatus');
+
+uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
+uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e => {
+  e.preventDefault(); uploadZone.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f?.type.startsWith('image/')) loadFile(f);
+});
+fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+
+function loadFile(file) {
+  currentFile = file;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const url = e.target.result;
+    previewImg.src = url;
+    currentImgType = url.split(',')[0].match(/:(.*?);/)[1];
+    currentImgBase64 = url.split(',')[1];
+    uploadZone.style.display = 'none';
+    previewSection.classList.add('visible');
+    resultsDiv.classList.remove('visible');
+    errorState.classList.remove('visible');
+    currentResult = null;
+    saveStatus.textContent = '';
+    saveStatus.className = 'save-status';
+    saveToMapBtn.disabled = false;
+    saveToMapBtn.textContent = 'add to map →';
+  };
+  reader.readAsDataURL(file);
+}
+
+function reset() {
+  uploadZone.style.display = '';
+  previewSection.classList.remove('visible');
+  resultsDiv.classList.remove('visible');
+  errorState.classList.remove('visible');
+  loadingState.classList.remove('active');
+  fileInput.value = '';
+  currentFile = null; currentImgBase64 = null; currentResult = null;
+  analyzeBtn.disabled = false; analyzeBtn.textContent = 'analyze →';
+  saveStatus.textContent = '';
+  saveToMapBtn.disabled = false; saveToMapBtn.textContent = 'add to map →';
+}
+
+resetBtn.addEventListener('click', reset);
+analyzeAgainBtn.addEventListener('click', reset);
+
+analyzeBtn.addEventListener('click', async () => {
+  if (!currentImgBase64) return;
+  analyzeBtn.disabled = true; analyzeBtn.textContent = 'analyzing...';
+  resultsDiv.classList.remove('visible'); errorState.classList.remove('visible');
+  loadingState.classList.add('active'); saveStatus.textContent = '';
+
+  let i = 0; loadingMsg.textContent = LOADING_MSGS[0];
+  loadingInterval = setInterval(() => { i=(i+1)%LOADING_MSGS.length; loadingMsg.textContent=LOADING_MSGS[i]; }, 2000);
+
+  try {
+    // calls your existing /api/anthropic.js — no changes needed there
+    const resp = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1200,
+        messages: [{ role: 'user', content: [
+          { type: 'image', source: { type: 'base64', media_type: currentImgType, data: currentImgBase64 } },
+          { type: 'text', text: `You are an expert at analyzing photos of Little Free Libraries (small wooden book-sharing boxes on posts in residential neighborhoods) and determining where they are located from visual clues.
+
+Analyze everything visible: architectural style of background buildings, vegetation and plant species, sidewalk/pavement type, street furniture, climate indicators, the library box design and any decorations or stickers, fencing, garden style, urban density, any readable text or signs.
+
+For San Francisco: distinguish between Mission District (painted Victorians, murals, dense rowhouses), Noe Valley (quieter, bungalows, Craftsman), Cole Valley (near Golden Gate Park, quaint), Castro, Haight-Ashbury, Potrero Hill, Glen Park, Bernal Heights, Inner/Outer Sunset, Inner/Outer Richmond, Pacific Heights, Nob Hill.
+
+Also look for visible book titles or spines in the library box — list any you can make out.
+
+Respond ONLY in this exact JSON, no markdown, no backticks:
+{
+  "primaryLocation": {
+    "city": "city or region",
+    "neighborhood": "specific neighborhood if identifiable, else empty string",
+    "confidence": "high or medium or low",
+    "reason": "one concise sentence of primary visual evidence"
+  },
+  "clues": ["specific visual clue and what it suggests geographically","another clue","another clue"],
+  "alternatives": [
+    {"location": "place", "probability": "25%"},
+    {"location": "place", "probability": "15%"},
+    {"location": "place", "probability": "10%"}
+  ],
+  "books": ["book title if readable"]
+}` }
+        ]}]
+      })
+    });
+
+    clearInterval(loadingInterval); loadingState.classList.remove('active');
+    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || `api error ${resp.status}`); }
+    const data = await resp.json();
+    const text = data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
+    currentResult = JSON.parse(text);
+    renderResults(currentResult);
+  } catch(err) {
+    clearInterval(loadingInterval); loadingState.classList.remove('active');
+    analyzeBtn.disabled = false; analyzeBtn.textContent = 'try again →';
+    errorState.textContent = `something went wrong: ${err.message||'unknown error'}`;
+    errorState.classList.add('visible');
+  }
+});
+
+function renderResults(r) {
+  const loc = r.primaryLocation || {};
+  document.getElementById('cityResult').textContent = loc.city || '?';
+  const badge = document.getElementById('confidenceBadge');
+  badge.textContent = loc.confidence || 'low';
+  badge.className = 'confidence ' + (loc.confidence || 'low');
+  document.getElementById('neighborhoodResult').textContent =
+    (loc.neighborhood ? loc.neighborhood + ' · ' : '') + (loc.reason || '');
+
+  const cluesList = document.getElementById('cluesList');
+  cluesList.innerHTML = '';
+  (r.clues||[]).forEach(c => { const d=document.createElement('div'); d.className='clue'; d.textContent=c; cluesList.appendChild(d); });
+
+  const altList = document.getElementById('altList');
+  altList.innerHTML = '';
+  (r.alternatives||[]).forEach(a => { const t=document.createElement('div'); t.className='alt-tag'; t.innerHTML=`${a.location||''}<span class="pct">${a.probability||''}</span>`; altList.appendChild(t); });
+
+  const books = (r.books||[]).filter(b=>b&&b.trim());
+  const booksSection = document.getElementById('booksSection');
+  if (books.length) { document.getElementById('booksList').textContent = books.join(', '); booksSection.style.display='block'; }
+  else { booksSection.style.display='none'; }
+
+  analyzeBtn.disabled = false; analyzeBtn.textContent = 'analyze →';
+  resultsDiv.classList.add('visible');
+}
+
+// ─── SAVE TO FIREBASE ─────────────────────────────────────────────────────────
+saveToMapBtn.addEventListener('click', async () => {
+  if (!currentResult || !currentFile) return;
+
+  saveToMapBtn.disabled = true;
+  saveToMapBtn.textContent = 'saving...';
+  saveStatus.textContent = '';
+  saveStatus.className = 'save-status';
+
+  try {
+    const loc = currentResult.primaryLocation || {};
+    const base = getCoordsForLocation(loc.city, loc.neighborhood);
+    const [lat, lng] = jitter(base);
+
+    // 1. upload photo to Firebase Storage
+    const filename = `library-photos/${Date.now()}_${currentFile.name.replace(/[^a-z0-9.]/gi,'_')}`;
+    const storageRef = ref(storage, filename);
+    await uploadBytes(storageRef, currentFile);
+    const imageUrl = await getDownloadURL(storageRef);
+
+    // 2. save metadata to Firestore
+    await addDoc(collection(db, 'libraries'), {
+      city: loc.city || 'Unknown',
+      neighborhood: loc.neighborhood || '',
+      confidence: loc.confidence || 'low',
+      reason: loc.reason || '',
+      clues: currentResult.clues || [],
+      books: (currentResult.books||[]).filter(b=>b&&b.trim()),
+      imageUrl,
+      lat,
+      lng,
+      addedAt: serverTimestamp(),
+    });
+
+    saveStatus.textContent = '✓ added to map';
+    saveStatus.className = 'save-status ok';
+    saveToMapBtn.textContent = 'added ✓';
+
+  } catch(err) {
+    saveToMapBtn.disabled = false;
+    saveToMapBtn.textContent = 'add to map →';
+    saveStatus.textContent = `save failed: ${err.message}`;
+    saveStatus.className = 'save-status err';
+  }
+});
+
+// ─── MAP ──────────────────────────────────────────────────────────────────────
+let mapLoaded = false;
+
+async function loadAndRenderMap() {
+  const mapLoadingEl = document.getElementById('mapLoading');
+  mapLoadingEl.style.display = 'block';
+
+  try {
+    const q = query(collection(db, 'libraries'), orderBy('addedAt', 'desc'));
+    const snapshot = await getDocs(q);
+    libraries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    mapLoaded = true;
+  } catch(err) {
+    mapLoadingEl.textContent = `couldn't load libraries: ${err.message}`;
+    return;
+  }
+
+  mapLoadingEl.style.display = 'none';
+  updateStats();
+  renderPins();
+  renderList();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = libraries.length;
+  document.getElementById('statCities').textContent = new Set(libraries.map(l=>l.city)).size;
+
+  if (libraries.length > 0) {
+    // addedAt is a Firestore Timestamp — convert to ms
+    const latest = libraries[0]; // already ordered desc
+    const ts = latest.addedAt?.toMillis ? latest.addedAt.toMillis() : Date.now();
+    const days = Math.floor((Date.now() - ts) / 86400000);
+    document.getElementById('statLastUpdated').textContent =
+      days === 0 ? 'today' : days === 1 ? 'yesterday' : days + 'd ago';
+  }
+}
+
+function renderPins() {
+  const pinLayer = document.getElementById('pinLayer');
+  if (!pinLayer) return;
+  pinLayer.innerHTML = '';
+
+  libraries.forEach(lib => {
+    if (lib.lat == null || lib.lng == null) return;
+    const { x, y } = project(lib.lat, lib.lng);
+    const isSelected = lib.id === selectedId;
+    const label = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
+
+    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+    g.setAttribute('class', 'map-pin-group');
+    g.setAttribute('data-id', lib.id);
+
+    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    circle.setAttribute('cx', x); circle.setAttribute('cy', y);
+    circle.setAttribute('r', isSelected ? 10 : 7);
+    circle.setAttribute('fill', isSelected ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.07)');
+    g.appendChild(circle);
+
+    const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
+    fo.setAttribute('x', x-9); fo.setAttribute('y', y-20);
+    fo.setAttribute('width', 18); fo.setAttribute('height', 20);
+    fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${isSelected?'16':'13'}px;line-height:1;text-align:center;cursor:pointer;">📚</div>`;
+    g.appendChild(fo);
+
+    g.addEventListener('click', () => selectLibrary(lib.id));
+    g.addEventListener('mouseenter', e => showTooltip(e, lib, label));
+    g.addEventListener('mouseleave', hideTooltip);
+    pinLayer.appendChild(g);
+  });
+}
+
+function showTooltip(e, lib, label) {
+  const tooltip = document.getElementById('mapTooltip');
+  const wrap = document.getElementById('mapWrap');
+  const rect = wrap.getBoundingClientRect();
+  const books = lib.books?.length ? `<div style="font-style:italic;color:#555;">${lib.books.slice(0,2).join(', ')}</div>` : '';
+  tooltip.innerHTML = `<div style="font-weight:bold">${label}</div>${books}<div style="color:#aaa;font-size:0.68rem">${lib.confidence||'?'} confidence</div>`;
+  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
+  tooltip.style.left = Math.min(mx+10, wrap.offsetWidth-195) + 'px';
+  tooltip.style.top = Math.max(my-60, 4) + 'px';
+  tooltip.classList.add('visible');
+}
+
+function hideTooltip() { document.getElementById('mapTooltip').classList.remove('visible'); }
+
+function renderList() {
+  const list = document.getElementById('libraryList');
+  const empty = document.getElementById('emptyMapMsg');
+  if (libraries.length === 0) { list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display = 'none'; list.innerHTML = '';
+
+  libraries.forEach(lib => {
+    const card = document.createElement('div');
+    card.className = 'library-card' + (lib.id === selectedId ? ' selected' : '');
+
+    const thumbHtml = lib.imageUrl
+      ? `<img class="card-thumb" src="${lib.imageUrl}" alt="" loading="lazy">`
+      : `<div class="card-thumb-placeholder">📚</div>`;
+
+    // Firestore timestamps need .toDate()
+    const addedAt = lib.addedAt?.toDate ? lib.addedAt.toDate() : new Date();
+    const dateStr = addedAt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
+    const locationStr = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
+    const booksStr = lib.books?.length ? lib.books.slice(0,3).join(', ') + (lib.books.length>3?'...':'') : '';
+
+    card.innerHTML = `${thumbHtml}
+      <div class="card-body">
+        <div class="card-location">${locationStr}</div>
+        <div class="card-meta">added ${dateStr}</div>
+        ${booksStr ? `<div class="card-books">${booksStr}</div>` : ''}
+      </div>
+      <div class="card-conf ${lib.confidence||'low'}">${lib.confidence||'low'}</div>`;
+
+    card.addEventListener('click', () => selectLibrary(lib.id));
+    list.appendChild(card);
+  });
+}
+
+function selectLibrary(id) {
+  selectedId = id;
+  const lib = libraries.find(l => l.id === id);
+  if (!lib) return;
+  renderPins(); renderList();
+  showDetail(lib);
+  document.getElementById('detailPanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+}
+
+function showDetail(lib) {
+  if (!lib) return;
+  const imgWrap = document.getElementById('detailImgWrap');
+  imgWrap.innerHTML = lib.imageUrl
+    ? `<img class="detail-img" src="${lib.imageUrl}" alt="">`
+    : `<div class="detail-img-placeholder">📚</div>`;
+
+  document.getElementById('detailLocation').textContent = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
+
+  const addedAt = lib.addedAt?.toDate ? lib.addedAt.toDate() : new Date();
+  const dateStr = addedAt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
+  document.getElementById('detailSub').innerHTML =
+    `<span class="card-conf ${lib.confidence||'low'}" style="margin-right:0.5rem">${lib.confidence||'low'} confidence</span>added ${dateStr}`;
+  document.getElementById('detailBooks').textContent = lib.books?.length ? lib.books.join(', ') : 'no books identified';
+  document.getElementById('detailClues').innerHTML = (lib.clues||[]).map(c=>`<div class="detail-clue">${c}</div>`).join('');
+  document.getElementById('detailPanel').classList.add('visible');
+}
+
+window.closeDetail = function() {
+  document.getElementById('detailPanel').classList.remove('visible');
+  selectedId = null; renderPins(); renderList();
+};
+
+</script>
+</body>
+</html>
