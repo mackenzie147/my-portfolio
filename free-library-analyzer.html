@@ -3,57 +3,46 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>little free library analyzer</title>
+<title>little library analyzer</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
   body {
-    background: #fff;
-    color: #111;
+    background: #fff; color: #111;
     font-family: 'Courier Prime', 'Courier New', monospace;
-    font-size: 15px;
-    line-height: 1.6;
-    max-width: 720px;
-    margin: 0 auto;
+    font-size: 15px; line-height: 1.6;
+    max-width: 720px; margin: 0 auto;
     padding: 2rem 1.5rem 6rem;
   }
 
-  a { color: #111; }
-  a:hover { color: #888; }
+  a { color: #111; } a:hover { color: #888; }
   hr { border: none; border-top: 1px solid #ddd; margin: 1.5rem 0; }
 
   .tabs { display: flex; margin-bottom: 2rem; border-bottom: 1px solid #ddd; }
   .tab-btn {
-    font-family: 'Courier Prime', monospace;
-    font-size: 0.85rem;
-    background: none; border: none;
-    border-bottom: 2px solid transparent;
-    padding: 0.5rem 1.2rem 0.5rem 0;
-    cursor: pointer; color: #aaa;
-    margin-bottom: -1px; letter-spacing: 0.02em;
-    transition: color 0.15s;
+    font-family: 'Courier Prime', monospace; font-size: 0.85rem;
+    background: none; border: none; border-bottom: 2px solid transparent;
+    padding: 0.5rem 1.2rem 0.5rem 0; cursor: pointer; color: #aaa;
+    margin-bottom: -1px; letter-spacing: 0.02em; transition: color 0.15s;
   }
   .tab-btn.active { color: #111; border-bottom-color: #111; }
   .tab-btn:hover { color: #555; }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
+  .tab-panel { display: none; } .tab-panel.active { display: block; }
 
+  /* upload */
   .upload-zone {
-    border: 1px dashed #aaa;
-    padding: 2.5rem 1.5rem;
+    border: 1px dashed #aaa; padding: 2.5rem 1.5rem;
     text-align: center; cursor: pointer;
-    position: relative; transition: background 0.15s;
-    margin-bottom: 1.5rem;
+    position: relative; transition: background 0.15s; margin-bottom: 1.5rem;
   }
   .upload-zone:hover, .upload-zone.dragover { background: #f9f9f9; border-color: #555; }
   .upload-zone input[type="file"] { position: absolute; inset: 0; opacity: 0; cursor: pointer; }
   .upload-zone .upload-main { font-size: 0.9rem; margin-bottom: 0.2rem; }
   .upload-zone .upload-sub { font-size: 0.75rem; color: #aaa; }
 
-  .preview-section { display: none; }
-  .preview-section.visible { display: block; }
+  .preview-section { display: none; } .preview-section.visible { display: block; }
 
   .img-and-btn { display: flex; gap: 1.5rem; align-items: flex-start; margin-bottom: 1.5rem; }
   .img-wrap img { width: 200px; display: block; border: 1px solid #ddd; }
@@ -61,59 +50,98 @@
   .img-controls .label { font-size: 0.75rem; color: #888; }
 
   button {
-    font-family: 'Courier Prime', monospace;
-    font-size: 0.8rem; background: #111; color: #fff;
-    border: none; padding: 0.5rem 1rem; cursor: pointer;
-    letter-spacing: 0.03em; transition: background 0.15s; white-space: nowrap;
+    font-family: 'Courier Prime', monospace; font-size: 0.8rem;
+    background: #111; color: #fff; border: none; padding: 0.5rem 1rem;
+    cursor: pointer; letter-spacing: 0.03em; transition: background 0.15s; white-space: nowrap;
   }
   button:hover { background: #333; }
   button:disabled { background: #aaa; cursor: wait; }
   button.secondary { background: #fff; color: #888; border: 1px solid #ddd; }
   button.secondary:hover { color: #111; border-color: #aaa; }
+  button.yes { background: #111; }
+  button.no { background: #fff; color: #111; border: 1px solid #111; }
+  button.no:hover { background: #f0f0f0; }
 
-  .dot-anim::after {
-    content: ''; animation: dots 1.5s steps(4, end) infinite;
-  }
-  @keyframes dots {
-    0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'}
-  }
+  .dot-anim::after { content: ''; animation: dots 1.5s steps(4,end) infinite; }
+  @keyframes dots { 0%{content:''} 25%{content:'.'} 50%{content:'..'} 75%{content:'...'} }
 
   .loading { display: none; font-size: 0.85rem; color: #888; margin-bottom: 1rem; }
   .loading.active { display: block; }
   .error { display: none; font-size: 0.85rem; color: #c00; border-left: 2px solid #c00; padding-left: 0.75rem; margin-bottom: 1rem; }
   .error.visible { display: block; }
-  .results { display: none; }
-  .results.visible { display: block; }
+  .results { display: none; } .results.visible { display: block; }
 
-  .result-location { margin-bottom: 1rem; }
-  .result-location .big { font-size: 1.2rem; font-weight: bold; }
-  .confidence {
-    display: inline-block; font-size: 0.68rem;
-    background: #111; color: #fff;
-    padding: 0.1rem 0.4rem; margin-left: 0.5rem;
-    vertical-align: middle; position: relative; top: -2px; letter-spacing: 0.05em;
+  /* analysis cards */
+  .analysis-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    margin-bottom: 1.25rem;
+    border: 1px solid #eee;
   }
-  .confidence.medium { background: #888; }
-  .confidence.low { background: #ccc; color: #555; }
-  .result-location .neighborhood { font-size: 0.85rem; color: #555; margin-top: 0.1rem; }
 
-  .clues { margin-bottom: 1.25rem; }
-  .clues-label { font-size: 0.75rem; color: #888; margin-bottom: 0.4rem; }
-  .clue { font-size: 0.85rem; padding-left: 1.2rem; position: relative; margin-bottom: 0.2rem; color: #333; }
+  .analysis-cell {
+    padding: 0.85rem 1rem;
+    border-right: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+  }
+  .analysis-cell:nth-child(2n) { border-right: none; }
+  .analysis-cell:nth-last-child(-n+2) { border-bottom: none; }
+  .analysis-cell.full-width {
+    grid-column: 1 / -1;
+    border-right: none;
+  }
+
+  .cell-label {
+    font-size: 0.65rem; letter-spacing: 0.12em;
+    text-transform: uppercase; color: #bbb; margin-bottom: 0.25rem;
+  }
+  .cell-value { font-size: 0.9rem; color: #111; font-weight: bold; margin-bottom: 0.2rem; }
+  .cell-sub { font-size: 0.78rem; color: #555; line-height: 1.5; }
+
+  /* confidence bar */
+  .conf-row { display: flex; align-items: center; gap: 0.5rem; margin-top: 0.3rem; }
+  .conf-bar { flex: 1; height: 3px; background: #eee; }
+  .conf-fill { height: 100%; background: #111; transition: width 0.3s; }
+  .conf-fill.medium { background: #888; }
+  .conf-fill.low { background: #ccc; }
+  .conf-label { font-size: 0.68rem; color: #888; white-space: nowrap; }
+
+  .clue { font-size: 0.82rem; padding-left: 1.2rem; position: relative; margin-bottom: 0.2rem; color: #333; }
   .clue::before { content: '→'; position: absolute; left: 0; color: #bbb; }
 
-  .alternatives { font-size: 0.8rem; color: #888; margin-bottom: 1rem; }
-  .alternatives-label { margin-bottom: 0.3rem; }
-  .alt-list { display: flex; flex-wrap: wrap; gap: 0.4rem; }
-  .alt-tag { border: 1px solid #ddd; padding: 0.15rem 0.5rem; font-size: 0.75rem; color: #666; }
+  .alt-list { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.3rem; }
+  .alt-tag { border: 1px solid #ddd; padding: 0.15rem 0.5rem; font-size: 0.72rem; color: #666; }
   .alt-tag .pct { color: #bbb; margin-left: 0.3rem; }
 
+  /* was this right flow */
+  .verify-section {
+    border: 1px solid #eee; padding: 1.1rem 1.25rem;
+    margin-bottom: 1rem;
+  }
+  .verify-q { font-size: 0.85rem; margin-bottom: 0.75rem; }
+  .verify-q strong { font-weight: bold; }
+  .verify-btns { display: flex; gap: 0.6rem; margin-bottom: 0; }
+
+  .correction-form { display: none; margin-top: 1rem; }
+  .correction-form.visible { display: block; }
+
+  .form-row { margin-bottom: 0.75rem; }
+  .form-label { font-size: 0.72rem; color: #888; margin-bottom: 0.25rem; letter-spacing: 0.05em; }
+  .form-input {
+    width: 100%; font-family: 'Courier Prime', monospace; font-size: 0.85rem;
+    border: 1px solid #ddd; padding: 0.4rem 0.6rem;
+    color: #111; background: #fff;
+  }
+  .form-input:focus { outline: none; border-color: #aaa; }
+  select.form-input { cursor: pointer; }
+
   .save-row { display: flex; align-items: center; gap: 1rem; margin-top: 0.75rem; }
-  .save-status { font-size: 0.75rem; color: #888; }
+  .save-status { font-size: 0.75rem; }
   .save-status.ok { color: #2a7a2a; }
   .save-status.err { color: #c00; }
 
-  /* MAP */
+  /* map */
   .map-stats { display: flex; gap: 2rem; margin-bottom: 1.25rem; font-size: 0.8rem; }
   .map-stat .num { font-weight: bold; font-size: 1.1rem; color: #111; }
   .map-stat .lbl { color: #aaa; font-size: 0.72rem; }
@@ -130,12 +158,13 @@
     padding: 0.4rem 0.6rem; font-size: 0.72rem;
     font-family: 'Courier Prime', monospace;
     pointer-events: none; display: none; z-index: 10;
-    max-width: 180px; line-height: 1.4;
+    max-width: 190px; line-height: 1.4;
     box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
   }
   .map-tooltip.visible { display: block; }
-  .map-credit { position: absolute; bottom: 4px; right: 6px; font-size: 0.6rem; color: #bbb; font-family: 'Courier Prime', monospace; }
+  .map-credit { position: absolute; bottom: 4px; right: 6px; font-size: 0.6rem; color: #bbb; }
 
+  /* card list */
   .library-list { display: flex; flex-direction: column; }
   .library-card {
     border: 1px solid #eee; border-bottom: none;
@@ -146,17 +175,18 @@
   .library-card:last-child { border-bottom: 1px solid #eee; }
   .library-card:hover { background: #fafafa; }
   .library-card.selected { background: #f5f5f5; border-left: 2px solid #111; }
-
   .card-thumb { width: 56px; height: 56px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; display: block; }
   .card-thumb-placeholder { width: 56px; height: 56px; background: #f0f0f0; border: 1px solid #ddd; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
   .card-body { flex: 1; min-width: 0; }
-  .card-location { font-weight: bold; font-size: 0.88rem; margin-bottom: 0.1rem; }
-  .card-meta { font-size: 0.72rem; color: #888; }
-  .card-books { font-size: 0.78rem; color: #555; font-style: italic; }
+  .card-location { font-weight: bold; font-size: 0.88rem; margin-bottom: 0.05rem; }
+  .card-venue { font-size: 0.75rem; color: #888; font-style: italic; margin-bottom: 0.05rem; }
+  .card-meta { font-size: 0.72rem; color: #aaa; }
+  .card-books { font-size: 0.75rem; color: #555; font-style: italic; margin-top: 0.1rem; }
   .card-conf { font-size: 0.65rem; background: #111; color: #fff; padding: 0.08rem 0.35rem; letter-spacing: 0.05em; white-space: nowrap; align-self: flex-start; margin-top: 0.2rem; }
   .card-conf.medium { background: #888; }
   .card-conf.low { background: #ccc; color: #555; }
 
+  /* detail panel */
   .detail-panel { display: none; border: 1px solid #ddd; padding: 1.25rem; margin-bottom: 1.5rem; background: #fafafa; position: relative; }
   .detail-panel.visible { display: block; }
   .detail-close { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: #aaa; font-size: 1rem; cursor: pointer; padding: 0; }
@@ -165,10 +195,11 @@
   .detail-img { width: 120px; height: 120px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
   .detail-img-placeholder { width: 120px; height: 120px; background: #f0f0f0; border: 1px solid #ddd; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
   .detail-info { flex: 1; min-width: 0; }
-  .detail-location { font-weight: bold; font-size: 1rem; margin-bottom: 0.15rem; }
-  .detail-sub { font-size: 0.78rem; color: #888; margin-bottom: 0.4rem; }
+  .detail-location { font-weight: bold; font-size: 1rem; margin-bottom: 0.1rem; }
+  .detail-venue { font-size: 0.8rem; color: #888; font-style: italic; margin-bottom: 0.3rem; }
+  .detail-sub { font-size: 0.75rem; color: #aaa; margin-bottom: 0.4rem; }
   .detail-books { font-size: 0.82rem; color: #555; font-style: italic; margin-bottom: 0.4rem; }
-  .detail-clue { font-size: 0.78rem; color: #555; padding-left: 1rem; position: relative; margin-bottom: 0.15rem; }
+  .detail-clue { font-size: 0.75rem; color: #555; padding-left: 1rem; position: relative; margin-bottom: 0.15rem; }
   .detail-clue::before { content: '→'; position: absolute; left: 0; color: #ccc; }
 
   .empty-map { text-align: center; padding: 3rem 1rem; color: #aaa; font-size: 0.85rem; }
@@ -185,6 +216,9 @@
     .img-wrap img { width: 100%; }
     .detail-inner { flex-direction: column; }
     .map-stats { gap: 1rem; }
+    .analysis-grid { grid-template-columns: 1fr; }
+    .analysis-cell:nth-child(2n) { border-right: 1px solid #eee; }
+    .analysis-cell.full-width { border-right: none; }
   }
 </style>
 </head>
@@ -192,34 +226,34 @@
 
 <p style="font-size:0.8rem; color:#aaa; margin-bottom:1.5rem;">← <a href="https://personal-website.dev">mackenzie sharp</a></p>
 
-<h1 style="margin-bottom:0.2rem;">little free library analyzer</h1>
-<div style="font-size:0.85rem; color:#888; margin-bottom:1.75rem;">upload a photo → get a location guess + add it to the community map</div>
+<h1 style="margin-bottom:0.2rem;">little library analyzer</h1>
+<div style="font-size:0.85rem; color:#888; margin-bottom:1.75rem;">upload any photo with books in it → i'll guess where it is and what kind of place it is</div>
 
 <div class="tabs">
-  <button class="tab-btn active" onclick="switchTab('analyze')">analyze a library</button>
+  <button class="tab-btn active" onclick="switchTab('analyze')">analyze</button>
   <button class="tab-btn" onclick="switchTab('map')">community map</button>
   <button class="tab-btn" onclick="switchTab('about')">about</button>
 </div>
 
-<!-- ANALYZE -->
+<!-- ═══ ANALYZE ═══ -->
 <div class="tab-panel active" id="tab-analyze">
   <p style="font-size:0.85rem; margin-bottom:0.75rem;">
-    upload a photo of a little free library and i'll guess where it is based on what's visible —
-    architecture, plants, street furniture, general vibe. works for specific sf neighborhoods and globally.
+    any photo with books in it — little free library, cafe shelf, bookshop, hostel common room, someone's apartment.
+    i'll guess the location, venue type, book languages, genre vibe, and what's going on in the background.
   </p>
   <p style="font-size:0.85rem; margin-bottom:1.25rem;">
-    if the guess is right (or close enough), you can add it to the <span style="text-decoration:underline; cursor:pointer;" onclick="switchTab('map')">community map</span>.
+    after the analysis you can confirm or correct it, then add it to the <span style="text-decoration:underline; cursor:pointer;" onclick="switchTab('map')">community map</span>.
   </p>
 
   <div class="upload-zone" id="uploadZone">
     <input type="file" accept="image/*" id="fileInput">
     <div class="upload-main">drop a photo here, or click to upload</div>
-    <div class="upload-sub">jpg / png / webp</div>
+    <div class="upload-sub">little free library · cafe · bookshop · hostel · anywhere with books</div>
   </div>
 
   <div class="preview-section" id="previewSection">
     <div class="img-and-btn">
-      <div class="img-wrap"><img id="previewImg" src="" alt="your library photo"></div>
+      <div class="img-wrap"><img id="previewImg" src="" alt="your photo"></div>
       <div class="img-controls">
         <div class="label">your photo ↑</div>
         <button id="analyzeBtn">analyze →</button>
@@ -233,30 +267,122 @@
     <div class="error" id="errorState"></div>
 
     <div class="results" id="resultsDiv">
-      <div class="result-location">
-        <span class="big" id="cityResult"></span><span class="confidence" id="confidenceBadge"></span>
-        <div class="neighborhood" id="neighborhoodResult"></div>
+
+      <!-- analysis grid -->
+      <div class="analysis-grid" id="analysisGrid">
+
+        <div class="analysis-cell full-width" id="cellLocation">
+          <div class="cell-label">location</div>
+          <div class="cell-value" id="locCity">—</div>
+          <div class="cell-sub" id="locNeighborhood"></div>
+          <div class="conf-row">
+            <div class="conf-bar"><div class="conf-fill" id="locConfFill" style="width:0%"></div></div>
+            <div class="conf-label" id="locConfLabel">—</div>
+          </div>
+          <div class="cell-sub" style="margin-top:0.3rem; color:#888;" id="locReason"></div>
+        </div>
+
+        <div class="analysis-cell" id="cellVenue">
+          <div class="cell-label">venue type</div>
+          <div class="cell-value" id="venueType">—</div>
+          <div class="conf-row">
+            <div class="conf-bar"><div class="conf-fill" id="venueConfFill" style="width:0%"></div></div>
+            <div class="conf-label" id="venueConfLabel">—</div>
+          </div>
+          <div class="cell-sub" style="margin-top:0.3rem;" id="venueDesc"></div>
+        </div>
+
+        <div class="analysis-cell" id="cellActivity">
+          <div class="cell-label">what's happening</div>
+          <div class="cell-value" id="activityVal">—</div>
+          <div class="conf-row">
+            <div class="conf-bar"><div class="conf-fill" id="activityConfFill" style="width:0%"></div></div>
+            <div class="conf-label" id="activityConfLabel">—</div>
+          </div>
+          <div class="cell-sub" style="margin-top:0.3rem;" id="activityDesc"></div>
+        </div>
+
+        <div class="analysis-cell" id="cellLanguage">
+          <div class="cell-label">book language(s)</div>
+          <div class="cell-value" id="langVal">—</div>
+          <div class="conf-row">
+            <div class="conf-bar"><div class="conf-fill" id="langConfFill" style="width:0%"></div></div>
+            <div class="conf-label" id="langConfLabel">—</div>
+          </div>
+          <div class="cell-sub" style="margin-top:0.3rem;" id="langDesc"></div>
+        </div>
+
+        <div class="analysis-cell" id="cellGenre">
+          <div class="cell-label">collection vibe</div>
+          <div class="cell-value" id="genreVal">—</div>
+          <div class="conf-row">
+            <div class="conf-bar"><div class="conf-fill" id="genreConfFill" style="width:0%"></div></div>
+            <div class="conf-label" id="genreConfLabel">—</div>
+          </div>
+          <div class="cell-sub" style="margin-top:0.3rem;" id="genreDesc"></div>
+        </div>
+
+        <div class="analysis-cell full-width">
+          <div class="cell-label">books spotted</div>
+          <div class="cell-sub" id="booksVal" style="font-style:italic;">none readable</div>
+        </div>
+
+        <div class="analysis-cell full-width">
+          <div class="cell-label">visual clues</div>
+          <div id="cluesList"></div>
+        </div>
+
+        <div class="analysis-cell full-width">
+          <div class="cell-label">also possibly</div>
+          <div class="alt-list" id="altList"></div>
+        </div>
+
       </div>
-      <div class="clues">
-        <div class="clues-label">what gave it away:</div>
-        <div id="cluesList"></div>
-      </div>
-      <div class="alternatives">
-        <div class="alternatives-label">also possibly:</div>
-        <div class="alt-list" id="altList"></div>
-      </div>
-      <div id="booksSection" style="margin-bottom:1rem; display:none;">
-        <div class="clues-label">books spotted:</div>
-        <div id="booksList" style="font-size:0.85rem; font-style:italic; color:#555;"></div>
-      </div>
-      <hr>
-      <div style="margin-top:0.75rem;">
-        <div style="font-size:0.78rem; color:#888; margin-bottom:0.5rem;">is this right? add it to the community map:</div>
-        <div class="save-row">
-          <button id="saveToMapBtn">add to map →</button>
-          <span class="save-status" id="saveStatus"></span>
+
+      <!-- was this right -->
+      <div class="verify-section" id="verifySection">
+        <div class="verify-q">
+          was the location right? i guessed <strong id="verifyGuess">—</strong>
+        </div>
+        <div class="verify-btns">
+          <button class="yes" id="yesBtn">yes, looks right →</button>
+          <button class="no" id="noBtn">no, let me correct it</button>
+        </div>
+
+        <div class="correction-form" id="correctionForm">
+          <div class="form-row">
+            <div class="form-label">city / region</div>
+            <input class="form-input" id="corrCity" type="text" placeholder="e.g. San Francisco">
+          </div>
+          <div class="form-row">
+            <div class="form-label">neighborhood (optional)</div>
+            <input class="form-input" id="corrNeighborhood" type="text" placeholder="e.g. Noe Valley">
+          </div>
+          <div class="form-row">
+            <div class="form-label">venue type</div>
+            <select class="form-input" id="corrVenue">
+              <option value="">select one</option>
+              <option value="little free library">little free library</option>
+              <option value="cafe">cafe</option>
+              <option value="bookshop">bookshop</option>
+              <option value="hostel">hostel</option>
+              <option value="bar">bar</option>
+              <option value="home / apartment">home / apartment</option>
+              <option value="library">library</option>
+              <option value="hotel lobby">hotel lobby</option>
+              <option value="office">office</option>
+              <option value="other">other</option>
+            </select>
+          </div>
+          <button id="saveWithCorrectionBtn">add to map with correction →</button>
         </div>
       </div>
+
+      <div class="save-row" id="saveRow" style="display:none;">
+        <button id="saveToMapBtn">add to map →</button>
+        <span class="save-status" id="saveStatus"></span>
+      </div>
+
       <div style="margin-top:0.75rem;">
         <button class="secondary" id="analyzeAgainBtn">analyze another →</button>
       </div>
@@ -264,14 +390,14 @@
   </div>
 </div>
 
-<!-- MAP -->
+<!-- ═══ MAP ═══ -->
 <div class="tab-panel" id="tab-map">
   <p style="font-size:0.85rem; margin-bottom:1.25rem; color:#555;">
-    every library uploaded and confirmed. click any 📚 pin to see the photo, books, and confidence level.
+    every confirmed location. click any pin to see the photo, venue type, and books.
   </p>
 
   <div class="map-stats">
-    <div class="map-stat"><div class="num" id="statTotal">—</div><div class="lbl">libraries mapped</div></div>
+    <div class="map-stat"><div class="num" id="statTotal">—</div><div class="lbl">places mapped</div></div>
     <div class="map-stat"><div class="num" id="statCities">—</div><div class="lbl">cities</div></div>
     <div class="map-stat"><div class="num" id="statLastUpdated">—</div><div class="lbl">last updated</div></div>
   </div>
@@ -330,6 +456,7 @@
       <div id="detailImgWrap"></div>
       <div class="detail-info">
         <div class="detail-location" id="detailLocation"></div>
+        <div class="detail-venue" id="detailVenue"></div>
         <div class="detail-sub" id="detailSub"></div>
         <div class="detail-books" id="detailBooks"></div>
         <div id="detailClues"></div>
@@ -337,26 +464,28 @@
     </div>
   </div>
 
-  <div class="map-loading" id="mapLoading">loading libraries<span class="dot-anim"></span></div>
+  <div class="map-loading" id="mapLoading" style="display:none;">loading<span class="dot-anim"></span></div>
   <div class="library-list" id="libraryList"></div>
-  <div class="empty-map" id="emptyMapMsg" style="display:none;">no libraries yet. analyze one and add it to the map →</div>
+  <div class="empty-map" id="emptyMapMsg" style="display:none;">no places mapped yet. analyze one and add it →</div>
 </div>
 
-<!-- ABOUT -->
+<!-- ═══ ABOUT ═══ -->
 <div class="tab-panel" id="tab-about">
   <div style="font-size:0.85rem; margin-bottom:1.5rem; line-height:1.8;">
     <p style="margin-bottom:0.75rem;">
-      this is a side project. you know those wooden book boxes people put outside their houses?
-      i got curious whether you could figure out where one was just from a photo. turns out: kind of yes.
+      started as a little free library geoguessing project. turned into something broader —
+      any photo with books in it. the hypothesis is that what's on the shelf tells you something
+      about where you are and who's there.
     </p>
     <p style="margin-bottom:0.75rem;">
-      it looks at background architecture, plants, sidewalk style, street furniture, and the library box itself
-      (paint, stickers, construction quality). victorian rowhouses read differently than noe valley bungalows.
-      succulents mean california. that kind of thing.
+      it looks at background architecture, plants, sidewalk style, street furniture, the books themselves
+      (languages, genres, spines), and what people in the background are doing.
+      victorian rowhouses read differently than noe valley bungalows. a shelf of japanese manga in
+      a narrow space reads differently than the same shelf in a brooklyn apartment.
     </p>
     <p>
-      the community map grows whenever someone uploads a library and confirms the location.
-      eventually the goal is to have a proper sf map with every little free library in the city tagged.
+      the community map grows whenever someone uploads and confirms a location.
+      only confirmed or corrected locations get pinned — AI guesses alone don't make it onto the map.
     </p>
   </div>
 
@@ -364,30 +493,20 @@
     <div class="note-label">on training a custom model — and when it becomes worth it</div>
     this currently uses a general-purpose vision model zero-shot. it works surprisingly well because it already knows
     what victorian architecture, bay area succulents, and german street signs look like. but a dedicated model
-    trained specifically on little free library photos would eventually outperform it — especially for fine-grained
+    trained specifically on these photos would eventually outperform it — especially for fine-grained
     tasks like distinguishing cole valley from inner sunset, or reading the book signal.
     <br><br>
-    here is roughly what different dataset sizes unlock:
+    <strong>~200–500 photos</strong> — not enough. zero-shot wins. this is where we are.
     <br><br>
-    <strong>~200–500 photos</strong> — not enough. a fine-tuned classifier at this scale will probably underperform
-    zero-shot vision on location guessing because it has not seen enough geographic variety. the general model wins here.
-    this is also where the project currently lives, which is why the current approach is correct.
+    <strong>~500–2,000</strong> — SF neighborhood classifier starts to compete, ~60–70% accuracy.
+    also the threshold where "books as location signal" becomes testable as a hypothesis.
     <br><br>
-    <strong>~500–2,000 photos</strong> — starting to get interesting, especially if well-labeled by neighborhood.
-    you could train a classifier competitive for SF-specific tasks (mission vs. noe valley) where the general model
-    is weakest. accuracy probably 60–70% on neighborhood-level guesses. this is also the threshold where
-    "books as location signal" becomes testable — do noe valley libraries skew literary fiction?
-    does the mission skew spanish-language? you need the data to find out.
+    <strong>~2,000–10,000</strong> — worth fine-tuning properly. book signal becomes trainable alongside visual.
     <br><br>
-    <strong>~2,000–10,000 photos</strong> — worth fine-tuning properly. neighborhood-level accuracy climbs.
-    you have enough to start training on the book signal alongside the visual one.
-    this is the range where a dedicated model starts to feel justified over the API cost.
+    <strong>10,000+</strong> — CLIP variant territory. real neighborhood + global accuracy.
+    enough data to say something meaningful about what shelf composition predicts about place.
     <br><br>
-    <strong>10,000+</strong> — now you have something. city-level accuracy globally, neighborhood-level in SF,
-    and enough labeled book data to say something real about the correlation between what is on the shelf
-    and where the library is. worth exploring a small vision-language model (CLIP variant) rather than just a classifier.
-    <br><br>
-    for now: zero-shot is the right call. revisit when this hits 2,000 confirmed uploads.
+    for now: zero-shot is the right call. revisit at 2,000 confirmed uploads.
   </div>
 
   <div class="note-box">
@@ -400,30 +519,28 @@
 
   <div class="note-box">
     <div class="note-label">sf neighborhood specificity</div>
-    trained (loosely) on the following distinction logic: mission district (murals, painted ladies, dense),
-    noe valley (quieter, bungalows, craftsman), cole valley (near the park, quaint), castro (victorian rowhouses),
-    haight-ashbury, potrero hill, glen park, bernal heights, inner/outer sunset, inner/outer richmond,
-    pacific heights, nob hill. if it gets your neighborhood wrong, upload more photos.
+    mission district (murals, painted ladies, dense), noe valley (quieter, bungalows, craftsman),
+    cole valley (near the park, quaint), castro (victorian rowhouses), haight-ashbury, potrero hill,
+    glen park, bernal heights, inner/outer sunset, inner/outer richmond, pacific heights, nob hill.
+    if it gets yours wrong, upload more photos.
   </div>
 
   <p style="font-size:0.85rem; color:#888;">
-    <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit and this
-    project is not affiliated with them in any way. this is just a side project.
+    <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit · this is just a side project.
+    this project is not affiliated with them. this is just a side project.
   </p>
 </div>
 
 <div class="footnote">
   built by <a href="https://personal-website.dev">mackenzie sharp</a> ·
-  <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit
+  <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit · this is just a side project
 </div>
 
-<!-- Firebase SDK (CDN, loads in real browser fine) -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
 import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js';
 
-// ─── FIREBASE CONFIG ──────────────────────────────────────────────────────────
 const firebaseConfig = {
   apiKey: "AIzaSyA4cjH7C2gSfe4UfOn8_AXHDNqmlakkhqg",
   authDomain: "library-ceb2f.firebaseapp.com",
@@ -431,20 +548,19 @@ const firebaseConfig = {
   storageBucket: "library-ceb2f.firebasestorage.app",
   messagingSenderId: "466545129114",
   appId: "1:466545129114:web:4f31880fdef03ad2081123",
-  measurementId: "G-QTVCXYHB5B"
 };
 
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db  = getFirestore(app);
 const storage = getStorage(app);
 
-// ─── MAP PROJECTION ───────────────────────────────────────────────────────────
+// ── projection ────────────────────────────────────────────────────────────────
 const MAP_W = 1000, MAP_H = 500;
 function project(lat, lng) {
-  return { x: ((lng + 180) / 360) * MAP_W, y: ((90 - lat) / 180) * MAP_H };
+  return { x: ((lng+180)/360)*MAP_W, y: ((90-lat)/180)*MAP_H };
 }
 
-// ─── CITY COORDS ──────────────────────────────────────────────────────────────
+// ── city coords ───────────────────────────────────────────────────────────────
 const CITY_COORDS = {
   'san francisco':[37.775,-122.419],'sf':[37.775,-122.419],
   'noe valley':[37.750,-122.433],'mission district':[37.760,-122.415],
@@ -468,42 +584,43 @@ const CITY_COORDS = {
   'mexico city':[19.433,-99.133],'buenos aires':[-34.604,-58.382],
   'cape town':[-33.924,18.424],'nairobi':[-1.292,36.821],
   'mumbai':[19.076,72.878],'singapore':[1.352,103.820],
+  'bangkok':[13.756,100.502],'jakarta':[-6.208,106.846],
 };
 
-function getCoordsForLocation(city, neighborhood) {
-  const s = ((neighborhood||'') + ' ' + (city||'')).toLowerCase();
-  for (const [key, coords] of Object.entries(CITY_COORDS)) {
-    if (s.includes(key)) return [...coords];
-  }
-  return [10 + (Math.random()-0.5)*60, (Math.random()-0.5)*300];
+function getCoords(city, neighborhood) {
+  const s = ((neighborhood||'')+' '+(city||'')).toLowerCase();
+  for (const [k,v] of Object.entries(CITY_COORDS)) { if (s.includes(k)) return [...v]; }
+  return [10+(Math.random()-0.5)*60,(Math.random()-0.5)*300];
+}
+function jitter(c) { return [c[0]+(Math.random()-0.5)*0.4, c[1]+(Math.random()-0.5)*0.4]; }
+
+function confToWidth(c) {
+  return c==='high'?'90%':c==='medium'?'55%':c==='low'?'25%':'15%';
+}
+function confToLabel(c) {
+  return c==='high'?'high confidence':c==='medium'?'medium confidence':c==='low'?'low confidence':'uncertain';
 }
 
-function jitter(c) {
-  return [c[0] + (Math.random()-0.5)*0.4, c[1] + (Math.random()-0.5)*0.4];
-}
-
-// ─── STATE ────────────────────────────────────────────────────────────────────
+// ── state ─────────────────────────────────────────────────────────────────────
 let libraries = [];
 let currentResult = null, currentFile = null, currentImgBase64 = null, currentImgType = null;
-let selectedId = null, loadingInterval;
+let selectedId = null, loadingInterval, verifyState = null; // 'confirmed' | 'correcting'
 
 const LOADING_MSGS = [
-  'reading the clues','checking the architecture','inspecting the plants',
-  'consulting the street signs','cross-referencing the paint','triangulating vibes',
+  'reading the clues','checking the architecture','inspecting the shelves',
+  'noting the languages','triangulating the vibe','consulting the street signs',
 ];
 
-// ─── TABS ─────────────────────────────────────────────────────────────────────
-window.switchTab = function(name) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  document.getElementById('tab-' + name).classList.add('active');
-  ['analyze','map','about'].forEach((n,i) => {
-    if (n === name) document.querySelectorAll('.tab-btn')[i].classList.add('active');
-  });
-  if (name === 'map') loadAndRenderMap();
+// ── tabs ──────────────────────────────────────────────────────────────────────
+window.switchTab = name => {
+  document.querySelectorAll('.tab-panel').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('tab-'+name).classList.add('active');
+  ['analyze','map','about'].forEach((n,i)=>{ if(n===name) document.querySelectorAll('.tab-btn')[i].classList.add('active'); });
+  if (name==='map') loadAndRenderMap();
 };
 
-// ─── ANALYZE ──────────────────────────────────────────────────────────────────
+// ── analyze ───────────────────────────────────────────────────────────────────
 const fileInput       = document.getElementById('fileInput');
 const uploadZone      = document.getElementById('uploadZone');
 const previewSection  = document.getElementById('previewSection');
@@ -515,17 +632,22 @@ const loadingState    = document.getElementById('loadingState');
 const loadingMsg      = document.getElementById('loadingMsg');
 const errorState      = document.getElementById('errorState');
 const resultsDiv      = document.getElementById('resultsDiv');
+const verifySection   = document.getElementById('verifySection');
+const correctionForm  = document.getElementById('correctionForm');
+const saveRow         = document.getElementById('saveRow');
 const saveToMapBtn    = document.getElementById('saveToMapBtn');
 const saveStatus      = document.getElementById('saveStatus');
+const yesBtn          = document.getElementById('yesBtn');
+const noBtn           = document.getElementById('noBtn');
+const saveWithCorrBtn = document.getElementById('saveWithCorrectionBtn');
 
-uploadZone.addEventListener('dragover', e => { e.preventDefault(); uploadZone.classList.add('dragover'); });
-uploadZone.addEventListener('dragleave', () => uploadZone.classList.remove('dragover'));
-uploadZone.addEventListener('drop', e => {
+uploadZone.addEventListener('dragover', e=>{e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave', ()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop', e=>{
   e.preventDefault(); uploadZone.classList.remove('dragover');
-  const f = e.dataTransfer.files[0];
-  if (f?.type.startsWith('image/')) loadFile(f);
+  const f=e.dataTransfer.files[0]; if(f?.type.startsWith('image/')) loadFile(f);
 });
-fileInput.addEventListener('change', e => { if (e.target.files[0]) loadFile(e.target.files[0]); });
+fileInput.addEventListener('change', e=>{ if(e.target.files[0]) loadFile(e.target.files[0]); });
 
 function loadFile(file) {
   currentFile = file;
@@ -539,11 +661,9 @@ function loadFile(file) {
     previewSection.classList.add('visible');
     resultsDiv.classList.remove('visible');
     errorState.classList.remove('visible');
-    currentResult = null;
-    saveStatus.textContent = '';
-    saveStatus.className = 'save-status';
-    saveToMapBtn.disabled = false;
-    saveToMapBtn.textContent = 'add to map →';
+    currentResult = null; verifyState = null;
+    saveStatus.textContent = ''; saveStatus.className = 'save-status';
+    saveToMapBtn.disabled = false; saveToMapBtn.textContent = 'add to map →';
   };
   reader.readAsDataURL(file);
 }
@@ -555,10 +675,11 @@ function reset() {
   errorState.classList.remove('visible');
   loadingState.classList.remove('active');
   fileInput.value = '';
-  currentFile = null; currentImgBase64 = null; currentResult = null;
-  analyzeBtn.disabled = false; analyzeBtn.textContent = 'analyze →';
-  saveStatus.textContent = '';
-  saveToMapBtn.disabled = false; saveToMapBtn.textContent = 'add to map →';
+  currentFile=null; currentImgBase64=null; currentResult=null; verifyState=null;
+  analyzeBtn.disabled=false; analyzeBtn.textContent='analyze →';
+  saveStatus.textContent=''; saveToMapBtn.disabled=false; saveToMapBtn.textContent='add to map →';
+  correctionForm.classList.remove('visible');
+  saveRow.style.display='none';
 }
 
 resetBtn.addEventListener('click', reset);
@@ -566,287 +687,377 @@ analyzeAgainBtn.addEventListener('click', reset);
 
 analyzeBtn.addEventListener('click', async () => {
   if (!currentImgBase64) return;
-  analyzeBtn.disabled = true; analyzeBtn.textContent = 'analyzing...';
+  analyzeBtn.disabled=true; analyzeBtn.textContent='analyzing...';
   resultsDiv.classList.remove('visible'); errorState.classList.remove('visible');
-  loadingState.classList.add('active'); saveStatus.textContent = '';
+  loadingState.classList.add('active');
 
-  let i = 0; loadingMsg.textContent = LOADING_MSGS[0];
-  loadingInterval = setInterval(() => { i=(i+1)%LOADING_MSGS.length; loadingMsg.textContent=LOADING_MSGS[i]; }, 2000);
+  let i=0; loadingMsg.textContent=LOADING_MSGS[0];
+  loadingInterval = setInterval(()=>{ i=(i+1)%LOADING_MSGS.length; loadingMsg.textContent=LOADING_MSGS[i]; }, 2000);
 
   try {
-    // calls your existing /api/anthropic.js — no changes needed there
     const resp = await fetch('/api/anthropic', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1200,
-        messages: [{ role: 'user', content: [
-          { type: 'image', source: { type: 'base64', media_type: currentImgType, data: currentImgBase64 } },
-          { type: 'text', text: `You are an expert at analyzing photos of Little Free Libraries (small wooden book-sharing boxes on posts in residential neighborhoods) and determining where they are located from visual clues.
+        model:'claude-sonnet-4-20250514',
+        max_tokens:1500,
+        messages:[{role:'user', content:[
+          {type:'image', source:{type:'base64', media_type:currentImgType, data:currentImgBase64}},
+          {type:'text', text:`You are an expert analyst who looks at photos containing books and infers everything possible about the place and context from visual evidence.
 
-Analyze everything visible: architectural style of background buildings, vegetation and plant species, sidewalk/pavement type, street furniture, climate indicators, the library box design and any decorations or stickers, fencing, garden style, urban density, any readable text or signs.
+Analyze this photo carefully. It could be a little free library, a cafe, bookshop, hostel, home, bar, library, office, or any other place with books.
 
-For San Francisco: distinguish between Mission District (painted Victorians, murals, dense rowhouses), Noe Valley (quieter, bungalows, Craftsman), Cole Valley (near Golden Gate Park, quaint), Castro, Haight-Ashbury, Potrero Hill, Glen Park, Bernal Heights, Inner/Outer Sunset, Inner/Outer Richmond, Pacific Heights, Nob Hill.
-
-Also look for visible book titles or spines in the library box — list any you can make out.
+Look at: architectural style, indoor vs outdoor setting, furniture and decor style, vegetation, street elements, people and what they're doing, book spines and titles, book languages, shelf organization, general vibe and aesthetic.
 
 Respond ONLY in this exact JSON, no markdown, no backticks:
 {
-  "primaryLocation": {
-    "city": "city or region",
+  "location": {
+    "city": "city or region name",
     "neighborhood": "specific neighborhood if identifiable, else empty string",
     "confidence": "high or medium or low",
-    "reason": "one concise sentence of primary visual evidence"
+    "reason": "one sentence of primary visual evidence for the location guess"
   },
-  "clues": ["specific visual clue and what it suggests geographically","another clue","another clue"],
-  "alternatives": [
-    {"location": "place", "probability": "25%"},
-    {"location": "place", "probability": "15%"},
-    {"location": "place", "probability": "10%"}
+  "venue": {
+    "type": "little free library / cafe / bookshop / hostel / bar / home / library / hotel lobby / office / other",
+    "confidence": "high or medium or low",
+    "description": "one sentence describing what you see that suggests this venue type"
+  },
+  "activity": {
+    "summary": "short phrase describing what's happening (e.g. 'people working on laptops', 'quiet browsing', 'no people visible')",
+    "confidence": "high or medium or low",
+    "description": "one sentence of detail"
+  },
+  "language": {
+    "primary": "dominant language on book spines (e.g. English, Japanese, German, mixed)",
+    "confidence": "high or medium or low",
+    "description": "what you can see on the spines"
+  },
+  "genre": {
+    "vibe": "short label (e.g. 'literary fiction heavy', 'eclectic / anything goes', 'self-help and business', 'sci-fi and fantasy', 'academic', 'travel and adventure')",
+    "confidence": "high or medium or low",
+    "description": "what the collection composition suggests"
+  },
+  "books": ["any readable title 1", "any readable title 2"],
+  "clues": [
+    "specific visual clue and what it tells you",
+    "another clue",
+    "another clue"
   ],
-  "books": ["book title if readable"]
-}` }
+  "alternatives": [
+    {"location": "alternative city or neighborhood", "probability": "20%"},
+    {"location": "another alternative", "probability": "10%"}
+  ]
+}`}
         ]}]
       })
     });
 
     clearInterval(loadingInterval); loadingState.classList.remove('active');
-    if (!resp.ok) { const e = await resp.json().catch(()=>({})); throw new Error(e.error?.message || `api error ${resp.status}`); }
+    if (!resp.ok) { const e=await resp.json().catch(()=>({})); throw new Error(e.error?.message||`api error ${resp.status}`); }
     const data = await resp.json();
     const text = data.content.map(b=>b.text||'').join('').replace(/```json|```/g,'').trim();
     currentResult = JSON.parse(text);
     renderResults(currentResult);
   } catch(err) {
     clearInterval(loadingInterval); loadingState.classList.remove('active');
-    analyzeBtn.disabled = false; analyzeBtn.textContent = 'try again →';
-    errorState.textContent = `something went wrong: ${err.message||'unknown error'}`;
+    analyzeBtn.disabled=false; analyzeBtn.textContent='try again →';
+    errorState.textContent=`something went wrong: ${err.message||'unknown error'}`;
     errorState.classList.add('visible');
   }
 });
 
 function renderResults(r) {
-  const loc = r.primaryLocation || {};
-  document.getElementById('cityResult').textContent = loc.city || '?';
-  const badge = document.getElementById('confidenceBadge');
-  badge.textContent = loc.confidence || 'low';
-  badge.className = 'confidence ' + (loc.confidence || 'low');
-  document.getElementById('neighborhoodResult').textContent =
-    (loc.neighborhood ? loc.neighborhood + ' · ' : '') + (loc.reason || '');
+  // location
+  const loc = r.location || {};
+  document.getElementById('locCity').textContent = loc.city || '?';
+  document.getElementById('locNeighborhood').textContent = loc.neighborhood || '';
+  document.getElementById('locReason').textContent = loc.reason || '';
+  setConf('locConf', loc.confidence);
 
+  // venue
+  const v = r.venue || {};
+  document.getElementById('venueType').textContent = v.type || '?';
+  document.getElementById('venueDesc').textContent = v.description || '';
+  setConf('venueConf', v.confidence);
+
+  // activity
+  const a = r.activity || {};
+  document.getElementById('activityVal').textContent = a.summary || '?';
+  document.getElementById('activityDesc').textContent = a.description || '';
+  setConf('activityConf', a.confidence);
+
+  // language
+  const l = r.language || {};
+  document.getElementById('langVal').textContent = l.primary || '?';
+  document.getElementById('langDesc').textContent = l.description || '';
+  setConf('langConf', l.confidence);
+
+  // genre
+  const g = r.genre || {};
+  document.getElementById('genreVal').textContent = g.vibe || '?';
+  document.getElementById('genreDesc').textContent = g.description || '';
+  setConf('genreConf', g.confidence);
+
+  // books
+  const books = (r.books||[]).filter(b=>b&&b.trim());
+  document.getElementById('booksVal').textContent = books.length ? books.join(', ') : 'none readable';
+
+  // clues
   const cluesList = document.getElementById('cluesList');
   cluesList.innerHTML = '';
-  (r.clues||[]).forEach(c => { const d=document.createElement('div'); d.className='clue'; d.textContent=c; cluesList.appendChild(d); });
+  (r.clues||[]).forEach(c=>{ const d=document.createElement('div'); d.className='clue'; d.textContent=c; cluesList.appendChild(d); });
 
+  // alternatives
   const altList = document.getElementById('altList');
   altList.innerHTML = '';
-  (r.alternatives||[]).forEach(a => { const t=document.createElement('div'); t.className='alt-tag'; t.innerHTML=`${a.location||''}<span class="pct">${a.probability||''}</span>`; altList.appendChild(t); });
+  (r.alternatives||[]).forEach(a=>{ const t=document.createElement('div'); t.className='alt-tag'; t.innerHTML=`${a.location||''}<span class="pct">${a.probability||''}</span>`; altList.appendChild(t); });
 
-  const books = (r.books||[]).filter(b=>b&&b.trim());
-  const booksSection = document.getElementById('booksSection');
-  if (books.length) { document.getElementById('booksList').textContent = books.join(', '); booksSection.style.display='block'; }
-  else { booksSection.style.display='none'; }
+  // verify section
+  const locStr = [loc.neighborhood, loc.city].filter(Boolean).join(', ') || '?';
+  document.getElementById('verifyGuess').textContent = locStr;
+  verifySection.style.display = 'block';
+  correctionForm.classList.remove('visible');
+  saveRow.style.display = 'none';
 
-  analyzeBtn.disabled = false; analyzeBtn.textContent = 'analyze →';
+  // pre-fill correction form with AI guess
+  document.getElementById('corrCity').value = loc.city || '';
+  document.getElementById('corrNeighborhood').value = loc.neighborhood || '';
+  const venueSelect = document.getElementById('corrVenue');
+  const aiVenue = (v.type||'').toLowerCase();
+  let matched = false;
+  for (const opt of venueSelect.options) { if (opt.value && aiVenue.includes(opt.value)) { venueSelect.value=opt.value; matched=true; break; } }
+  if (!matched) venueSelect.value = '';
+
+  analyzeBtn.disabled=false; analyzeBtn.textContent='analyze →';
   resultsDiv.classList.add('visible');
 }
 
-// ─── SAVE TO FIREBASE ─────────────────────────────────────────────────────────
-saveToMapBtn.addEventListener('click', async () => {
+function setConf(prefix, conf) {
+  const fill  = document.getElementById(prefix+'Fill');
+  const label = document.getElementById(prefix+'Label');
+  if (!fill||!label) return;
+  fill.style.width = confToWidth(conf);
+  fill.className = 'conf-fill ' + (conf||'');
+  label.textContent = confToLabel(conf);
+}
+
+// ── verify flow ───────────────────────────────────────────────────────────────
+yesBtn.addEventListener('click', () => {
+  verifyState = 'confirmed';
+  correctionForm.classList.remove('visible');
+  saveRow.style.display = 'flex';
+  yesBtn.textContent = '✓ confirmed';
+  yesBtn.disabled = true;
+  noBtn.style.display = 'none';
+});
+
+noBtn.addEventListener('click', () => {
+  verifyState = 'correcting';
+  correctionForm.classList.add('visible');
+  saveRow.style.display = 'none';
+});
+
+saveToMapBtn.addEventListener('click', () => saveEntry(false));
+saveWithCorrBtn.addEventListener('click', () => saveEntry(true));
+
+async function saveEntry(useCorrection) {
   if (!currentResult || !currentFile) return;
 
-  saveToMapBtn.disabled = true;
-  saveToMapBtn.textContent = 'saving...';
-  saveStatus.textContent = '';
-  saveStatus.className = 'save-status';
+  const btn = useCorrection ? saveWithCorrBtn : saveToMapBtn;
+  btn.disabled=true; btn.textContent='saving...';
+  saveStatus.textContent=''; saveStatus.className='save-status';
 
   try {
-    const loc = currentResult.primaryLocation || {};
-    const base = getCoordsForLocation(loc.city, loc.neighborhood);
+    const loc = currentResult.location || {};
+    let city, neighborhood, venueType;
+
+    if (useCorrection) {
+      city         = document.getElementById('corrCity').value.trim() || loc.city || 'Unknown';
+      neighborhood = document.getElementById('corrNeighborhood').value.trim() || loc.neighborhood || '';
+      venueType    = document.getElementById('corrVenue').value || currentResult.venue?.type || '';
+    } else {
+      city         = loc.city || 'Unknown';
+      neighborhood = loc.neighborhood || '';
+      venueType    = currentResult.venue?.type || '';
+    }
+
+    const base = getCoords(city, neighborhood);
     const [lat, lng] = jitter(base);
 
-    // 1. upload photo to Firebase Storage
+    // upload photo
     const filename = `library-photos/${Date.now()}_${currentFile.name.replace(/[^a-z0-9.]/gi,'_')}`;
     const storageRef = ref(storage, filename);
     await uploadBytes(storageRef, currentFile);
     const imageUrl = await getDownloadURL(storageRef);
 
-    // 2. save metadata to Firestore
+    // save to firestore
     await addDoc(collection(db, 'libraries'), {
-      city: loc.city || 'Unknown',
-      neighborhood: loc.neighborhood || '',
+      city,
+      neighborhood,
+      venueType,
       confidence: loc.confidence || 'low',
       reason: loc.reason || '',
       clues: currentResult.clues || [],
       books: (currentResult.books||[]).filter(b=>b&&b.trim()),
+      activity: currentResult.activity?.summary || '',
+      language: currentResult.language?.primary || '',
+      genre: currentResult.genre?.vibe || '',
+      locationConfirmed: useCorrection ? 'corrected' : 'confirmed',
       imageUrl,
-      lat,
-      lng,
+      lat, lng,
       addedAt: serverTimestamp(),
     });
 
     saveStatus.textContent = '✓ added to map';
     saveStatus.className = 'save-status ok';
-    saveToMapBtn.textContent = 'added ✓';
+    btn.textContent = 'added ✓';
+    if (!useCorrection) saveRow.style.display = 'flex';
 
   } catch(err) {
-    saveToMapBtn.disabled = false;
-    saveToMapBtn.textContent = 'add to map →';
+    btn.disabled=false;
+    btn.textContent = useCorrection ? 'add to map with correction →' : 'add to map →';
     saveStatus.textContent = `save failed: ${err.message}`;
     saveStatus.className = 'save-status err';
   }
-});
+}
 
-// ─── MAP ──────────────────────────────────────────────────────────────────────
-let mapLoaded = false;
-
+// ── map ───────────────────────────────────────────────────────────────────────
 async function loadAndRenderMap() {
-  const mapLoadingEl = document.getElementById('mapLoading');
-  mapLoadingEl.style.display = 'block';
-
+  const el = document.getElementById('mapLoading');
+  el.style.display = 'block';
   try {
-    const q = query(collection(db, 'libraries'), orderBy('addedAt', 'desc'));
-    const snapshot = await getDocs(q);
-    libraries = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    mapLoaded = true;
+    const q = query(collection(db,'libraries'), orderBy('addedAt','desc'));
+    const snap = await getDocs(q);
+    libraries = snap.docs.map(d=>({id:d.id,...d.data()}));
   } catch(err) {
-    mapLoadingEl.textContent = `couldn't load libraries: ${err.message}`;
-    return;
+    el.textContent=`couldn't load: ${err.message}`; return;
   }
-
-  mapLoadingEl.style.display = 'none';
-  updateStats();
-  renderPins();
-  renderList();
+  el.style.display='none';
+  updateStats(); renderPins(); renderList();
 }
 
 function updateStats() {
   document.getElementById('statTotal').textContent = libraries.length;
   document.getElementById('statCities').textContent = new Set(libraries.map(l=>l.city)).size;
-
-  if (libraries.length > 0) {
-    // addedAt is a Firestore Timestamp — convert to ms
-    const latest = libraries[0]; // already ordered desc
-    const ts = latest.addedAt?.toMillis ? latest.addedAt.toMillis() : Date.now();
-    const days = Math.floor((Date.now() - ts) / 86400000);
-    document.getElementById('statLastUpdated').textContent =
-      days === 0 ? 'today' : days === 1 ? 'yesterday' : days + 'd ago';
+  if (libraries.length>0) {
+    const ts = libraries[0].addedAt?.toMillis?.()||Date.now();
+    const days = Math.floor((Date.now()-ts)/86400000);
+    document.getElementById('statLastUpdated').textContent = days===0?'today':days===1?'yesterday':days+'d ago';
   }
 }
 
 function renderPins() {
   const pinLayer = document.getElementById('pinLayer');
   if (!pinLayer) return;
-  pinLayer.innerHTML = '';
-
-  libraries.forEach(lib => {
-    if (lib.lat == null || lib.lng == null) return;
-    const { x, y } = project(lib.lat, lib.lng);
-    const isSelected = lib.id === selectedId;
+  pinLayer.innerHTML='';
+  libraries.forEach(lib=>{
+    if (lib.lat==null||lib.lng==null) return;
+    const {x,y} = project(lib.lat, lib.lng);
+    const isSel = lib.id===selectedId;
     const label = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
 
-    const g = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-    g.setAttribute('class', 'map-pin-group');
-    g.setAttribute('data-id', lib.id);
+    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
+    g.setAttribute('class','map-pin-group');
 
-    const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-    circle.setAttribute('cx', x); circle.setAttribute('cy', y);
-    circle.setAttribute('r', isSelected ? 10 : 7);
-    circle.setAttribute('fill', isSelected ? 'rgba(0,0,0,0.15)' : 'rgba(0,0,0,0.07)');
+    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
+    circle.setAttribute('cx',x); circle.setAttribute('cy',y);
+    circle.setAttribute('r', isSel?10:7);
+    circle.setAttribute('fill', isSel?'rgba(0,0,0,0.15)':'rgba(0,0,0,0.07)');
     g.appendChild(circle);
 
-    const fo = document.createElementNS('http://www.w3.org/2000/svg', 'foreignObject');
-    fo.setAttribute('x', x-9); fo.setAttribute('y', y-20);
-    fo.setAttribute('width', 18); fo.setAttribute('height', 20);
-    fo.innerHTML = `<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${isSelected?'16':'13'}px;line-height:1;text-align:center;cursor:pointer;">📚</div>`;
+    const fo = document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
+    fo.setAttribute('x',x-9); fo.setAttribute('y',y-20);
+    fo.setAttribute('width',18); fo.setAttribute('height',20);
+    const emoji = lib.venueType==='cafe'?'☕':lib.venueType==='bookshop'?'🏪':lib.venueType==='hostel'?'🏨':lib.venueType==='bar'?'🍺':lib.venueType==='home / apartment'?'🏠':'📚';
+    fo.innerHTML=`<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${isSel?'16':'13'}px;line-height:1;text-align:center;cursor:pointer;">${emoji}</div>`;
     g.appendChild(fo);
 
-    g.addEventListener('click', () => selectLibrary(lib.id));
-    g.addEventListener('mouseenter', e => showTooltip(e, lib, label));
-    g.addEventListener('mouseleave', hideTooltip);
+    g.addEventListener('click',()=>selectLibrary(lib.id));
+    g.addEventListener('mouseenter',e=>showTooltip(e,lib,label));
+    g.addEventListener('mouseleave',hideTooltip);
     pinLayer.appendChild(g);
   });
 }
 
-function showTooltip(e, lib, label) {
+function showTooltip(e,lib,label) {
   const tooltip = document.getElementById('mapTooltip');
   const wrap = document.getElementById('mapWrap');
   const rect = wrap.getBoundingClientRect();
+  const venue = lib.venueType ? `<div style="color:#888;font-size:0.68rem">${lib.venueType}</div>` : '';
   const books = lib.books?.length ? `<div style="font-style:italic;color:#555;">${lib.books.slice(0,2).join(', ')}</div>` : '';
-  tooltip.innerHTML = `<div style="font-weight:bold">${label}</div>${books}<div style="color:#aaa;font-size:0.68rem">${lib.confidence||'?'} confidence</div>`;
-  const mx = e.clientX - rect.left, my = e.clientY - rect.top;
-  tooltip.style.left = Math.min(mx+10, wrap.offsetWidth-195) + 'px';
-  tooltip.style.top = Math.max(my-60, 4) + 'px';
+  tooltip.innerHTML=`<div style="font-weight:bold">${label}</div>${venue}${books}<div style="color:#aaa;font-size:0.68rem">${lib.confidence||'?'} confidence · ${lib.locationConfirmed||''}</div>`;
+  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
+  tooltip.style.left=Math.min(mx+10,wrap.offsetWidth-200)+'px';
+  tooltip.style.top=Math.max(my-70,4)+'px';
   tooltip.classList.add('visible');
 }
-
 function hideTooltip() { document.getElementById('mapTooltip').classList.remove('visible'); }
 
 function renderList() {
-  const list = document.getElementById('libraryList');
-  const empty = document.getElementById('emptyMapMsg');
-  if (libraries.length === 0) { list.innerHTML=''; empty.style.display='block'; return; }
-  empty.style.display = 'none'; list.innerHTML = '';
-
-  libraries.forEach(lib => {
-    const card = document.createElement('div');
-    card.className = 'library-card' + (lib.id === selectedId ? ' selected' : '');
-
+  const list=document.getElementById('libraryList');
+  const empty=document.getElementById('emptyMapMsg');
+  if (libraries.length===0) { list.innerHTML=''; empty.style.display='block'; return; }
+  empty.style.display='none'; list.innerHTML='';
+  libraries.forEach(lib=>{
+    const card=document.createElement('div');
+    card.className='library-card'+(lib.id===selectedId?' selected':'');
     const thumbHtml = lib.imageUrl
       ? `<img class="card-thumb" src="${lib.imageUrl}" alt="" loading="lazy">`
       : `<div class="card-thumb-placeholder">📚</div>`;
-
-    // Firestore timestamps need .toDate()
-    const addedAt = lib.addedAt?.toDate ? lib.addedAt.toDate() : new Date();
-    const dateStr = addedAt.toLocaleDateString('en-US', {month:'short', day:'numeric', year:'numeric'});
-    const locationStr = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
-    const booksStr = lib.books?.length ? lib.books.slice(0,3).join(', ') + (lib.books.length>3?'...':'') : '';
-
-    card.innerHTML = `${thumbHtml}
+    const addedAt = lib.addedAt?.toDate?lib.addedAt.toDate():new Date();
+    const dateStr = addedAt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+    const locationStr = [lib.neighborhood,lib.city].filter(Boolean).join(', ');
+    const booksStr = lib.books?.length?lib.books.slice(0,2).join(', ')+(lib.books.length>2?'...':''):'';
+    const corrected = lib.locationConfirmed==='corrected' ? ' · <span style="color:#888">corrected</span>' : '';
+    card.innerHTML=`${thumbHtml}
       <div class="card-body">
         <div class="card-location">${locationStr}</div>
-        <div class="card-meta">added ${dateStr}</div>
-        ${booksStr ? `<div class="card-books">${booksStr}</div>` : ''}
+        ${lib.venueType?`<div class="card-venue">${lib.venueType}</div>`:''}
+        <div class="card-meta">added ${dateStr}${corrected}</div>
+        ${booksStr?`<div class="card-books">${booksStr}</div>`:''}
       </div>
       <div class="card-conf ${lib.confidence||'low'}">${lib.confidence||'low'}</div>`;
-
-    card.addEventListener('click', () => selectLibrary(lib.id));
+    card.addEventListener('click',()=>selectLibrary(lib.id));
     list.appendChild(card);
   });
 }
 
 function selectLibrary(id) {
-  selectedId = id;
-  const lib = libraries.find(l => l.id === id);
+  selectedId=id;
+  const lib=libraries.find(l=>l.id===id);
   if (!lib) return;
   renderPins(); renderList();
   showDetail(lib);
-  document.getElementById('detailPanel').scrollIntoView({ behavior:'smooth', block:'nearest' });
+  document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
 
 function showDetail(lib) {
   if (!lib) return;
-  const imgWrap = document.getElementById('detailImgWrap');
-  imgWrap.innerHTML = lib.imageUrl
-    ? `<img class="detail-img" src="${lib.imageUrl}" alt="">`
-    : `<div class="detail-img-placeholder">📚</div>`;
-
-  document.getElementById('detailLocation').textContent = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
-
-  const addedAt = lib.addedAt?.toDate ? lib.addedAt.toDate() : new Date();
-  const dateStr = addedAt.toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'});
-  document.getElementById('detailSub').innerHTML =
-    `<span class="card-conf ${lib.confidence||'low'}" style="margin-right:0.5rem">${lib.confidence||'low'} confidence</span>added ${dateStr}`;
-  document.getElementById('detailBooks').textContent = lib.books?.length ? lib.books.join(', ') : 'no books identified';
-  document.getElementById('detailClues').innerHTML = (lib.clues||[]).map(c=>`<div class="detail-clue">${c}</div>`).join('');
+  const imgWrap=document.getElementById('detailImgWrap');
+  imgWrap.innerHTML=lib.imageUrl
+    ?`<img class="detail-img" src="${lib.imageUrl}" alt="">`
+    :`<div class="detail-img-placeholder">📚</div>`;
+  document.getElementById('detailLocation').textContent=[lib.neighborhood,lib.city].filter(Boolean).join(', ');
+  document.getElementById('detailVenue').textContent=lib.venueType||'';
+  const addedAt=lib.addedAt?.toDate?lib.addedAt.toDate():new Date();
+  const dateStr=addedAt.toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+  document.getElementById('detailSub').innerHTML=`<span class="card-conf ${lib.confidence||'low'}" style="margin-right:0.5rem">${lib.confidence||'low'} confidence</span>added ${dateStr} · ${lib.locationConfirmed||''}`;
+  const parts=[];
+  if(lib.language) parts.push(lib.language);
+  if(lib.genre) parts.push(lib.genre);
+  if(lib.activity) parts.push(lib.activity);
+  document.getElementById('detailBooks').textContent=lib.books?.length?lib.books.join(', '):'no books identified';
+  document.getElementById('detailClues').innerHTML=(lib.clues||[]).map(c=>`<div class="detail-clue">${c}</div>`).join('');
+  if(parts.length) {
+    document.getElementById('detailClues').innerHTML+=`<div class="detail-clue" style="margin-top:0.3rem">${parts.join(' · ')}</div>`;
+  }
   document.getElementById('detailPanel').classList.add('visible');
 }
 
-window.closeDetail = function() {
+window.closeDetail=()=>{
   document.getElementById('detailPanel').classList.remove('visible');
-  selectedId = null; renderPins(); renderList();
+  selectedId=null; renderPins(); renderList();
 };
-
 </script>
 </body>
 </html>
