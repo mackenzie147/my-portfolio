@@ -324,7 +324,27 @@
 
         <div class="analysis-cell full-width">
           <div class="cell-label">books spotted</div>
-          <div class="cell-sub" id="booksVal" style="font-style:italic;">none readable</div>
+          <div class="cell-sub" id="booksVal" style="font-style:italic; margin-bottom:0.6rem;">none readable</div>
+          <div id="bookAnalysisWrap" style="display:none;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:0.5rem 1.5rem; margin-bottom:0.5rem;">
+              <div>
+                <div class="cell-label" style="margin-bottom:0.1rem;">genres / topics</div>
+                <div class="cell-sub" id="baGenres"></div>
+              </div>
+              <div>
+                <div class="cell-label" style="margin-bottom:0.1rem;">era</div>
+                <div class="cell-sub" id="baEra"></div>
+              </div>
+            </div>
+            <div style="margin-bottom:0.4rem;">
+              <div class="cell-label" style="margin-bottom:0.1rem;">notable / weird ones</div>
+              <div class="cell-sub" id="baNotable"></div>
+            </div>
+            <div>
+              <div class="cell-label" style="margin-bottom:0.1rem;">what it says about this place</div>
+              <div class="cell-sub" id="baStory" style="font-style:italic; color:#444;"></div>
+            </div>
+          </div>
         </div>
 
         <div class="analysis-cell full-width">
@@ -745,7 +765,13 @@ Respond ONLY in this exact JSON, no markdown, no backticks:
     "confidence": "high or medium or low",
     "description": "what the collection composition suggests about who uses this place"
   },
-  "books": ["every readable title or author you can make out"],
+  "books": ["every readable title or author name you can make out — be exhaustive, list everything legible"],
+  "bookAnalysis": {
+    "genres": "comma-separated list of genres/topics represented (e.g. 'thriller, literary fiction, tech manuals, self-help')",
+    "era": "rough era of the collection (e.g. 'mostly 2000s–2010s', 'mix of 80s classics and recent', 'hard to tell')",
+    "notableOrWeird": "any titles or authors that stand out as interesting, surprising, or out of place — and why",
+    "collectionStory": "two sentences max: what does this specific set of books tell you about the person or place? be specific and a little opinionated"
+  },
   "clues": [
     "every piece of readable text and what it tells you geographically",
     "interior style clue and what it suggests",
@@ -810,6 +836,19 @@ function renderResults(r) {
   // books
   const books = (r.books||[]).filter(b=>b&&b.trim());
   document.getElementById('booksVal').textContent = books.length ? books.join(', ') : 'none readable';
+
+  // book analysis
+  const ba = r.bookAnalysis || {};
+  const baWrap = document.getElementById('bookAnalysisWrap');
+  if (ba.genres || ba.era || ba.notableOrWeird || ba.collectionStory) {
+    document.getElementById('baGenres').textContent = ba.genres || '—';
+    document.getElementById('baEra').textContent = ba.era || '—';
+    document.getElementById('baNotable').textContent = ba.notableOrWeird || '—';
+    document.getElementById('baStory').textContent = ba.collectionStory || '—';
+    baWrap.style.display = 'block';
+  } else {
+    baWrap.style.display = 'none';
+  }
 
   // clues
   const cluesList = document.getElementById('cluesList');
@@ -908,6 +947,7 @@ async function saveEntry(useCorrection) {
       reason: loc.reason || '',
       clues: currentResult.clues || [],
       books: (currentResult.books||[]).filter(b=>b&&b.trim()),
+      bookAnalysis: currentResult.bookAnalysis || {},
       activity: currentResult.activity?.summary || '',
       language: currentResult.language?.primary || '',
       genre: currentResult.genre?.vibe || '',
