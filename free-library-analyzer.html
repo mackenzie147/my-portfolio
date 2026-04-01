@@ -187,10 +187,8 @@
   .card-conf.low { background: #ccc; color: #555; }
 
   /* detail panel */
-  .detail-panel { display: none; border: 1px solid #ddd; padding: 1.25rem; margin-bottom: 1.5rem; background: #fafafa; position: relative; }
+  .detail-panel { display: none; border: 1px solid #ddd; padding: 1.25rem; margin-bottom: 1.5rem; background: #fafafa; }
   .detail-panel.visible { display: block; }
-  .detail-close { position: absolute; top: 0.75rem; right: 0.75rem; background: none; border: none; color: #aaa; font-size: 1rem; cursor: pointer; padding: 0; }
-  .detail-close:hover { color: #111; background: none; }
   .detail-inner { display: flex; gap: 1.25rem; }
   .detail-img { width: 120px; height: 120px; object-fit: cover; border: 1px solid #ddd; flex-shrink: 0; }
   .detail-img-placeholder { width: 120px; height: 120px; background: #f0f0f0; border: 1px solid #ddd; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 2rem; }
@@ -471,7 +469,6 @@
   </div>
 
   <div class="detail-panel" id="detailPanel">
-    <button class="detail-close" onclick="closeDetail()">✕</button>
     <div class="detail-inner">
       <div id="detailImgWrap"></div>
       <div class="detail-info">
@@ -546,8 +543,7 @@
   </div>
 
   <p style="font-size:0.85rem; color:#888;">
-    <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit · this is just a side project.
-    this project is not affiliated with them. this is just a side project.
+    <a href="https://littlefreelibrary.org" target="_blank">little free library</a> is a real nonprofit and not affiliated with this project. this is just a side project.
   </p>
 </div>
 
@@ -720,7 +716,7 @@ analyzeBtn.addEventListener('click', async () => {
       headers:{'Content-Type':'application/json'},
       body: JSON.stringify({
         model:'claude-sonnet-4-20250514',
-        max_tokens:1500,
+        max_tokens:2500,
         messages:[{role:'user', content:[
           {type:'image', source:{type:'base64', media_type:currentImgType, data:currentImgBase64}},
           {type:'text', text:`You are an expert analyst who looks at photos containing books and infers the specific location and context from visual evidence. You reason like a detective — you commit to the most specific conclusion the evidence supports, you do not hedge when the clues point clearly somewhere.
@@ -736,6 +732,8 @@ CRITICAL RULES:
 Analyze this photo carefully. It could be a little free library, a cafe, bookshop, hostel, home, bar, library, office, or any other place with books.
 
 First, mentally list every piece of text you can read in the image. Then list every geographic clue (architecture, plants, street furniture, interior style, flooring, furniture). Then reason from those clues to the most specific location you can justify.
+
+BOOK READING — before filling the JSON, go shelf by shelf left to right top to bottom. Attempt every spine. Include full titles, partial titles, author names, series names, even single readable words. Use [illegible] for truly unreadable spines. Aim for 10-30+ entries — returning 3 titles for a photo with 40 visible books is a failure.
 
 Respond ONLY in this exact JSON, no markdown, no backticks:
 {
@@ -765,7 +763,7 @@ Respond ONLY in this exact JSON, no markdown, no backticks:
     "confidence": "high or medium or low",
     "description": "what the collection composition suggests about who uses this place"
   },
-  "books": ["every readable title or author name you can make out — be exhaustive, list everything legible"],
+  "books": ["every title, author, or partial spine text you can make out — aim for 10-30+ entries, use [illegible] for unreadable ones"],
   "bookAnalysis": {
     "genres": "comma-separated list of genres/topics represented (e.g. 'thriller, literary fiction, tech manuals, self-help')",
     "era": "rough era of the collection (e.g. 'mostly 2000s–2010s', 'mix of 80s classics and recent', 'hard to tell')",
