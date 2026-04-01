@@ -209,6 +209,15 @@
   .footnote { margin-top: 3rem; font-size: 0.75rem; color: #bbb; border-top: 1px solid #eee; padding-top: 1rem; }
   .footnote a { color: #bbb; }
 
+  .delete-btn {
+    font-family: 'Courier Prime', monospace; font-size: 0.7rem;
+    background: none; color: #ccc; border: 1px solid #eee;
+    padding: 0.2rem 0.5rem; cursor: pointer; margin-top: 0.3rem;
+    transition: all 0.15s; white-space: nowrap; align-self: flex-start;
+    letter-spacing: 0.03em;
+  }
+  .delete-btn:hover { color: #c00; border-color: #c00; background: #fff5f5; }
+
   @media (max-width: 480px) {
     .img-and-btn { flex-direction: column; }
     .img-wrap img { width: 100%; }
@@ -554,7 +563,7 @@
 
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-app.js';
-import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
+import { getFirestore, collection, addDoc, getDocs, orderBy, query, serverTimestamp, deleteDoc, doc } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-firestore.js';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'https://www.gstatic.com/firebasejs/10.11.0/firebase-storage.js';
 
 const firebaseConfig = {
@@ -569,6 +578,9 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getFirestore(app);
 const storage = getStorage(app);
+
+// ── admin mode — visit the page with ?admin=mackenzie to see delete buttons ──
+const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mackenzie';
 
 // ── projection ────────────────────────────────────────────────────────────────
 const MAP_W = 1000, MAP_H = 500;
@@ -1062,11 +1074,37 @@ function renderList() {
         ${lib.venueType?`<div class="card-venue">${lib.venueType}</div>`:''}
         <div class="card-meta">added ${dateStr}${corrected}</div>
         ${booksStr?`<div class="card-books">${booksStr}</div>`:''}
+        ${isAdmin?`<button class="delete-btn" data-id="${lib.id}">remove →</button>`:''}
       </div>
       <div class="card-conf ${lib.confidence||'low'}">${lib.confidence||'low'}</div>`;
-    card.addEventListener('click',()=>selectLibrary(lib.id));
+    card.addEventListener('click', e=>{
+      if (e.target.classList.contains('delete-btn')) return;
+      selectLibrary(lib.id);
+    });
+    if (isAdmin) {
+      const delBtn = card.querySelector('.delete-btn');
+      if (delBtn) delBtn.addEventListener('click', e=>{
+        e.stopPropagation();
+        deleteLibrary(lib.id);
+      });
+    }
     list.appendChild(card);
   });
+}
+
+async function deleteLibrary(id) {
+  if (!confirm('remove this entry from the map?')) return;
+  try {
+    await deleteDoc(doc(db, 'libraries', id));
+    libraries = libraries.filter(l=>l.id!==id);
+    if (selectedId===id) {
+      selectedId=null;
+      document.getElementById('detailPanel').classList.remove('visible');
+    }
+    updateStats(); renderPins(); renderList();
+  } catch(err) {
+    alert('delete failed: ' + err.message);
+  }
 }
 
 function selectLibrary(id) {
