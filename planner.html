@@ -379,6 +379,7 @@ body {
   background: var(--surface2);
   border-color: var(--rule);
   user-select: none;
+  touch-action: none;
 }
 .task-chip:hover { border-color: var(--ink); }
 .task-chip.personal { background: var(--personal-bg); border-color: var(--personal-border); }
@@ -387,6 +388,8 @@ body {
 .task-chip.done .chip-txt { text-decoration: line-through; }
 .task-chip.dragging { opacity: .25; }
 .task-chip.drag-target { border-color: var(--ink) !important; box-shadow: 0 0 0 2px var(--ink); }
+.task-chip.reorder-dragging { opacity: .6; background: var(--surface2) !important; }
+.task-chip.reorder-over { border-top: 2px solid var(--ink); }
 
 .chip-check {
   width: 12px; height: 12px;
@@ -431,6 +434,20 @@ body {
 }
 .task-chip:hover .chip-del { opacity: 1; }
 .chip-del:hover { color: #b01010 !important; }
+
+.chip-drag-handle {
+  opacity: 0;
+  background: none; border: none;
+  color: var(--ink3); font-size: 11px;
+  cursor: grab;
+  padding: 0 2px;
+  font-family: var(--font-body);
+  flex-shrink: 0;
+  transition: opacity .12s;
+  line-height: 1;
+}
+.task-chip:hover .chip-drag-handle { opacity: 1; }
+.chip-drag-handle:active { cursor: grabbing; }
 
 /* task tooltip on hover */
 .chip-full {
@@ -557,6 +574,9 @@ body {
   overflow-y: auto;
   transition: background .12s;
 }
+.panel-body.expanded {
+  max-height: none;
+}
 .panel-body.dz { background: #f0f4ff; }
 .panel-body::-webkit-scrollbar { width: 3px; }
 .panel-body::-webkit-scrollbar-thumb { background: var(--rule2); border-radius: 2px; }
@@ -594,6 +614,18 @@ body {
   font-weight: 600;
   letter-spacing: .04em;
 }
+.expand-btn {
+  background: transparent;
+  border: none;
+  font-size: 9px;
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  padding: 2px 4px;
+  color: var(--ink3);
+  transition: color .12s;
+}
+.expand-btn:hover { color: var(--ink); }
 
 /* ── MONTH BACKLOGS ───────────────────────────────────────────── */
 .month-bl-grid {
@@ -725,6 +757,25 @@ body {
   font-size: 9px; font-weight: 700;
   letter-spacing: .1em; text-transform: uppercase;
   color: var(--ink3);
+}
+
+/* ── ALL TASKS VIEW ───────────────────────────────────────────── */
+.all-tasks-container {
+  max-width: 800px;
+}
+.all-tasks-section {
+  margin-bottom: 20px;
+}
+.all-tasks-title {
+  font-family: var(--font-display);
+  font-size: 18px;
+  margin-bottom: 10px;
+  color: var(--ink);
+}
+.all-tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
 }
 
 /* ── TOAST ───────────────────────────────────────────────────── */
@@ -859,6 +910,7 @@ body {
       <button class="nav-tab active" onclick="setView('week')">Week</button>
       <button class="nav-tab" onclick="setView('month')">Month</button>
       <button class="nav-tab" onclick="setView('backlogs')">Backlogs</button>
+      <button class="nav-tab" onclick="setView('all')">All tasks</button>
       <button class="nav-tab" onclick="setView('review')">Review</button>
     </div>
     <div class="week-nav-btns" id="week-nav">
@@ -955,8 +1007,9 @@ window._signOut = async () => {
 
 window._onAuth = async (user) => {
   document.getElementById('auth-screen').style.display = 'none';
-  document.getElementById('app').classList.remove('hidden');
-  document.getElementById('app').style.display = 'flex';
+  const app = document.getElementById('app');
+  app.classList.remove('hidden');
+  app.style.display = 'flex';
 
   const btn = document.getElementById('user-btn');
   if (user.photoURL) {
@@ -1017,8 +1070,10 @@ const MONTHS_LONG = ['January','February','March','April','May','June','July','A
 const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 // ── STATE ────────────────────────────────────────────────────────
-let saveTmr = null, dragState = null;
+let saveTmr = null, dragState = null, reorderState = null;
 let colWidths = {}; // { ds: flex-grow }
+let currentCat = 'personal'; // track which category is selected for new tasks
+let expandedPanels = new Set(); // track which panels are expanded
 
 let S = {
   view: 'week',
@@ -1075,12 +1130,12 @@ const removeTask = (loc, id) => setArr(loc, getArr(loc).filter(t => t.id !== id)
 
 // ── TASK OPS ──────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
-function mkTask(text, cat) { return { id: uid(), text: text.trim(), cat: cat||'personal', done: false }; }
+function mkTask(text, cat) { return { id: uid(), text: text.trim(), cat: cat||currentCat, done: false }; }
 
 function addTask(loc, text, cat) {
   if (!text?.trim()) return;
   const arr = getArr(loc);
-  arr.push(mkTask(text, cat));
+  arr.push(mkTask(text, cat || currentCat));
   setArr(loc, arr);
   save(); render();
 }
@@ -1101,6 +1156,51 @@ function deleteTask(loc, id) {
 function editTask(loc, id, text) {
   const t = findTask(loc, id);
   if (t) { t.text = text; save(); }
+}
+
+// ── REORDER TASKS ─────────────────────────────────────────────────
+function reorderStart(e, loc, id) {
+  reorderState = { loc, id, startY: e.clientY || e.touches?.[0]?.clientY };
+  e.dataTransfer?.setDragImage(new Image(), 0, 0);
+  const el = document.querySelector(`[data-tid="${id}"]`);
+  if (el) el.classList.add('reorder-dragging');
+}
+
+function reorderOver(e, loc, id) {
+  if (!reorderState || reorderState.loc !== loc) return;
+  if (reorderState.id === id) return;
+  
+  e.preventDefault();
+  const el = document.querySelector(`[data-tid="${id}"]`);
+  if (el) el.classList.add('reorder-over');
+}
+
+function reorderLeave(id) {
+  const el = document.querySelector(`[data-tid="${id}"]`);
+  if (el) el.classList.remove('reorder-over');
+}
+
+function reorderEnd() {
+  document.querySelectorAll('[data-tid]').forEach(el => {
+    el.classList.remove('reorder-dragging', 'reorder-over');
+  });
+  reorderState = null;
+}
+
+function reorderDrop(toLoc, toId) {
+  if (!reorderState) return;
+  if (reorderState.loc !== toLoc) return;
+  
+  const arr = getArr(toLoc);
+  const fromIdx = arr.findIndex(t => t.id === reorderState.id);
+  const toIdx = arr.findIndex(t => t.id === toId);
+  
+  if (fromIdx === -1 || toIdx === -1 || fromIdx === toIdx) return;
+  
+  const [task] = arr.splice(fromIdx, 1);
+  arr.splice(toIdx, 0, task);
+  setArr(toLoc, arr);
+  save(); render();
 }
 
 // ── FILTER ────────────────────────────────────────────────────────
@@ -1132,10 +1232,14 @@ function dropTo(toLoc) {
 }
 
 // ── VIEW / NAV ────────────────────────────────────────────────────
-function setView(v) { S.view = v; save(); render(); }
+function setView(v) { S.view = v; currentCat = 'personal'; save(); render(); }
 function shiftWeek(d) { S.weekStart = addDays(S.weekStart, d*7); save(); render(); }
 function goToday() { S.weekStart = sunOf(today()); save(); render(); }
-function toggleCat(c) { if(c==='personal') S.showP=!S.showP; else S.showW=!S.showW; save(); render(); }
+function toggleCat(c) { 
+  if(c==='personal') S.showP=!S.showP; 
+  else S.showW=!S.showW; 
+  save(); render(); 
+}
 function mNavMonth(d) {
   S.mNav.m += d;
   if (S.mNav.m < 0) { S.mNav.m = 11; S.mNav.y--; }
@@ -1143,6 +1247,19 @@ function mNavMonth(d) {
   render();
 }
 function gotoDay(ds) { S.weekStart = sunOf(ds); S.view = 'week'; save(); render(); }
+
+function switchCatContext(cat) {
+  currentCat = cat;
+}
+
+function togglePanelExpand(loc) {
+  if (expandedPanels.has(loc)) {
+    expandedPanels.delete(loc);
+  } else {
+    expandedPanels.add(loc);
+  }
+  render();
+}
 
 // ── COL RESIZE ────────────────────────────────────────────────────
 function initColResize(handle, ds) {
@@ -1179,18 +1296,27 @@ function initColResize(handle, ds) {
 }
 
 // ── RENDER CHIP ───────────────────────────────────────────────────
-function renderChip(task, loc) {
+function renderChip(task, loc, allowReorder = false) {
   const ref = `'${loc}','${task.id}'`;
+  const reorderAttrs = allowReorder 
+    ? `ondragstart="reorderStart(event,'${loc}','${task.id}')"
+       ondragend="reorderEnd()"
+       ondragover="event.preventDefault();reorderOver(event,'${loc}','${task.id}')"
+       ondragleave="reorderLeave('${task.id}')"
+       ondrop="event.stopPropagation();reorderDrop('${loc}','${task.id}')"` 
+    : `ondragstart="dragStart(event,${ref})"
+       ondragend="dragEnd()"
+       ondragover="event.preventDefault();this.classList.add('drag-target')"
+       ondragleave="this.classList.remove('drag-target')"
+       ondrop="event.stopPropagation();this.classList.remove('drag-target');dropTo('${loc}')"`;
+
   return `<div class="task-chip ${task.cat}${task.done?' done':''}" data-tid="${task.id}"
       draggable="true"
-      ondragstart="dragStart(event,${ref})"
-      ondragend="dragEnd()"
-      ondragover="event.preventDefault();this.classList.add('drag-target')"
-      ondragleave="this.classList.remove('drag-target')"
-      ondrop="event.stopPropagation();this.classList.remove('drag-target');dropTo('${loc}')">
+      ${reorderAttrs}>
     <div class="chip-check" onclick="toggleDone(${ref})"></div>
     <span class="chip-txt" title="${task.text.replace(/"/g,'&quot;')}">${esc(task.text)}</span>
     <div class="chip-full">${esc(task.text)}</div>
+    ${allowReorder ? '<button class="chip-drag-handle" style="cursor:grab">⋮</button>' : ''}
     <button class="chip-del" onclick="event.stopPropagation();deleteTask(${ref})">✕</button>
   </div>`;
 }
@@ -1265,17 +1391,19 @@ function renderWeek() {
 
 function renderPanel(title, icon, loc, placeholder) {
   const tasks = filtTasks(getArr(loc));
+  const isExpanded = expandedPanels.has(loc);
   const chips = tasks.length
-    ? tasks.map(t => renderChip(t, loc)).join('')
+    ? tasks.map(t => renderChip(t, loc, true)).join('')
     : `<div class="panel-empty">Drop tasks here</div>`;
+  
   return `<div class="panel">
-    <div class="panel-head" onclick="this.closest('.panel').classList.toggle('shut')">
+    <div class="panel-head" onclick="togglePanelExpand('${loc}')">
       <span style="font-size:13px">${icon}</span>
       <span class="panel-title">${title}</span>
       <span class="panel-count">${tasks.length}</span>
       <span class="panel-caret">▾</span>
     </div>
-    <div class="panel-body"
+    <div class="panel-body${isExpanded ? ' expanded' : ''}"
       ondragover="event.preventDefault();this.classList.add('dz')"
       ondragleave="this.classList.remove('dz')"
       ondrop="this.classList.remove('dz');dropTo('${loc}')">${chips}</div>
@@ -1395,17 +1523,18 @@ function renderBacklogsView() {
     const key = `${y}-${p2(m+1)}`;
     const tasks = filtTasks(S.monthBL[key] || []);
     const isCurrentMonth = m === new Date().getMonth() && y === currYear;
+    const isExpanded = expandedPanels.has(key);
     const chips = tasks.length
-      ? tasks.map(t => renderChip(t, key)).join('')
+      ? tasks.map(t => renderChip(t, key, true)).join('')
       : `<div class="panel-empty">Nothing planned</div>`;
 
     return `<div class="panel${isCurrentMonth?' this-month':''}">
-      <div class="panel-head" onclick="this.closest('.panel').classList.toggle('shut')">
+      <div class="panel-head" onclick="togglePanelExpand('${key}')">
         <span class="panel-title">${MONTHS_LONG[m]} ${y !== currYear ? y : ''}</span>
         <span class="panel-count">${tasks.length}</span>
         <span class="panel-caret">▾</span>
       </div>
-      <div class="panel-body"
+      <div class="panel-body${isExpanded ? ' expanded' : ''}"
         ondragover="event.preventDefault();this.classList.add('dz')"
         ondragleave="this.classList.remove('dz')"
         ondrop="this.classList.remove('dz');dropTo('${key}')">${chips}</div>
@@ -1429,6 +1558,94 @@ function renderBacklogsView() {
     </div>
     <div class="month-bl-grid">${cards}</div>
   </div>`;
+}
+
+// ── ALL TASKS VIEW ─────────────────────────────────────────────────
+function renderAllTasksView() {
+  const allLocs = ['weekBL', 'mainBL', ...Object.keys(S.monthBL), ...Object.keys(S.tasks)];
+  
+  const byLoc = {};
+  allLocs.forEach(loc => {
+    const tasks = filtTasks(getArr(loc));
+    if (tasks.length > 0) byLoc[loc] = tasks;
+  });
+
+  let html = `<div class="all-tasks-container">
+    <div style="margin-bottom:16px">
+      <h2 style="font-family:var(--font-display);font-size:24px;color:var(--ink);margin-bottom:8px">All tasks</h2>
+      <div style="display:flex;gap:8px">
+        <button style="background:var(--personal-bg);color:var(--personal-ink);border:1.5px solid var(--personal-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer" onclick="switchCatContext('personal');render()" ${currentCat === 'personal' ? 'style="opacity:1"' : 'style="opacity:.6"'}>🌸 Personal</button>
+        <button style="background:var(--work-bg);color:var(--work-ink);border:1.5px solid var(--work-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer" onclick="switchCatContext('work');render()" ${currentCat === 'work' ? 'style="opacity:1"' : 'style="opacity:.6"'}>💙 Work</button>
+      </div>
+    </div>`;
+
+  // Organize sections
+  const sections = [];
+  
+  // Weekly backlogs
+  if (byLoc['weekBL']) {
+    sections.push({ title: '📅 This week's backlog', loc: 'weekBL', tasks: byLoc['weekBL'] });
+  }
+  if (byLoc['mainBL']) {
+    sections.push({ title: '📦 Main backlog', loc: 'mainBL', tasks: byLoc['mainBL'] });
+  }
+  
+  // This week's days
+  const ws = S.weekStart, t = today();
+  const weekDays = [];
+  for (let i = 0; i < 7; i++) {
+    const ds = addDays(ws, i);
+    if (byLoc[ds]) {
+      weekDays.push({ ds, tasks: byLoc[ds] });
+    }
+  }
+  if (weekDays.length > 0) {
+    sections.push({ title: '📆 This week', days: weekDays });
+  }
+  
+  // Month backlogs
+  const monthKeys = Object.keys(byLoc).filter(k => isMonthBL(k));
+  monthKeys.forEach(key => {
+    const [y,m] = key.split('-');
+    sections.push({ 
+      title: `${MONTHS_LONG[parseInt(m)-1]} ${y}`, 
+      loc: key, 
+      tasks: byLoc[key],
+      isMonth: true
+    });
+  });
+
+  // Render sections
+  sections.forEach(sec => {
+    if (sec.days) {
+      // Week days section
+      html += `<div class="all-tasks-section">
+        <div class="all-tasks-title">${sec.title}</div>
+        <div style="display:grid;gap:12px">`;
+      sec.days.forEach(({ ds, tasks }) => {
+        const dt = parseD(ds);
+        const isToday = ds === t;
+        html += `<div style="border-left:3px solid ${isToday ? 'var(--personal-ink)' : 'var(--rule2)'};padding-left:12px">
+          <div style="font-weight:700;font-size:12px;margin-bottom:6px">${friendlyDate(ds)}</div>
+          <div class="all-tasks-list">
+            ${tasks.map(task => renderChip(task, ds, true)).join('')}
+          </div>
+        </div>`;
+      });
+      html += '</div></div>';
+    } else {
+      // Regular section
+      html += `<div class="all-tasks-section">
+        <div class="all-tasks-title">${sec.title}</div>
+        <div class="all-tasks-list">
+          ${sec.tasks.map(task => renderChip(task, sec.loc, true)).join('')}
+        </div>
+      </div>`;
+    }
+  });
+
+  html += '</div>';
+  return html;
 }
 
 // ── REVIEW VIEW ────────────────────────────────────────────────────
@@ -1492,7 +1709,7 @@ function render() {
 
   // nav tabs
   document.querySelectorAll('.nav-tab').forEach((el,i) =>
-    el.classList.toggle('active', ['week','month','backlogs','review'][i] === S.view));
+    el.classList.toggle('active', ['week','month','backlogs','all','review'][i] === S.view));
 
   // week nav visibility
   const wn = document.getElementById('week-nav');
@@ -1508,6 +1725,7 @@ function render() {
   if (S.view === 'week') m.innerHTML = renderWeek();
   else if (S.view === 'month') m.innerHTML = renderMonthView();
   else if (S.view === 'backlogs') m.innerHTML = renderBacklogsView();
+  else if (S.view === 'all') m.innerHTML = renderAllTasksView();
   else if (S.view === 'review') m.innerHTML = renderReview();
 
   // attach resize handles after render
@@ -1615,10 +1833,11 @@ window._onAuth = window._onAuth || (() => {});
 
 // ── GLOBALS ───────────────────────────────────────────────────────
 Object.assign(window, {
-  setView, shiftWeek, goToday, toggleCat,
+  setView, shiftWeek, goToday, toggleCat, switchCatContext,
   addTask, toggleDone, deleteTask, editTask,
   dragStart, dragEnd, dropTo,
-  mNavMonth, gotoDay,
+  reorderStart, reorderOver, reorderLeave, reorderEnd, reorderDrop,
+  mNavMonth, gotoDay, togglePanelExpand,
   mergeRemote, setSyncDot, showToast, render, save
 });
 
