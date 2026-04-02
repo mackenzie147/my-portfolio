@@ -6,7 +6,6 @@
 <title>planner</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300&display=swap" rel="stylesheet">
 <style>
-/* ── TOKENS ─────────────────────────────────────────────────── */
 :root {
   --bg: #f5f3ee;
   --surface: #ffffff;
@@ -18,32 +17,23 @@
   --rule2: #d4cfc6;
   --accent: #1a1917;
   --accent-text: #ffffff;
-
-  /* category chips */
   --personal-bg: #fde8e0;
   --personal-ink: #8c3a20;
   --personal-border: #f5c4b0;
   --work-bg: #e0e8fd;
   --work-ink: #20408c;
   --work-border: #b0c4f5;
-
-  /* status */
   --done-bg: #e8f5e0;
   --done-ink: #2a6020;
-
   --font-display: 'DM Serif Display', Georgia, serif;
   --font-body: 'DM Sans', system-ui, sans-serif;
-
   --radius-sm: 4px;
   --radius: 8px;
   --radius-lg: 12px;
-
   --shadow: 0 1px 3px rgba(26,25,23,.08), 0 4px 12px rgba(26,25,23,.06);
   --shadow-lg: 0 2px 8px rgba(26,25,23,.1), 0 12px 32px rgba(26,25,23,.12);
 }
-
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
 body {
   font-family: var(--font-body);
   background: var(--bg);
@@ -53,8 +43,6 @@ body {
   font-size: 13px;
   line-height: 1.4;
 }
-
-/* ── AUTH SCREEN ─────────────────────────────────────────────── */
 #auth-screen {
   position: fixed; inset: 0;
   background: var(--ink);
@@ -85,10 +73,7 @@ body {
   margin-bottom: 40px;
 }
 .auth-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 10px;
+  display: flex; align-items: center; justify-content: center; gap: 10px;
   width: 100%;
   padding: 14px 20px;
   background: var(--ink);
@@ -100,7 +85,6 @@ body {
   font-weight: 600;
   cursor: pointer;
   transition: opacity .15s;
-  letter-spacing: .01em;
 }
 .auth-btn:hover { opacity: .85; }
 .auth-btn svg { width: 18px; height: 18px; flex-shrink: 0; }
@@ -125,8 +109,6 @@ body {
   transition: border-color .15s;
 }
 .auth-demo:hover { border-color: var(--ink); }
-
-/* ── SETUP NOTICE ─────────────────────────────────────────────── */
 #setup-notice {
   background: #fffbe6;
   border: 1.5px solid #e8d870;
@@ -139,14 +121,8 @@ body {
   display: none;
 }
 #setup-notice.show { display: block; }
-#setup-notice strong { font-weight: 700; }
-#setup-notice a { color: #5a4e00; }
-
-/* ── APP SHELL ───────────────────────────────────────────────── */
 #app { display: none; height: 100dvh; display: flex; flex-direction: column; }
 #app.hidden { display: none; }
-
-/* ── TOP BAR ─────────────────────────────────────────────────── */
 .topbar {
   height: 52px;
   background: var(--surface);
@@ -167,8 +143,7 @@ body {
 }
 .topbar-sep { width: 1px; height: 20px; background: var(--rule2); flex-shrink: 0; }
 .nav-tabs {
-  display: flex;
-  gap: 2px;
+  display: flex; gap: 2px;
   background: var(--surface2);
   border-radius: 6px;
   padding: 2px;
@@ -192,9 +167,7 @@ body {
   color: var(--ink);
   box-shadow: 0 1px 3px rgba(0,0,0,.1);
 }
-.week-nav-btns {
-  display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-}
+.week-nav-btns { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
 .wbtn {
   background: var(--surface2);
   border: 1.5px solid var(--rule);
@@ -207,14 +180,8 @@ body {
 }
 .wbtn:hover { border-color: var(--ink); color: var(--ink); }
 .wbtn.today { background: var(--ink); color: white; border-color: var(--ink); }
-.week-label {
-  font-size: 11px; font-weight: 700; color: var(--ink3);
-  white-space: nowrap;
-}
-.topbar-right {
-  margin-left: auto;
-  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-}
+.week-label { font-size: 11px; font-weight: 700; color: var(--ink3); white-space: nowrap; }
+.topbar-right { margin-left: auto; display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .cat-toggle {
   display: flex; align-items: center; gap: 5px;
   padding: 4px 10px;
@@ -252,34 +219,20 @@ body {
 .sync-dot.ok { background: #4caf70; }
 .sync-dot.busy { background: #f5a623; animation: pulse 1s infinite; }
 @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.3} }
-
-/* ── MAIN CONTENT ─────────────────────────────────────────────── */
 .main-content {
   flex: 1;
   overflow: auto;
   padding: 16px;
   -webkit-overflow-scrolling: touch;
 }
-
-/* ── WEEK VIEW ───────────────────────────────────────────────── */
-.week-wrapper {
-  display: flex;
-  gap: 8px;
-  min-height: calc(100dvh - 100px);
-  align-items: stretch;
-}
-
+.week-wrapper { display: flex; gap: 8px; min-height: calc(100dvh - 100px); align-items: stretch; }
 .week-cols {
-  display: flex;
-  gap: 0;
-  flex: 1;
-  min-width: 0;
+  display: flex; gap: 0; flex: 1; min-width: 0;
   border: 1.5px solid var(--rule);
   border-radius: var(--radius-lg);
   overflow: hidden;
   background: var(--rule);
 }
-
 .day-col {
   background: var(--surface);
   display: flex;
@@ -292,8 +245,6 @@ body {
 }
 .day-col:last-child { border-right: none; }
 .day-col.today { background: #fffef8; }
-
-/* column resize handle */
 .col-resize {
   position: absolute;
   right: -3px; top: 0; bottom: 0;
@@ -304,65 +255,18 @@ body {
   transition: opacity .15s;
 }
 .col-resize:hover, .col-resize.dragging { opacity: 1; background: rgba(26,25,23,.12); border-radius: 3px; }
-
-.day-head {
-  padding: 10px 10px 8px;
-  border-bottom: 1.5px solid var(--rule);
-  flex-shrink: 0;
-}
-.day-head-row {
-  display: flex;
-  align-items: baseline;
-  gap: 5px;
-  margin-bottom: 4px;
-}
-.day-name {
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  color: var(--ink3);
-  text-transform: uppercase;
-}
-.day-date {
-  font-family: var(--font-display);
-  font-size: 22px;
-  line-height: 1;
-  color: var(--ink);
-}
+.day-head { padding: 10px 10px 8px; border-bottom: 1.5px solid var(--rule); flex-shrink: 0; }
+.day-head-row { display: flex; align-items: baseline; gap: 5px; margin-bottom: 4px; }
+.day-name { font-size: 9px; font-weight: 700; letter-spacing: .1em; color: var(--ink3); text-transform: uppercase; }
+.day-date { font-family: var(--font-display); font-size: 22px; line-height: 1; color: var(--ink); }
 .today .day-date { color: var(--personal-ink); }
-.day-meta {
-  font-size: 9px;
-  font-weight: 600;
-  color: var(--ink3);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.day-prog {
-  height: 2px;
-  background: var(--rule);
-  border-radius: 1px;
-  margin-top: 5px;
-  overflow: hidden;
-}
-.day-prog-fill {
-  height: 100%;
-  background: var(--ink);
-  border-radius: 1px;
-  transition: width .4s ease;
-}
-
-.day-body {
-  flex: 1;
-  overflow-y: auto;
-  padding: 6px;
-  -webkit-overflow-scrolling: touch;
-}
+.day-meta { font-size: 9px; font-weight: 600; color: var(--ink3); display: flex; align-items: center; justify-content: space-between; }
+.day-prog { height: 2px; background: var(--rule); border-radius: 1px; margin-top: 5px; overflow: hidden; }
+.day-prog-fill { height: 100%; background: var(--ink); border-radius: 1px; transition: width .4s ease; }
+.day-body { flex: 1; overflow-y: auto; padding: 6px; -webkit-overflow-scrolling: touch; }
 .day-body::-webkit-scrollbar { width: 3px; }
 .day-body::-webkit-scrollbar-track { background: transparent; }
 .day-body::-webkit-scrollbar-thumb { background: var(--rule2); border-radius: 2px; }
-
-/* CHIP task */
 .task-chip {
   display: flex;
   align-items: center;
@@ -390,7 +294,6 @@ body {
 .task-chip.drag-target { border-color: var(--ink) !important; box-shadow: 0 0 0 2px var(--ink); }
 .task-chip.reorder-dragging { opacity: .6; background: var(--surface2) !important; }
 .task-chip.reorder-over { border-top: 2px solid var(--ink); }
-
 .chip-check {
   width: 12px; height: 12px;
   border-radius: 3px;
@@ -401,9 +304,7 @@ body {
 }
 .task-chip.personal .chip-check { border-color: var(--personal-ink); }
 .task-chip.work .chip-check { border-color: var(--work-ink); }
-.task-chip.done .chip-check {
-  background: currentColor;
-}
+.task-chip.done .chip-check { background: currentColor; }
 .task-chip.done.personal .chip-check { background: var(--personal-ink); }
 .task-chip.done.work .chip-check { background: var(--work-ink); }
 .chip-check::after {
@@ -415,13 +316,7 @@ body {
   transform: rotate(45deg) translateY(-1px);
 }
 .task-chip.done .chip-check::after { display: block; }
-.chip-txt {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  min-width: 0;
-}
+.chip-txt { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
 .chip-del {
   opacity: 0;
   background: none; border: none;
@@ -434,7 +329,6 @@ body {
 }
 .task-chip:hover .chip-del { opacity: 1; }
 .chip-del:hover { color: #b01010 !important; }
-
 .chip-drag-handle {
   opacity: 0;
   background: none; border: none;
@@ -448,8 +342,6 @@ body {
 }
 .task-chip:hover .chip-drag-handle { opacity: 1; }
 .chip-drag-handle:active { cursor: grabbing; }
-
-/* task tooltip on hover */
 .chip-full {
   position: absolute;
   left: 0; top: calc(100% + 4px);
@@ -468,16 +360,8 @@ body {
   box-shadow: var(--shadow-lg);
 }
 .task-chip:hover .chip-full { display: block; }
-
-/* inline add */
-.day-add {
-  border-top: 1.5px dashed var(--rule);
-  padding: 5px 6px;
-  flex-shrink: 0;
-}
-.day-add-row {
-  display: flex; gap: 4px; align-items: center;
-}
+.day-add { border-top: 1.5px dashed var(--rule); padding: 5px 6px; flex-shrink: 0; }
+.day-add-row { display: flex; gap: 4px; align-items: center; }
 .day-add-inp {
   flex: 1;
   background: transparent;
@@ -490,15 +374,7 @@ body {
   min-width: 0;
 }
 .day-add-inp::placeholder { color: var(--ink3); }
-.day-add-cat {
-  background: transparent;
-  border: none;
-  font-size: 11px;
-  cursor: pointer;
-  outline: none;
-  padding: 0;
-  color: var(--ink2);
-}
+.day-add-cat { background: transparent; border: none; font-size: 11px; cursor: pointer; outline: none; padding: 0; color: var(--ink2); }
 .day-add-btn {
   background: var(--ink);
   color: white;
@@ -514,139 +390,37 @@ body {
   transition: opacity .12s;
 }
 .day-add-btn:hover { opacity: .75; }
-
-/* drop zone */
 .day-col.dz-over { background: #f0f4ff; }
 .day-col.dz-over .day-body { background: rgba(100,120,255,.04); }
-
-/* ── SIDEBAR ─────────────────────────────────────────────────── */
-.sidebar {
-  width: 240px;
-  flex-shrink: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
+.sidebar { width: 240px; flex-shrink: 0; display: flex; flex-direction: column; gap: 8px; }
 .panel {
   background: var(--surface);
   border: 1.5px solid var(--rule);
   border-radius: var(--radius-lg);
   overflow: hidden;
 }
-.panel-head {
-  padding: 9px 12px;
-  border-bottom: 1.5px solid var(--rule);
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  cursor: pointer;
-  user-select: none;
-  transition: background .12s;
-}
+.panel-head { padding: 9px 12px; border-bottom: 1.5px solid var(--rule); display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none; transition: background .12s; }
 .panel-head:hover { background: var(--surface2); }
-.panel-title {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: .07em;
-  color: var(--ink2);
-  flex: 1;
-  text-transform: uppercase;
-}
-.panel-count {
-  font-size: 9px; font-weight: 700;
-  background: var(--surface2);
-  color: var(--ink3);
-  border-radius: 20px;
-  padding: 1px 7px;
-  border: 1px solid var(--rule);
-}
-.panel-caret {
-  font-size: 9px; color: var(--ink3);
-  transition: transform .2s;
-}
+.panel-title { font-size: 10px; font-weight: 700; letter-spacing: .07em; color: var(--ink2); flex: 1; text-transform: uppercase; }
+.panel-count { font-size: 9px; font-weight: 700; background: var(--surface2); color: var(--ink3); border-radius: 20px; padding: 1px 7px; border: 1px solid var(--rule); }
+.panel-caret { font-size: 9px; color: var(--ink3); transition: transform .2s; }
 .panel.shut .panel-caret { transform: rotate(-90deg); }
 .panel.shut .panel-body, .panel.shut .panel-add { display: none; }
-.panel-body {
-  padding: 6px;
-  min-height: 36px;
-  max-height: 280px;
-  overflow-y: auto;
-  transition: background .12s;
-}
-.panel-body.expanded {
-  max-height: none;
-}
+.panel-body { padding: 6px; min-height: 36px; max-height: 280px; overflow-y: auto; transition: background .12s; }
+.panel-body.expanded { max-height: none; }
 .panel-body.dz { background: #f0f4ff; }
 .panel-body::-webkit-scrollbar { width: 3px; }
 .panel-body::-webkit-scrollbar-thumb { background: var(--rule2); border-radius: 2px; }
-.panel-add {
-  border-top: 1.5px dashed var(--rule);
-  padding: 5px 8px;
-  display: flex; gap: 4px; align-items: center;
-}
-.panel-add-inp {
-  flex: 1;
-  background: transparent;
-  border: none; outline: none;
-  font-family: var(--font-body);
-  font-size: 11px; font-weight: 500;
-  color: var(--ink);
-  min-width: 0;
-}
+.panel-add { border-top: 1.5px dashed var(--rule); padding: 5px 8px; display: flex; gap: 4px; align-items: center; }
+.panel-add-inp { flex: 1; background: transparent; border: none; outline: none; font-family: var(--font-body); font-size: 11px; font-weight: 500; color: var(--ink); min-width: 0; }
 .panel-add-inp::placeholder { color: var(--ink3); }
-.panel-add-cat { background: transparent; border: none; font-size: 11px; cursor: pointer; outline: none; padding: 0; }
-.panel-add-btn {
-  background: var(--ink); color: white;
-  border: none; border-radius: 4px;
-  width: 18px; height: 18px;
-  font-size: 14px; line-height: 1;
-  cursor: pointer; display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-body); font-weight: 300;
-  transition: opacity .12s;
-}
+.panel-add-cat { background: transparent; border: none; font-size: 11px; cursor: pointer; outline: none; padding: 0; color: var(--ink2); }
+.panel-add-btn { background: var(--ink); color: white; border: none; border-radius: 4px; width: 18px; height: 18px; font-size: 14px; line-height: 1; cursor: pointer; display: flex; align-items: center; justify-content: center; font-family: var(--font-body); font-weight: 300; transition: opacity .12s; }
 .panel-add-btn:hover { opacity: .75; }
-.panel-empty {
-  text-align: center;
-  padding: 12px 8px;
-  color: var(--ink3);
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: .04em;
-}
-.expand-btn {
-  background: transparent;
-  border: none;
-  font-size: 9px;
-  font-weight: 700;
-  cursor: pointer;
-  outline: none;
-  padding: 2px 4px;
-  color: var(--ink3);
-  transition: color .12s;
-}
-.expand-btn:hover { color: var(--ink); }
-
-/* ── MONTH BACKLOGS ───────────────────────────────────────────── */
-.month-bl-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-  gap: 8px;
-}
-
-/* ── MONTH CALENDAR VIEW ─────────────────────────────────────── */
-.month-cal-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 14px;
-}
-.month-cal-title {
-  font-family: var(--font-display);
-  font-size: 24px;
-  color: var(--ink);
-  flex: 1;
-}
+.panel-empty { text-align: center; padding: 12px 8px; color: var(--ink3); font-size: 10px; font-weight: 600; letter-spacing: .04em; }
+.month-bl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px; }
+.month-cal-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+.month-cal-title { font-family: var(--font-display); font-size: 24px; color: var(--ink); flex: 1; }
 .mnav {
   background: var(--surface);
   border: 1.5px solid var(--rule);
@@ -657,19 +431,8 @@ body {
   transition: all .12s;
 }
 .mnav:hover { border-color: var(--ink); color: var(--ink); }
-.month-cal-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 3px;
-}
-.wdhdr {
-  text-align: center;
-  font-size: 9px; font-weight: 700;
-  color: var(--ink3);
-  letter-spacing: .07em;
-  padding: 4px 0;
-  text-transform: uppercase;
-}
+.month-cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 3px; }
+.wdhdr { text-align: center; font-size: 9px; font-weight: 700; color: var(--ink3); letter-spacing: .07em; padding: 4px 0; text-transform: uppercase; }
 .mcal-day {
   background: var(--surface);
   border: 1.5px solid var(--rule);
@@ -685,100 +448,44 @@ body {
 .mcal-day.dz { background: #f0f4ff; border-color: var(--work-border); }
 .mcal-day-num { font-size: 11px; font-weight: 700; color: var(--ink2); margin-bottom: 3px; }
 .mcal-day.today .mcal-day-num { color: var(--personal-ink); }
-.mcal-chip {
-  font-size: 8px; font-weight: 600;
-  padding: 1px 4px;
-  border-radius: 3px;
-  margin-bottom: 2px;
-  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-}
+.mcal-chip { font-size: 8px; font-weight: 600; padding: 1px 4px; border-radius: 3px; margin-bottom: 2px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .mcal-chip.personal { background: var(--personal-bg); color: var(--personal-ink); }
 .mcal-chip.work { background: var(--work-bg); color: var(--work-ink); }
 .mcal-chip.done { opacity: .4; text-decoration: line-through; }
 .mcal-more { font-size: 8px; color: var(--ink3); font-weight: 700; }
-
-/* ── REVIEW / STATS ───────────────────────────────────────────── */
-.review-card {
-  background: var(--surface);
-  border: 1.5px solid var(--rule);
-  border-radius: var(--radius-lg);
-  padding: 24px;
-  max-width: 680px;
-}
-.review-title {
-  font-family: var(--font-display);
-  font-size: 26px;
-  margin-bottom: 4px;
-}
-.review-sub {
-  font-size: 12px; color: var(--ink3); font-weight: 500;
-  margin-bottom: 20px;
-}
+.review-card { background: var(--surface); border: 1.5px solid var(--rule); border-radius: var(--radius-lg); padding: 24px; max-width: 680px; }
+.review-title { font-family: var(--font-display); font-size: 26px; margin-bottom: 4px; }
+.review-sub { font-size: 12px; color: var(--ink3); font-weight: 500; margin-bottom: 20px; }
 .rev-section { margin-bottom: 18px; }
-.rev-section-title {
-  font-size: 9px; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink3); margin-bottom: 7px;
-}
-.rev-item {
-  display: flex; align-items: center; gap: 8px;
-  padding: 8px 10px;
-  background: var(--surface2);
-  border-radius: 6px;
-  margin-bottom: 4px;
-  font-size: 12px; font-weight: 500;
-}
+.rev-section-title { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); margin-bottom: 7px; }
+.rev-item { display: flex; align-items: center; gap: 8px; padding: 8px 10px; background: var(--surface2); border-radius: 6px; margin-bottom: 4px; font-size: 12px; font-weight: 500; }
 .rev-item.overdue { background: #fde8e0; }
 .rev-item.upcoming { background: var(--surface2); }
 .rev-dot { width: 6px; height: 6px; border-radius: 50%; flex-shrink: 0; }
 .rev-date { font-size: 10px; font-weight: 700; color: var(--ink3); margin-left: auto; white-space: nowrap; }
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-  gap: 8px;
-  margin-bottom: 16px;
-}
-.stat-card {
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 8px; margin-bottom: 16px; }
+.stat-card { background: var(--surface); border: 1.5px solid var(--rule); border-radius: var(--radius-lg); padding: 16px; text-align: center; }
+.stat-num { font-family: var(--font-display); font-size: 32px; color: var(--ink); line-height: 1; margin-bottom: 4px; }
+.stat-label { font-size: 9px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink3); }
+.all-tasks-container { max-width: 800px; }
+.all-tasks-section { margin-bottom: 20px; }
+.all-tasks-title { font-family: var(--font-display); font-size: 18px; margin-bottom: 10px; color: var(--ink); }
+.all-tasks-list { display: flex; flex-direction: column; gap: 3px; }
+.cat-buttons { display: flex; gap: 8px; margin-bottom: 16px; }
+.cat-btn {
+  padding: 4px 12px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 11px;
+  cursor: pointer;
+  border: 1.5px solid;
   background: var(--surface);
-  border: 1.5px solid var(--rule);
-  border-radius: var(--radius-lg);
-  padding: 16px;
-  text-align: center;
+  transition: opacity .2s;
+  font-family: var(--font-body);
 }
-.stat-num {
-  font-family: var(--font-display);
-  font-size: 32px;
-  color: var(--ink);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-.stat-label {
-  font-size: 9px; font-weight: 700;
-  letter-spacing: .1em; text-transform: uppercase;
-  color: var(--ink3);
-}
-
-/* ── ALL TASKS VIEW ───────────────────────────────────────────── */
-.all-tasks-container {
-  max-width: 800px;
-}
-.all-tasks-section {
-  margin-bottom: 20px;
-}
-.all-tasks-title {
-  font-family: var(--font-display);
-  font-size: 18px;
-  margin-bottom: 10px;
-  color: var(--ink);
-}
-.all-tasks-list {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
-
-/* ── TOAST ───────────────────────────────────────────────────── */
+.cat-btn.personal { border-color: var(--personal-border); background: var(--personal-bg); color: var(--personal-ink); }
+.cat-btn.work { border-color: var(--work-border); background: var(--work-bg); color: var(--work-ink); }
+.cat-btn.inactive { opacity: .5; }
 .toast {
   position: fixed;
   bottom: 24px; right: 20px;
@@ -793,8 +500,6 @@ body {
   pointer-events: none;
 }
 @keyframes tslide { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:none; } }
-
-/* ── USER MENU ─────────────────────────────────────────────────── */
 .user-menu {
   position: fixed;
   top: 56px; right: 16px;
@@ -808,57 +513,24 @@ body {
   display: none;
 }
 .user-menu.show { display: block; }
-.um-item {
-  padding: 8px 12px;
-  border-radius: 5px;
-  font-size: 12px; font-weight: 600;
-  cursor: pointer;
-  transition: background .12s;
-}
+.um-item { padding: 8px 12px; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; transition: background .12s; }
 .um-item:hover { background: var(--surface2); }
 .um-item.danger { color: #b01010; }
-.um-name {
-  padding: 8px 12px 4px;
-  font-size: 10px; font-weight: 700;
-  color: var(--ink3); letter-spacing: .05em;
-  text-transform: uppercase;
-}
+.um-name { padding: 8px 12px 4px; font-size: 10px; font-weight: 700; color: var(--ink3); letter-spacing: .05em; text-transform: uppercase; }
 .um-sep { height: 1px; background: var(--rule); margin: 4px 0; }
-
-/* ── MOBILE ──────────────────────────────────────────────────── */
 @media (max-width: 768px) {
   .topbar { height: 48px; padding: 0 12px; gap: 8px; overflow-x: auto; }
   .topbar::-webkit-scrollbar { display: none; }
   .week-nav-btns .week-label { display: none; }
-
   .week-wrapper { flex-direction: column; }
-  .week-cols {
-    flex-direction: column;
-    border-radius: var(--radius);
-    overflow-y: auto;
-    max-height: 60dvh;
-  }
-  .day-col {
-    flex: none;
-    border-right: none;
-    border-bottom: 1.5px solid var(--rule);
-    min-width: 0;
-  }
+  .week-cols { flex-direction: column; border-radius: var(--radius); overflow-y: auto; max-height: 60dvh; }
+  .day-col { flex: none; border-right: none; border-bottom: 1.5px solid var(--rule); min-width: 0; }
   .day-col:last-child { border-bottom: none; }
   .day-body { max-height: 200px; }
-
-  /* mobile: show only today + 2 days ahead */
   .day-col.mobile-hide { display: none; }
-
-  .sidebar {
-    width: 100%;
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
+  .sidebar { width: 100%; flex-direction: row; flex-wrap: wrap; gap: 8px; }
   .sidebar .panel { flex: 1; min-width: 200px; }
   .sidebar .panel.next-week { flex: 100%; }
-
   .main-content { padding: 10px; }
   .col-resize { display: none; }
 }
@@ -866,12 +538,11 @@ body {
 </head>
 <body>
 
-<!-- AUTH SCREEN -->
 <div id="auth-screen">
   <div class="auth-card">
     <div class="auth-logo">planner.</div>
     <div class="auth-sub">sign in to sync across devices</div>
-    <button class="auth-btn" onclick="signInGoogle()">
+    <button class="auth-btn" onclick="window.signInGoogle()">
       <svg viewBox="0 0 24 24" fill="none">
         <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
         <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
@@ -880,72 +551,56 @@ body {
       </svg>
       Continue with Google
     </button>
-    <button class="auth-demo" onclick="signInDemo()">Try demo (local only)</button>
+    <button class="auth-demo" onclick="window.signInDemo()">Try demo (local only)</button>
     <div class="auth-note">Your data is private and encrypted to your account.</div>
   </div>
 </div>
 
-<!-- SETUP NOTICE (shown when Firebase not configured) -->
 <div id="setup-notice">
-  <strong>⚡ Firebase setup needed for cross-device sync.</strong>
-  See the setup instructions in the <code>SETUP.md</code> file. For now you can use <em>demo mode</em> which saves locally. <a href="#" onclick="document.getElementById('setup-notice').style.display='none'">dismiss</a>
+  <strong>⚡ Firebase setup needed for cross-device sync.</strong> See the setup instructions in the <code>SETUP.md</code> file.
 </div>
 
-<!-- APP -->
 <div id="app" class="hidden">
-  <!-- USER MENU -->
   <div class="user-menu" id="user-menu">
     <div class="um-name" id="um-name">—</div>
     <div class="um-sep"></div>
-    <div class="um-item" onclick="closeMenus()">✓ Close</div>
+    <div class="um-item" onclick="window.closeMenus()">✓ Close</div>
     <div class="um-sep"></div>
-    <div class="um-item danger" onclick="signOut()">Sign out</div>
+    <div class="um-item danger" onclick="window.signOut()">Sign out</div>
   </div>
 
-  <!-- TOP BAR -->
   <div class="topbar">
     <div class="logo">planner.</div>
     <div class="topbar-sep"></div>
     <div class="nav-tabs">
-      <button class="nav-tab active" onclick="setView('week')">Week</button>
-      <button class="nav-tab" onclick="setView('month')">Month</button>
-      <button class="nav-tab" onclick="setView('backlogs')">Backlogs</button>
-      <button class="nav-tab" onclick="setView('all')">All tasks</button>
-      <button class="nav-tab" onclick="setView('review')">Review</button>
+      <button class="nav-tab active" onclick="window.setView('week')">Week</button>
+      <button class="nav-tab" onclick="window.setView('month')">Month</button>
+      <button class="nav-tab" onclick="window.setView('backlogs')">Backlogs</button>
+      <button class="nav-tab" onclick="window.setView('all')">All tasks</button>
+      <button class="nav-tab" onclick="window.setView('review')">Review</button>
     </div>
     <div class="week-nav-btns" id="week-nav">
-      <button class="wbtn" onclick="shiftWeek(-1)">‹</button>
+      <button class="wbtn" onclick="window.shiftWeek(-1)">‹</button>
       <span class="week-label" id="week-lbl"></span>
-      <button class="wbtn today" onclick="goToday()">Today</button>
-      <button class="wbtn" onclick="shiftWeek(1)">›</button>
+      <button class="wbtn today" onclick="window.goToday()">Today</button>
+      <button class="wbtn" onclick="window.shiftWeek(1)">›</button>
     </div>
     <div class="topbar-right">
-      <button class="cat-toggle p on" id="p-tog" onclick="toggleCat('personal')">
+      <button class="cat-toggle p on" id="p-tog" onclick="window.toggleCat('personal')">
         <span class="dot" style="background:var(--personal-ink)"></span>Personal
       </button>
-      <button class="cat-toggle w on" id="w-tog" onclick="toggleCat('work')">
+      <button class="cat-toggle w on" id="w-tog" onclick="window.toggleCat('work')">
         <span class="dot" style="background:var(--work-ink)"></span>Work
       </button>
       <div class="sync-dot" id="sync-dot" title="Local"></div>
-      <button class="user-btn" id="user-btn" onclick="toggleUserMenu()">?</button>
+      <button class="user-btn" id="user-btn" onclick="window.toggleUserMenu()">?</button>
     </div>
   </div>
 
-  <!-- MAIN -->
   <div class="main-content" id="main"></div>
 </div>
 
-<!-- Firebase SDKs -->
 <script type="module">
-// ── FIREBASE CONFIG ────────────────────────────────────────────
-// TO USE GOOGLE LOGIN + SYNC:
-// 1. Go to https://console.firebase.google.com
-// 2. Create a project → "Add app" → Web
-// 3. Enable Authentication → Google sign-in method
-// 4. Enable Firestore Database
-// 5. Replace the config below with your project's config
-// Without config, the app works in local demo mode.
-
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDTlUiYTTZAcsCnRlDUIC7kIz-pm8RZxGc",
   authDomain: "my-planner-71c54.firebaseapp.com",
@@ -957,7 +612,6 @@ const FIREBASE_CONFIG = {
 };
 
 const FIREBASE_READY = !!FIREBASE_CONFIG.apiKey;
-
 let auth = null, db = null, currentUser = null, unsubscribe = null;
 
 if (FIREBASE_READY) {
@@ -982,12 +636,11 @@ if (FIREBASE_READY) {
       window._onAuth(user);
     } else {
       currentUser = null;
-      showAuth();
+      window.showAuth();
     }
   });
 } else {
-  // Show auth screen with demo note
-  showAuthWithNote();
+  window.showAuthWithNote();
 }
 
 window._signInGoogle = async () => {
@@ -1002,7 +655,7 @@ window._signOut = async () => {
   if (!FIREBASE_READY) { location.reload(); return; }
   if (unsubscribe) unsubscribe();
   await window._fb.signOut(auth);
-  showAuth();
+  window.showAuth();
 };
 
 window._onAuth = async (user) => {
@@ -1013,86 +666,82 @@ window._onAuth = async (user) => {
 
   const btn = document.getElementById('user-btn');
   if (user.photoURL) {
-    btn.innerHTML = `<img src="${user.photoURL}" alt="">`;
+    btn.innerHTML = '<img src="' + user.photoURL + '" alt="">';
   } else {
     btn.textContent = (user.displayName || user.email || '?')[0].toUpperCase();
   }
   document.getElementById('um-name').textContent = user.displayName || user.email || 'You';
 
-  setSyncDot('busy');
+  window.setSyncDot('busy');
 
-  // Listen to Firestore
   const { doc, onSnapshot } = window._fb;
   const ref = doc(db, 'users', user.uid, 'planner', 'data');
   unsubscribe = onSnapshot(ref, snap => {
     if (snap.exists()) {
       const remote = snap.data();
-      mergeRemote(remote);
+      window.mergeRemote(remote);
     }
-    setSyncDot('ok');
+    window.setSyncDot('ok');
     window._render();
   }, err => {
     console.warn(err);
-    setSyncDot('');
+    window.setSyncDot('');
     window._render();
   });
 };
 
 window._saveRemote = async (data) => {
   if (!FIREBASE_READY || !currentUser) return;
-  setSyncDot('busy');
+  window.setSyncDot('busy');
   const { doc, setDoc, serverTimestamp } = window._fb;
   try {
     const ref = doc(db, 'users', currentUser.uid, 'planner', 'data');
     await setDoc(ref, { ...data, _t: serverTimestamp() });
-    setSyncDot('ok');
+    window.setSyncDot('ok');
   } catch(e) {
     console.warn(e);
-    setSyncDot('');
+    window.setSyncDot('');
   }
 };
 
-function showAuth() {
+window.showAuth = () => {
   document.getElementById('auth-screen').style.display = 'flex';
   document.getElementById('app').style.display = 'none';
   document.getElementById('app').classList.add('hidden');
-}
-function showAuthWithNote() {
-  document.getElementById('auth-screen').style.display = 'flex';
-}
+};
 
+window.showAuthWithNote = () => {
+  document.getElementById('auth-screen').style.display = 'flex';
+};
 </script>
 
 <script>
-// ── CONSTANTS ────────────────────────────────────────────────────
 const DAYS = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 const MONTHS_LONG = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 const MONTHS_SHORT = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
-// ── STATE ────────────────────────────────────────────────────────
 let saveTmr = null, dragState = null, reorderState = null;
-let colWidths = {}; // { ds: flex-grow }
-let currentCat = 'personal'; // track which category is selected for new tasks
-let expandedPanels = new Set(); // track which panels are expanded
+let colWidths = {};
+let currentCat = 'personal';
+let expandedPanels = new Set();
 
 let S = {
   view: 'week',
   weekStart: '',
   showP: true,
   showW: true,
-  tasks: {}, // keyed by date string or backlog key
-  monthBL: {}, // keyed by "YYYY-MM" → [{id,text,cat,done}]
+  tasks: {},
+  monthBL: {},
   weekBL: [],
   mainBL: [],
   totalDone: 0,
   mNav: { m: new Date().getMonth(), y: new Date().getFullYear() },
 };
 
-// ── DATE UTILS ───────────────────────────────────────────────────
 const p2 = n => String(n).padStart(2,'0');
-const today = () => { const d=new Date(); return `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`; };
+const today = () => { const d=new Date(); return d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate()); };
 const parseD = s => { const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); };
-const fmtD = d => `${d.getFullYear()}-${p2(d.getMonth()+1)}-${p2(d.getDate())}`;
+const fmtD = d => d.getFullYear()+'-'+p2(d.getMonth()+1)+'-'+p2(d.getDate());
 const addDays = (s,n) => { const d=parseD(s); d.setDate(d.getDate()+n); return fmtD(d); };
 const sunOf = s => { const d=parseD(s); d.setDate(d.getDate()-d.getDay()); return fmtD(d); };
 const nextSun = s => addDays(sunOf(s), 7);
@@ -1102,92 +751,93 @@ const isMonthBL = s => /^\d{4}-\d{2}$/.test(s);
 const weekLabel = sun => {
   const s=parseD(sun), e=parseD(addDays(sun,6));
   return s.getMonth()===e.getMonth()
-    ? `${MONTHS_SHORT[s.getMonth()]} ${s.getDate()}–${e.getDate()}`
-    : `${MONTHS_SHORT[s.getMonth()]} ${s.getDate()} – ${MONTHS_SHORT[e.getMonth()]} ${e.getDate()}`;
+    ? MONTHS_SHORT[s.getMonth()]+' '+s.getDate()+'–'+e.getDate()
+    : MONTHS_SHORT[s.getMonth()]+' '+s.getDate()+' – '+MONTHS_SHORT[e.getMonth()]+' '+e.getDate();
 };
+
 const friendlyDate = s => {
   const t=today(), tm=addDays(t,1), ys=addDays(t,-1);
   if(s===t) return 'Today';
   if(s===tm) return 'Tomorrow';
   if(s===ys) return 'Yesterday';
   const d=parseD(s);
-  return `${DAYS[d.getDay()]} ${MONTHS_SHORT[d.getMonth()]} ${d.getDate()}`;
+  return DAYS[d.getDay()]+' '+MONTHS_SHORT[d.getMonth()]+' '+d.getDate();
 };
 
-// ── STORAGE KEYS ─────────────────────────────────────────────────
 const getArr = loc => {
   if (isDate(loc)) return S.tasks[loc] || [];
   if (isMonthBL(loc)) return S.monthBL[loc] || [];
   return S[loc] || [];
 };
+
 const setArr = (loc, arr) => {
   if (isDate(loc)) S.tasks[loc] = arr;
   else if (isMonthBL(loc)) S.monthBL[loc] = arr;
   else S[loc] = arr;
 };
+
 const findTask = (loc, id) => getArr(loc).find(t => t.id === id);
 const removeTask = (loc, id) => setArr(loc, getArr(loc).filter(t => t.id !== id));
 
-// ── TASK OPS ──────────────────────────────────────────────────────
 function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
 function mkTask(text, cat) { return { id: uid(), text: text.trim(), cat: cat||currentCat, done: false }; }
 
-function addTask(loc, text, cat) {
-  if (!text?.trim()) return;
+window.addTask = function(loc, text, cat) {
+  if (!text || !text.trim()) return;
   const arr = getArr(loc);
   arr.push(mkTask(text, cat || currentCat));
   setArr(loc, arr);
-  save(); render();
-}
+  window.save();
+  window.render();
+};
 
-function toggleDone(loc, id) {
+window.toggleDone = function(loc, id) {
   const t = findTask(loc, id);
   if (!t) return;
   t.done = !t.done;
-  if (t.done) { S.totalDone++; sprayConfetti(t.cat); }
-  save(); render();
-}
+  if (t.done) { S.totalDone++; window.sprayConfetti(t.cat); }
+  window.save();
+  window.render();
+};
 
-function deleteTask(loc, id) {
+window.deleteTask = function(loc, id) {
   removeTask(loc, id);
-  save(); render();
-}
+  window.save();
+  window.render();
+};
 
-function editTask(loc, id, text) {
+window.editTask = function(loc, id, text) {
   const t = findTask(loc, id);
-  if (t) { t.text = text; save(); }
-}
+  if (t) { t.text = text; window.save(); }
+};
 
-// ── REORDER TASKS ─────────────────────────────────────────────────
-function reorderStart(e, loc, id) {
-  reorderState = { loc, id, startY: e.clientY || e.touches?.[0]?.clientY };
-  e.dataTransfer?.setDragImage(new Image(), 0, 0);
-  const el = document.querySelector(`[data-tid="${id}"]`);
+window.reorderStart = function(e, loc, id) {
+  reorderState = { loc, id, startY: e.clientY || (e.touches ? e.touches[0].clientY : 0) };
+  const el = document.querySelector('[data-tid="' + id + '"]');
   if (el) el.classList.add('reorder-dragging');
-}
+};
 
-function reorderOver(e, loc, id) {
+window.reorderOver = function(e, loc, id) {
   if (!reorderState || reorderState.loc !== loc) return;
   if (reorderState.id === id) return;
-  
   e.preventDefault();
-  const el = document.querySelector(`[data-tid="${id}"]`);
+  const el = document.querySelector('[data-tid="' + id + '"]');
   if (el) el.classList.add('reorder-over');
-}
+};
 
-function reorderLeave(id) {
-  const el = document.querySelector(`[data-tid="${id}"]`);
+window.reorderLeave = function(id) {
+  const el = document.querySelector('[data-tid="' + id + '"]');
   if (el) el.classList.remove('reorder-over');
-}
+};
 
-function reorderEnd() {
+window.reorderEnd = function() {
   document.querySelectorAll('[data-tid]').forEach(el => {
     el.classList.remove('reorder-dragging', 'reorder-over');
   });
   reorderState = null;
-}
+};
 
-function reorderDrop(toLoc, toId) {
+window.reorderDrop = function(toLoc, toId) {
   if (!reorderState) return;
   if (reorderState.loc !== toLoc) return;
   
@@ -1200,26 +850,30 @@ function reorderDrop(toLoc, toId) {
   const [task] = arr.splice(fromIdx, 1);
   arr.splice(toIdx, 0, task);
   setArr(toLoc, arr);
-  save(); render();
-}
+  window.save();
+  window.render();
+};
 
-// ── FILTER ────────────────────────────────────────────────────────
 const filtTasks = tasks => (tasks||[]).filter(t =>
   (t.cat !== 'personal' || S.showP) && (t.cat !== 'work' || S.showW)
 );
 
-// ── DRAG & DROP ───────────────────────────────────────────────────
-function dragStart(e, loc, id) {
+window.dragStart = function(e, loc, id) {
   dragState = { loc, id };
   e.dataTransfer.effectAllowed = 'move';
-  setTimeout(() => document.querySelector(`[data-tid="${id}"]`)?.classList.add('dragging'), 0);
-}
-function dragEnd() {
+  setTimeout(() => {
+    const el = document.querySelector('[data-tid="' + id + '"]');
+    if (el) el.classList.add('dragging');
+  }, 0);
+};
+
+window.dragEnd = function() {
   document.querySelectorAll('.dragging,.drag-target,.dz-over,.dz').forEach(el =>
     el.classList.remove('dragging','drag-target','dz-over','dz'));
   dragState = null;
-}
-function dropTo(toLoc) {
+};
+
+window.dropTo = function(toLoc) {
   if (!dragState || dragState.loc === toLoc) return;
   const t = findTask(dragState.loc, dragState.id);
   if (!t) return;
@@ -1227,45 +881,41 @@ function dropTo(toLoc) {
   const arr = getArr(toLoc);
   arr.push(t);
   setArr(toLoc, arr);
-  save(); render();
-  showToast('Moved ✓');
-}
+  window.save();
+  window.render();
+  window.showToast('Moved ✓');
+};
 
-// ── VIEW / NAV ────────────────────────────────────────────────────
-function setView(v) { S.view = v; currentCat = 'personal'; save(); render(); }
-function shiftWeek(d) { S.weekStart = addDays(S.weekStart, d*7); save(); render(); }
-function goToday() { S.weekStart = sunOf(today()); save(); render(); }
-function toggleCat(c) { 
+window.setView = function(v) { S.view = v; currentCat = 'personal'; window.save(); window.render(); };
+window.shiftWeek = function(d) { S.weekStart = addDays(S.weekStart, d*7); window.save(); window.render(); };
+window.goToday = function() { S.weekStart = sunOf(today()); window.save(); window.render(); };
+window.toggleCat = function(c) { 
   if(c==='personal') S.showP=!S.showP; 
   else S.showW=!S.showW; 
-  save(); render(); 
-}
-function mNavMonth(d) {
+  window.save();
+  window.render(); 
+};
+window.mNavMonth = function(d) {
   S.mNav.m += d;
   if (S.mNav.m < 0) { S.mNav.m = 11; S.mNav.y--; }
   if (S.mNav.m > 11) { S.mNav.m = 0; S.mNav.y++; }
-  render();
-}
-function gotoDay(ds) { S.weekStart = sunOf(ds); S.view = 'week'; save(); render(); }
-
-function switchCatContext(cat) {
-  currentCat = cat;
-}
-
-function togglePanelExpand(loc) {
+  window.render();
+};
+window.gotoDay = function(ds) { S.weekStart = sunOf(ds); S.view = 'week'; window.save(); window.render(); };
+window.switchCatContext = function(cat) { currentCat = cat; };
+window.togglePanelExpand = function(loc) {
   if (expandedPanels.has(loc)) {
     expandedPanels.delete(loc);
   } else {
     expandedPanels.add(loc);
   }
-  render();
-}
+  window.render();
+};
 
-// ── COL RESIZE ────────────────────────────────────────────────────
 function initColResize(handle, ds) {
   let startX, startFlex;
   const onMove = e => {
-    const dx = (e.touches?.[0]?.clientX ?? e.clientX) - startX;
+    const dx = (e.touches ? e.touches[0].clientX : e.clientX) - startX;
     const col = document.getElementById('dc-' + ds);
     if (!col) return;
     const newFlex = Math.max(0.4, startFlex + dx / 80);
@@ -1295,50 +945,30 @@ function initColResize(handle, ds) {
   });
 }
 
-// ── RENDER CHIP ───────────────────────────────────────────────────
-function renderChip(task, loc, allowReorder = false) {
-  const ref = `'${loc}','${task.id}'`;
+function renderChip(task, loc, allowReorder) {
+  const ref = "'" + loc + "','" + task.id + "'";
   const reorderAttrs = allowReorder 
-    ? `ondragstart="reorderStart(event,'${loc}','${task.id}')"
-       ondragend="reorderEnd()"
-       ondragover="event.preventDefault();reorderOver(event,'${loc}','${task.id}')"
-       ondragleave="reorderLeave('${task.id}')"
-       ondrop="event.stopPropagation();reorderDrop('${loc}','${task.id}')"` 
-    : `ondragstart="dragStart(event,${ref})"
-       ondragend="dragEnd()"
-       ondragover="event.preventDefault();this.classList.add('drag-target')"
-       ondragleave="this.classList.remove('drag-target')"
-       ondrop="event.stopPropagation();this.classList.remove('drag-target');dropTo('${loc}')"`;
+    ? "ondragstart=\"window.reorderStart(event,'" + loc + "','" + task.id + "')\" ondragend=\"window.reorderEnd()\" ondragover=\"event.preventDefault();window.reorderOver(event,'" + loc + "','" + task.id + "')\" ondragleave=\"window.reorderLeave('" + task.id + "')\" ondrop=\"event.stopPropagation();window.reorderDrop('" + loc + "','" + task.id + "')\""
+    : "ondragstart=\"window.dragStart(event," + ref + ")\" ondragend=\"window.dragEnd()\" ondragover=\"event.preventDefault();this.classList.add('drag-target')\" ondragleave=\"this.classList.remove('drag-target')\" ondrop=\"event.stopPropagation();this.classList.remove('drag-target');window.dropTo('" + loc + "')\"";
 
-  return `<div class="task-chip ${task.cat}${task.done?' done':''}" data-tid="${task.id}"
-      draggable="true"
-      ${reorderAttrs}>
-    <div class="chip-check" onclick="toggleDone(${ref})"></div>
-    <span class="chip-txt" title="${task.text.replace(/"/g,'&quot;')}">${esc(task.text)}</span>
-    <div class="chip-full">${esc(task.text)}</div>
-    ${allowReorder ? '<button class="chip-drag-handle" style="cursor:grab">⋮</button>' : ''}
-    <button class="chip-del" onclick="event.stopPropagation();deleteTask(${ref})">✕</button>
-  </div>`;
+  return '<div class="task-chip ' + task.cat + (task.done ? ' done' : '') + '" data-tid="' + task.id + '" draggable="true" ' + reorderAttrs + '>' +
+    '<div class="chip-check" onclick="window.toggleDone(' + ref + ')"></div>' +
+    '<span class="chip-txt" title="' + (task.text || '').replace(/"/g, '&quot;') + '">' + esc(task.text) + '</span>' +
+    '<div class="chip-full">' + esc(task.text) + '</div>' +
+    (allowReorder ? '<button class="chip-drag-handle" style="cursor:grab">⋮</button>' : '') +
+    '<button class="chip-del" onclick="event.stopPropagation();window.deleteTask(' + ref + ')">✕</button>' +
+    '</div>';
 }
 
-// ── RENDER ADD ROW ─────────────────────────────────────────────────
 function renderAddRow(loc, placeholder) {
-  return `<div class="day-add">
-    <div class="day-add-row">
-      <input class="day-add-inp" placeholder="${placeholder||'Add…'}"
-        onkeydown="if(event.key==='Enter'){const r=this.closest('.day-add');addTask('${loc}',this.value,r.querySelector('.day-add-cat').value);this.value=''}"
-      >
-      <select class="day-add-cat">
-        <option value="personal">🌸</option>
-        <option value="work">💙</option>
-      </select>
-      <button class="day-add-btn"
-        onclick="const r=this.closest('.day-add');const i=r.querySelector('.day-add-inp');addTask('${loc}',i.value,r.querySelector('.day-add-cat').value);i.value=''">+</button>
-    </div>
-  </div>`;
+  return '<div class="day-add">' +
+    '<div class="day-add-row">' +
+    '<input class="day-add-inp" placeholder="' + (placeholder||'Add…') + '" onkeydown="if(event.key===\'Enter\'){const r=this.closest(\'.day-add\');window.addTask(\'' + loc + '\',this.value,r.querySelector(\'.day-add-cat\').value);this.value=\'\'}">' +
+    '<select class="day-add-cat"><option value="personal">🌸</option><option value="work">💙</option></select>' +
+    '<button class="day-add-btn" onclick="const r=this.closest(\'.day-add\');const i=r.querySelector(\'.day-add-inp\');window.addTask(\'' + loc + '\',i.value,r.querySelector(\'.day-add-cat\').value);i.value=\'\'">+</button>' +
+    '</div></div>';
 }
 
-// ── WEEK VIEW ──────────────────────────────────────────────────────
 function renderWeek() {
   const ws = S.weekStart, t = today(), nws = nextSun(ws);
   let cols = '';
@@ -1352,41 +982,29 @@ function renderWeek() {
 
     const chips = tasks.length
       ? tasks.map(t => renderChip(t, ds)).join('')
-      : `<div style="padding:8px 4px;color:var(--ink3);font-size:10px;font-weight:600;text-align:center">${isToday?'nothing yet':'—'}</div>`;
+      : '<div style="padding:8px 4px;color:var(--ink3);font-size:10px;font-weight:600;text-align:center">' + (isToday?'nothing yet':'—') + '</div>';
 
-    cols += `<div class="day-col${isToday?' today':''}" id="dc-${ds}"
-        style="flex:${flexVal}"
-        ondragover="event.preventDefault();this.classList.add('dz-over')"
-        ondragleave="this.classList.remove('dz-over')"
-        ondrop="this.classList.remove('dz-over');dropTo('${ds}')">
-      <div class="day-head">
-        <div class="day-head-row">
-          <div class="day-name">${DAYS[dt.getDay()]}</div>
-          <div class="day-date">${dt.getDate()}</div>
-        </div>
-        <div class="day-meta">
-          <span>${done}/${tasks.length}</span>
-          <span>${MONTHS_SHORT[dt.getMonth()]}</span>
-        </div>
-        <div class="day-prog"><div class="day-prog-fill" style="width:${pct}%"></div></div>
-      </div>
-      <div class="day-body">${chips}</div>
-      ${renderAddRow(ds, isToday ? 'Add task…' : 'Plan…')}
-      <div class="col-resize" id="rz-${ds}"></div>
-    </div>`;
+    cols += '<div class="day-col' + (isToday ? ' today' : '') + '" id="dc-' + ds + '" style="flex:' + flexVal + '" ' +
+      'ondragover="event.preventDefault();this.classList.add(\'dz-over\')" ' +
+      'ondragleave="this.classList.remove(\'dz-over\')" ' +
+      'ondrop="this.classList.remove(\'dz-over\');window.dropTo(\'' + ds + '\')">' +
+      '<div class="day-head">' +
+      '<div class="day-head-row"><div class="day-name">' + DAYS[dt.getDay()] + '</div><div class="day-date">' + dt.getDate() + '</div></div>' +
+      '<div class="day-meta"><span>' + done + '/' + tasks.length + '</span><span>' + MONTHS_SHORT[dt.getMonth()] + '</span></div>' +
+      '<div class="day-prog"><div class="day-prog-fill" style="width:' + pct + '%"></div></div>' +
+      '</div>' +
+      '<div class="day-body">' + chips + '</div>' +
+      renderAddRow(ds, isToday ? 'Add task…' : 'Plan…') +
+      '<div class="col-resize" id="rz-' + ds + '"></div>' +
+      '</div>';
   }
 
-  // Sidebar
-  const sidebar = `<div class="sidebar">
-    ${renderPanel('WEEK BACKLOG', '🗓', 'weekBL', '')}
-    ${renderPanel('BACKLOG', '📦', 'mainBL', '')}
-    ${renderNextWeek(nws)}
-  </div>`;
-
-  return `<div class="week-wrapper">
-    <div class="week-cols">${cols}</div>
-    ${sidebar}
-  </div>`;
+  return '<div class="week-wrapper"><div class="week-cols">' + cols + '</div>' +
+    '<div class="sidebar">' +
+    renderPanel('WEEK BACKLOG', '🗓', 'weekBL', '') +
+    renderPanel('BACKLOG', '📦', 'mainBL', '') +
+    renderNextWeek(nws) +
+    '</div></div>';
 }
 
 function renderPanel(title, icon, loc, placeholder) {
@@ -1394,30 +1012,23 @@ function renderPanel(title, icon, loc, placeholder) {
   const isExpanded = expandedPanels.has(loc);
   const chips = tasks.length
     ? tasks.map(t => renderChip(t, loc, true)).join('')
-    : `<div class="panel-empty">Drop tasks here</div>`;
+    : '<div class="panel-empty">Drop tasks here</div>';
   
-  return `<div class="panel">
-    <div class="panel-head" onclick="togglePanelExpand('${loc}')">
-      <span style="font-size:13px">${icon}</span>
-      <span class="panel-title">${title}</span>
-      <span class="panel-count">${tasks.length}</span>
-      <span class="panel-caret">▾</span>
-    </div>
-    <div class="panel-body${isExpanded ? ' expanded' : ''}"
-      ondragover="event.preventDefault();this.classList.add('dz')"
-      ondragleave="this.classList.remove('dz')"
-      ondrop="this.classList.remove('dz');dropTo('${loc}')">${chips}</div>
-    <div class="panel-add">
-      <input class="panel-add-inp" placeholder="${placeholder||'Add to backlog…'}"
-        onkeydown="if(event.key==='Enter'){const r=this.closest('.panel-add');addTask('${loc}',this.value,r.querySelector('.panel-add-cat').value);this.value=''}">
-      <select class="panel-add-cat" style="background:transparent;border:none;font-size:11px;cursor:pointer;outline:none">
-        <option value="personal">🌸</option>
-        <option value="work">💙</option>
-      </select>
-      <button class="panel-add-btn"
-        onclick="const r=this.closest('.panel-add');const i=r.querySelector('.panel-add-inp');addTask('${loc}',i.value,r.querySelector('.panel-add-cat').value);i.value=''">+</button>
-    </div>
-  </div>`;
+  return '<div class="panel"><div class="panel-head" onclick="window.togglePanelExpand(\'' + loc + '\')">' +
+    '<span style="font-size:13px">' + icon + '</span>' +
+    '<span class="panel-title">' + title + '</span>' +
+    '<span class="panel-count">' + tasks.length + '</span>' +
+    '<span class="panel-caret">▾</span>' +
+    '</div>' +
+    '<div class="panel-body' + (isExpanded ? ' expanded' : '') + '" ' +
+    'ondragover="event.preventDefault();this.classList.add(\'dz\')" ' +
+    'ondragleave="this.classList.remove(\'dz\')" ' +
+    'ondrop="this.classList.remove(\'dz\');window.dropTo(\'' + loc + '\')">' + chips + '</div>' +
+    '<div class="panel-add">' +
+    '<input class="panel-add-inp" placeholder="' + (placeholder||'Add to backlog…') + '" onkeydown="if(event.key===\'Enter\'){const r=this.closest(\'.panel-add\');window.addTask(\'' + loc + '\',this.value,r.querySelector(\'.panel-add-cat\').value);this.value=\'\'}">' +
+    '<select class="panel-add-cat" style="background:transparent;border:none;font-size:11px;cursor:pointer;outline:none;color:var(--ink2)"><option value="personal">🌸</option><option value="work">💙</option></select>' +
+    '<button class="panel-add-btn" onclick="const r=this.closest(\'.panel-add\');const i=r.querySelector(\'.panel-add-inp\');window.addTask(\'' + loc + '\',i.value,r.querySelector(\'.panel-add-cat\').value);i.value=\'\'">+</button>' +
+    '</div></div>';
 }
 
 function renderNextWeek(nws) {
@@ -1426,141 +1037,122 @@ function renderNextWeek(nws) {
     const ds = addDays(nws, i), dt = parseD(ds);
     const tasks = filtTasks(getArr(ds));
     const chips = tasks.slice(0,3).map(t =>
-      `<div class="mcal-chip ${t.cat}${t.done?' done':''}">${esc(t.text)}</div>`
+      '<div class="mcal-chip ' + t.cat + (t.done ? ' done' : '') + '">' + esc(t.text) + '</div>'
     ).join('');
-    const more = tasks.length > 3 ? `<div class="mcal-more">+${tasks.length-3}</div>` : '';
-    rows += `<div style="border-bottom:1px solid var(--rule);padding:6px 10px;transition:background .12s"
-        ondragover="event.preventDefault();this.style.background='var(--surface2)'"
-        ondragleave="this.style.background=''"
-        ondrop="this.style.background='';dropTo('${ds}')">
-      <div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">
-        <span style="font-size:9px;font-weight:700;color:var(--ink3);width:22px">${DAYS[dt.getDay()].slice(0,2).toUpperCase()}</span>
-        <span style="font-family:var(--font-display);font-size:14px">${dt.getDate()}</span>
-      </div>
-      ${chips}${more}
-      <div style="display:flex;gap:3px;margin-top:3px">
-        <input style="flex:1;background:transparent;border:none;outline:none;font-family:var(--font-body);font-size:10px;font-weight:500;color:var(--ink);min-width:0"
-          placeholder="plan…"
-          onkeydown="if(event.key==='Enter'){addTask('${ds}',this.value,'personal');this.value=''}">
-        <button style="background:var(--ink);color:white;border:none;border-radius:3px;width:16px;height:16px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:300"
-          onclick="const i=this.previousElementSibling;addTask('${ds}',i.value,'personal');i.value=''">+</button>
-      </div>
-    </div>`;
+    const more = tasks.length > 3 ? '<div class="mcal-more">+' + (tasks.length-3) + '</div>' : '';
+    rows += '<div style="border-bottom:1px solid var(--rule);padding:6px 10px;transition:background .12s" ' +
+      'ondragover="event.preventDefault();this.style.background=\'var(--surface2)\'" ' +
+      'ondragleave="this.style.background=\'\'" ' +
+      'ondrop="this.style.background=\'\';window.dropTo(\'' + ds + '\')">' +
+      '<div style="display:flex;align-items:center;gap:6px;margin-bottom:3px">' +
+      '<span style="font-size:9px;font-weight:700;color:var(--ink3);width:22px">' + DAYS[dt.getDay()].slice(0,2).toUpperCase() + '</span>' +
+      '<span style="font-family:var(--font-display);font-size:14px">' + dt.getDate() + '</span>' +
+      '</div>' + chips + more +
+      '<div style="display:flex;gap:3px;margin-top:3px">' +
+      '<input style="flex:1;background:transparent;border:none;outline:none;font-family:var(--font-body);font-size:10px;font-weight:500;color:var(--ink);min-width:0" placeholder="plan…" onkeydown="if(event.key===\'Enter\'){window.addTask(\'' + ds + '\',this.value,\'personal\');this.value=\'\'}">' +
+      '<button style="background:var(--ink);color:white;border:none;border-radius:3px;width:16px;height:16px;font-size:12px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-family:var(--font-body);font-weight:300" onclick="const i=this.previousElementSibling;window.addTask(\'' + ds + '\',i.value,\'personal\');i.value=\'\'">+</button>' +
+      '</div></div>';
   }
   const nwDt = parseD(nws);
   const nwEnd = parseD(addDays(nws,6));
-  return `<div class="panel next-week" style="border-color:var(--rule2)">
-    <div class="panel-head" onclick="this.closest('.panel').classList.toggle('shut')">
-      <span style="font-size:13px">→</span>
-      <span class="panel-title">NEXT WEEK</span>
-      <span style="font-size:9px;color:var(--ink3);font-weight:600">${MONTHS_SHORT[nwDt.getMonth()]} ${nwDt.getDate()} – ${MONTHS_SHORT[nwEnd.getMonth()]} ${nwEnd.getDate()}</span>
-      <span class="panel-caret">▾</span>
-    </div>
-    <div style="max-height:320px;overflow-y:auto">${rows}</div>
-  </div>`;
+  return '<div class="panel next-week" style="border-color:var(--rule2)">' +
+    '<div class="panel-head" onclick="this.closest(\'.panel\').classList.toggle(\'shut\')">' +
+    '<span style="font-size:13px">→</span>' +
+    '<span class="panel-title">NEXT WEEK</span>' +
+    '<span style="font-size:9px;color:var(--ink3);font-weight:600">' + MONTHS_SHORT[nwDt.getMonth()] + ' ' + nwDt.getDate() + ' – ' + MONTHS_SHORT[nwEnd.getMonth()] + ' ' + nwEnd.getDate() + '</span>' +
+    '<span class="panel-caret">▾</span>' +
+    '</div>' +
+    '<div style="max-height:320px;overflow-y:auto">' + rows + '</div>' +
+    '</div>';
 }
 
-// ── MONTH CALENDAR ─────────────────────────────────────────────────
 function renderMonthView() {
   const { m, y } = S.mNav, t = today();
   const first = new Date(y, m, 1), last = new Date(y, m+1, 0);
   const off = first.getDay();
 
   let grid = '';
-  DAYS.forEach(d => { grid += `<div class="wdhdr">${d.slice(0,2)}</div>`; });
+  DAYS.forEach(d => { grid += '<div class="wdhdr">' + d.slice(0,2) + '</div>'; });
 
-  // prev month overflow
   const prevLast = new Date(y, m, 0);
   for (let i = off-1; i >= 0; i--) {
     const d = prevLast.getDate()-i;
     const m2 = m===0?11:m-1, y2 = m===0?y-1:y;
-    grid += renderMCalDay(d, `${y2}-${p2(m2+1)}-${p2(d)}`, true, t);
+    grid += renderMCalDay(d, y2+'-'+p2(m2+1)+'-'+p2(d), true, t);
   }
   for (let d = 1; d <= last.getDate(); d++)
-    grid += renderMCalDay(d, `${y}-${p2(m+1)}-${p2(d)}`, false, t);
+    grid += renderMCalDay(d, y+'-'+p2(m+1)+'-'+p2(d), false, t);
 
   const rem = (off + last.getDate()) % 7;
   if (rem) for (let d = 1; d <= 7-rem; d++) {
     const m2 = m===11?0:m+1, y2 = m===11?y+1:y;
-    grid += renderMCalDay(d, `${y2}-${p2(m2+1)}-${p2(d)}`, true, t);
+    grid += renderMCalDay(d, y2+'-'+p2(m2+1)+'-'+p2(d), true, t);
   }
 
-  return `<div class="month-cal-header">
-    <button class="mnav" onclick="mNavMonth(-1)">‹</button>
-    <div class="month-cal-title">${MONTHS_LONG[m]} ${y}</div>
-    <button class="mnav" onclick="mNavMonth(1)">›</button>
-    <button class="wbtn today" onclick="S.mNav={m:new Date().getMonth(),y:new Date().getFullYear()};render()">This month</button>
-  </div>
-  <div class="month-cal-grid">${grid}</div>`;
+  return '<div class="month-cal-header">' +
+    '<button class="mnav" onclick="window.mNavMonth(-1)">‹</button>' +
+    '<div class="month-cal-title">' + MONTHS_LONG[m] + ' ' + y + '</div>' +
+    '<button class="mnav" onclick="window.mNavMonth(1)">›</button>' +
+    '<button class="wbtn today" onclick="S.mNav={m:new Date().getMonth(),y:new Date().getFullYear()};window.render()">This month</button>' +
+    '</div><div class="month-cal-grid">' + grid + '</div>';
 }
 
 function renderMCalDay(n, ds, otherMonth, t) {
   const tasks = filtTasks(getArr(ds));
   const chips = tasks.slice(0,3).map(t =>
-    `<div class="mcal-chip ${t.cat}${t.done?' done':''}">${esc(t.text)}</div>`
+    '<div class="mcal-chip ' + t.cat + (t.done ? ' done' : '') + '">' + esc(t.text) + '</div>'
   ).join('');
-  const more = tasks.length > 3 ? `<div class="mcal-more">+${tasks.length-3}</div>` : '';
-  return `<div class="mcal-day${otherMonth?' other-month':''}${ds===t?' today':''}"
-    onclick="gotoDay('${ds}')"
-    ondragover="event.preventDefault();this.classList.add('dz')"
-    ondragleave="this.classList.remove('dz')"
-    ondrop="this.classList.remove('dz');dropTo('${ds}');gotoDay('${ds}')">
-    <div class="mcal-day-num">${n}</div>
-    ${chips}${more}
-  </div>`;
+  const more = tasks.length > 3 ? '<div class="mcal-more">+' + (tasks.length-3) + '</div>' : '';
+  return '<div class="mcal-day' + (otherMonth ? ' other-month' : '') + (ds===t ? ' today' : '') + '" ' +
+    'onclick="window.gotoDay(\'' + ds + '\')" ' +
+    'ondragover="event.preventDefault();this.classList.add(\'dz\')" ' +
+    'ondragleave="this.classList.remove(\'dz\')" ' +
+    'ondrop="this.classList.remove(\'dz\');window.dropTo(\'' + ds + '\');window.gotoDay(\'' + ds + '\')">' +
+    '<div class="mcal-day-num">' + n + '</div>' +
+    chips + more + '</div>';
 }
 
-// ── MONTH BACKLOGS VIEW ────────────────────────────────────────────
 function renderBacklogsView() {
   const t = today();
   const currYear = new Date().getFullYear();
-  // Show current year's months + next year's first half
   const months = [];
   for (let m = 0; m < 12; m++) months.push({ y: currYear, m });
   for (let m = 0; m < 6; m++) months.push({ y: currYear+1, m });
 
   const cards = months.map(({ y, m }) => {
-    const key = `${y}-${p2(m+1)}`;
+    const key = y+'-'+p2(m+1);
     const tasks = filtTasks(S.monthBL[key] || []);
     const isCurrentMonth = m === new Date().getMonth() && y === currYear;
     const isExpanded = expandedPanels.has(key);
     const chips = tasks.length
       ? tasks.map(t => renderChip(t, key, true)).join('')
-      : `<div class="panel-empty">Nothing planned</div>`;
+      : '<div class="panel-empty">Nothing planned</div>';
 
-    return `<div class="panel${isCurrentMonth?' this-month':''}">
-      <div class="panel-head" onclick="togglePanelExpand('${key}')">
-        <span class="panel-title">${MONTHS_LONG[m]} ${y !== currYear ? y : ''}</span>
-        <span class="panel-count">${tasks.length}</span>
-        <span class="panel-caret">▾</span>
-      </div>
-      <div class="panel-body${isExpanded ? ' expanded' : ''}"
-        ondragover="event.preventDefault();this.classList.add('dz')"
-        ondragleave="this.classList.remove('dz')"
-        ondrop="this.classList.remove('dz');dropTo('${key}')">${chips}</div>
-      <div class="panel-add">
-        <input class="panel-add-inp" placeholder="Add to ${MONTHS_SHORT[m]}…"
-          onkeydown="if(event.key==='Enter'){const r=this.closest('.panel-add');addTask('${key}',this.value,r.querySelector('select').value);this.value=''}">
-        <select style="background:transparent;border:none;font-size:11px;cursor:pointer;outline:none">
-          <option value="personal">🌸</option>
-          <option value="work">💙</option>
-        </select>
-        <button class="panel-add-btn"
-          onclick="const r=this.closest('.panel-add');const i=r.querySelector('.panel-add-inp');addTask('${key}',i.value,r.querySelector('select').value);i.value=''">+</button>
-      </div>
-    </div>`;
+    return '<div class="panel' + (isCurrentMonth ? ' this-month' : '') + '">' +
+      '<div class="panel-head" onclick="window.togglePanelExpand(\'' + key + '\')">' +
+      '<span class="panel-title">' + MONTHS_LONG[m] + (y !== currYear ? ' ' + y : '') + '</span>' +
+      '<span class="panel-count">' + tasks.length + '</span>' +
+      '<span class="panel-caret">▾</span>' +
+      '</div>' +
+      '<div class="panel-body' + (isExpanded ? ' expanded' : '') + '" ' +
+      'ondragover="event.preventDefault();this.classList.add(\'dz\')" ' +
+      'ondragleave="this.classList.remove(\'dz\')" ' +
+      'ondrop="this.classList.remove(\'dz\');window.dropTo(\'' + key + '\')">' + chips + '</div>' +
+      '<div class="panel-add">' +
+      '<input class="panel-add-inp" placeholder="Add to ' + MONTHS_SHORT[m] + '…" onkeydown="if(event.key===\'Enter\'){const r=this.closest(\'.panel-add\');window.addTask(\'' + key + '\',this.value,r.querySelector(\'select\').value);this.value=\'\'}">' +
+      '<select style="background:transparent;border:none;font-size:11px;cursor:pointer;outline:none;color:var(--ink2)"><option value="personal">🌸</option><option value="work">💙</option></select>' +
+      '<button class="panel-add-btn" onclick="const r=this.closest(\'.panel-add\');const i=r.querySelector(\'.panel-add-inp\');window.addTask(\'' + key + '\',i.value,r.querySelector(\'select\').value);i.value=\'\'">+</button>' +
+      '</div></div>';
   }).join('');
 
-  return `<div>
-    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">
-      <h2 style="font-family:var(--font-display);font-size:24px;color:var(--ink)">Month Backlogs</h2>
-      <span style="font-size:11px;font-weight:500;color:var(--ink3)">Drag tasks to days in Week or Month view</span>
-    </div>
-    <div class="month-bl-grid">${cards}</div>
-  </div>`;
+  return '<div>' +
+    '<div style="display:flex;align-items:center;gap:10px;margin-bottom:16px">' +
+    '<h2 style="font-family:var(--font-display);font-size:24px;color:var(--ink)">Month Backlogs</h2>' +
+    '<span style="font-size:11px;font-weight:500;color:var(--ink3)">Drag tasks to days in Week or Month view</span>' +
+    '</div>' +
+    '<div class="month-bl-grid">' + cards + '</div></div>';
 }
 
-// ── ALL TASKS VIEW ─────────────────────────────────────────────────
 function renderAllTasksView() {
   const allLocs = ['weekBL', 'mainBL', ...Object.keys(S.monthBL), ...Object.keys(S.tasks)];
   
@@ -1570,27 +1162,23 @@ function renderAllTasksView() {
     if (tasks.length > 0) byLoc[loc] = tasks;
   });
 
-  let html = `<div class="all-tasks-container">
-    <div style="margin-bottom:16px">
-      <h2 style="font-family:var(--font-display);font-size:24px;color:var(--ink);margin-bottom:8px">All tasks</h2>
-      <div style="display:flex;gap:8px">
-        <button style="background:var(--personal-bg);color:var(--personal-ink);border:1.5px solid var(--personal-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;opacity:${currentCat === 'personal' ? '1' : '.6'}" onclick="switchCatContext('personal');render()">🌸 Personal</button>
-        <button style="background:var(--work-bg);color:var(--work-ink);border:1.5px solid var(--work-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;opacity:${currentCat === 'work' ? '1' : '.6'}" onclick="switchCatContext('work');render()">💙 Work</button>
-      </div>
-    </div>`;
+  let html = '<div class="all-tasks-container">' +
+    '<div style="margin-bottom:16px">' +
+    '<h2 style="font-family:var(--font-display);font-size:24px;color:var(--ink);margin-bottom:8px">All tasks</h2>' +
+    '<div class="cat-buttons">' +
+    '<button class="cat-btn personal ' + (currentCat === 'personal' ? '' : 'inactive') + '" onclick="window.switchCatContext(\'personal\');window.render()">🌸 Personal</button>' +
+    '<button class="cat-btn work ' + (currentCat === 'work' ? '' : 'inactive') + '" onclick="window.switchCatContext(\'work\');window.render()">💙 Work</button>' +
+    '</div></div>';
 
-  // Organize sections
   const sections = [];
   
-  // Weekly backlogs
   if (byLoc['weekBL']) {
-    sections.push({ title: '📅 This week's backlog', loc: 'weekBL', tasks: byLoc['weekBL'] });
+    sections.push({ title: '📅 This week\'s backlog', loc: 'weekBL', tasks: byLoc['weekBL'] });
   }
   if (byLoc['mainBL']) {
     sections.push({ title: '📦 Main backlog', loc: 'mainBL', tasks: byLoc['mainBL'] });
   }
   
-  // This week's days
   const ws = S.weekStart, t = today();
   const weekDays = [];
   for (let i = 0; i < 7; i++) {
@@ -1603,44 +1191,35 @@ function renderAllTasksView() {
     sections.push({ title: '📆 This week', days: weekDays });
   }
   
-  // Month backlogs
   const monthKeys = Object.keys(byLoc).filter(k => isMonthBL(k));
   monthKeys.forEach(key => {
     const [y,m] = key.split('-');
     sections.push({ 
-      title: `${MONTHS_LONG[parseInt(m)-1]} ${y}`, 
+      title: MONTHS_LONG[parseInt(m)-1] + ' ' + y, 
       loc: key, 
       tasks: byLoc[key],
       isMonth: true
     });
   });
 
-  // Render sections
   sections.forEach(sec => {
     if (sec.days) {
-      // Week days section
-      html += `<div class="all-tasks-section">
-        <div class="all-tasks-title">${sec.title}</div>
-        <div style="display:grid;gap:12px">`;
+      html += '<div class="all-tasks-section"><div class="all-tasks-title">' + sec.title + '</div><div style="display:grid;gap:12px">';
       sec.days.forEach(({ ds, tasks }) => {
         const dt = parseD(ds);
         const isToday = ds === t;
-        html += `<div style="border-left:3px solid ${isToday ? 'var(--personal-ink)' : 'var(--rule2)'};padding-left:12px">
-          <div style="font-weight:700;font-size:12px;margin-bottom:6px">${friendlyDate(ds)}</div>
-          <div class="all-tasks-list">
-            ${tasks.map(task => renderChip(task, ds, true)).join('')}
-          </div>
-        </div>`;
+        html += '<div style="border-left:3px solid ' + (isToday ? 'var(--personal-ink)' : 'var(--rule2)') + ';padding-left:12px">' +
+          '<div style="font-weight:700;font-size:12px;margin-bottom:6px">' + friendlyDate(ds) + '</div>' +
+          '<div class="all-tasks-list">' +
+          tasks.map(task => renderChip(task, ds, true)).join('') +
+          '</div></div>';
       });
       html += '</div></div>';
     } else {
-      // Regular section
-      html += `<div class="all-tasks-section">
-        <div class="all-tasks-title">${sec.title}</div>
-        <div class="all-tasks-list">
-          ${sec.tasks.map(task => renderChip(task, sec.loc, true)).join('')}
-        </div>
-      </div>`;
+      html += '<div class="all-tasks-section"><div class="all-tasks-title">' + sec.title + '</div>' +
+        '<div class="all-tasks-list">' +
+        sec.tasks.map(task => renderChip(task, sec.loc, true)).join('') +
+        '</div></div>';
     }
   });
 
@@ -1648,7 +1227,6 @@ function renderAllTasksView() {
   return html;
 }
 
-// ── REVIEW VIEW ────────────────────────────────────────────────────
 function renderReview() {
   const t = today(), ws = sunOf(t);
   const pending = [], upcoming = [], nwItems = [];
@@ -1667,29 +1245,27 @@ function renderReview() {
     (S.tasks[ds]||[]).forEach(t => { if(!t.done) nwItems.push({...t, date: ds}); });
   }
 
-  const dot = cat => `<div class="rev-dot" style="background:${cat==='personal'?'var(--personal-ink)':'var(--work-ink)'}"></div>`;
-  const ri = (t, cls) => `<div class="rev-item${cls?' '+cls:''}">
-    ${dot(t.cat)}<span style="flex:1">${esc(t.text)}</span>
-    <span class="rev-date">${friendlyDate(t.date)}</span>
-  </div>`;
+  const dot = cat => '<div class="rev-dot" style="background:' + (cat==='personal'?'var(--personal-ink)':'var(--work-ink)') + '"></div>';
+  const ri = (t, cls) => '<div class="rev-item' + (cls ? ' '+cls : '') + '">' +
+    dot(t.cat) + '<span style="flex:1">' + esc(t.text) + '</span>' +
+    '<span class="rev-date">' + friendlyDate(t.date) + '</span></div>';
 
   const dLeft = 6 - parseD(t).getDay();
   const streak = calcStreak();
 
-  return `<div class="stats-grid">
-    <div class="stat-card"><div class="stat-num">${S.totalDone||0}</div><div class="stat-label">Total done</div></div>
-    <div class="stat-card"><div class="stat-num">${streak}</div><div class="stat-label">Day streak</div></div>
-    <div class="stat-card"><div class="stat-num">${dLeft}</div><div class="stat-label">Days left this week</div></div>
-  </div>
-  <div class="review-card">
-    <div class="review-title">Weekly Review</div>
-    <div class="review-sub">${dLeft===0?'Last day of the week':dLeft===1?'1 day left':dLeft+' days left'}</div>
-    ${pending.length?`<div class="rev-section"><div class="rev-section-title">⚠ Unfinished this week</div>${pending.map(t=>ri(t,'overdue')).join('')}</div>`:''}
-    ${upcoming.length?`<div class="rev-section"><div class="rev-section-title">Coming up</div>${upcoming.slice(0,8).map(t=>ri(t,'upcoming')).join('')}</div>`:''}
-    <div class="rev-section"><div class="rev-section-title">Next week</div>
-      ${nwItems.length?nwItems.slice(0,8).map(t=>ri(t,'')).join(''):`<div class="panel-empty" style="text-align:left">Nothing planned yet — use the Next Week panel in the sidebar</div>`}
-    </div>
-  </div>`;
+  return '<div class="stats-grid">' +
+    '<div class="stat-card"><div class="stat-num">' + (S.totalDone||0) + '</div><div class="stat-label">Total done</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + streak + '</div><div class="stat-label">Day streak</div></div>' +
+    '<div class="stat-card"><div class="stat-num">' + dLeft + '</div><div class="stat-label">Days left this week</div></div>' +
+    '</div>' +
+    '<div class="review-card">' +
+    '<div class="review-title">Weekly Review</div>' +
+    '<div class="review-sub">' + (dLeft===0?'Last day of the week':dLeft===1?'1 day left':dLeft+' days left') + '</div>' +
+    (pending.length ? '<div class="rev-section"><div class="rev-section-title">⚠ Unfinished this week</div>' + pending.map(t=>ri(t,'overdue')).join('') + '</div>' : '') +
+    (upcoming.length ? '<div class="rev-section"><div class="rev-section-title">Coming up</div>' + upcoming.slice(0,8).map(t=>ri(t,'upcoming')).join('') + '</div>' : '') +
+    '<div class="rev-section"><div class="rev-section-title">Next week</div>' +
+    (nwItems.length ? nwItems.slice(0,8).map(t=>ri(t,'')).join('') : '<div class="panel-empty" style="text-align:left">Nothing planned yet</div>') +
+    '</div></div>';
 }
 
 function calcStreak() {
@@ -1702,25 +1278,21 @@ function calcStreak() {
   return s;
 }
 
-// ── MAIN RENDER ────────────────────────────────────────────────────
-function render() {
+window.render = function() {
   const m = document.getElementById('main');
   if (!m) return;
 
-  // nav tabs
   document.querySelectorAll('.nav-tab').forEach((el,i) =>
     el.classList.toggle('active', ['week','month','backlogs','all','review'][i] === S.view));
 
-  // week nav visibility
   const wn = document.getElementById('week-nav');
   if (wn) wn.style.display = S.view === 'week' ? 'flex' : 'none';
   const wl = document.getElementById('week-lbl');
   if (wl) wl.textContent = weekLabel(S.weekStart);
 
-  // cat toggles
   const pt = document.getElementById('p-tog'), wt = document.getElementById('w-tog');
-  if (pt) pt.className = `cat-toggle p${S.showP?' on':''}`;
-  if (wt) wt.className = `cat-toggle w${S.showW?' on':''}`;
+  if (pt) pt.className = 'cat-toggle p' + (S.showP ? ' on' : '');
+  if (wt) wt.className = 'cat-toggle w' + (S.showW ? ' on' : '');
 
   if (S.view === 'week') m.innerHTML = renderWeek();
   else if (S.view === 'month') m.innerHTML = renderMonthView();
@@ -1728,7 +1300,6 @@ function render() {
   else if (S.view === 'all') m.innerHTML = renderAllTasksView();
   else if (S.view === 'review') m.innerHTML = renderReview();
 
-  // attach resize handles after render
   if (S.view === 'week') {
     for (let i = 0; i < 7; i++) {
       const ds = addDays(S.weekStart, i);
@@ -1736,117 +1307,105 @@ function render() {
       if (h) initColResize(h, ds);
     }
   }
-}
+};
 
-// ── PERSISTENCE ────────────────────────────────────────────────────
-function saveLocal() {
+window.saveLocal = function() {
   try { localStorage.setItem('planner_v1', JSON.stringify(S)); } catch(e) {}
-}
-function loadLocal() {
+};
+
+window.loadLocal = function() {
   try {
     const raw = localStorage.getItem('planner_v1');
-    if (raw) mergeRemote(JSON.parse(raw));
+    if (raw) window.mergeRemote(JSON.parse(raw));
   } catch(e) {}
-}
-function mergeRemote(d) {
+};
+
+window.mergeRemote = function(d) {
   if (!d) return;
   const keys = ['tasks','weekBL','mainBL','monthBL','totalDone','showP','showW','mNav'];
   keys.forEach(k => { if (d[k] !== undefined) S[k] = d[k]; });
-}
-function save() {
-  saveLocal();
+};
+
+window.save = function() {
+  window.saveLocal();
   clearTimeout(saveTmr);
   saveTmr = setTimeout(() => {
     if (window._saveRemote) window._saveRemote(S);
   }, 1500);
-}
-function setSyncDot(s) {
+};
+
+window.setSyncDot = function(s) {
   const el = document.getElementById('sync-dot');
   if (!el) return;
-  el.className = 'sync-dot' + (s==='ok'?' ok':s==='busy'?' busy':'');
-  el.title = s==='ok'?'Synced':s==='busy'?'Syncing…':'Local only';
-}
+  el.className = 'sync-dot' + (s==='ok' ? ' ok' : s==='busy' ? ' busy' : '');
+  el.title = s==='ok' ? 'Synced' : s==='busy' ? 'Syncing…' : 'Local only';
+};
 
-// ── CONFETTI ──────────────────────────────────────────────────────
-function sprayConfetti(cat) {
+window.sprayConfetti = function(cat) {
   const colors = cat === 'personal'
     ? ['#fde8e0','#f5b8a0','#e88070']
     : ['#e0e8fd','#a0b8f5','#7090e8'];
   for (let i = 0; i < 12; i++) {
     const el = document.createElement('div');
-    el.style.cssText = `position:fixed;width:6px;height:6px;border-radius:2px;
-      left:${20+Math.random()*60}%;top:${10+Math.random()*40}%;
-      background:${colors[i%colors.length]};pointer-events:none;z-index:9999;
-      animation:cfall 1s ease-in forwards;`;
+    el.style.cssText = 'position:fixed;width:6px;height:6px;border-radius:2px;' +
+      'left:' + (20+Math.random()*60) + '%;top:' + (10+Math.random()*40) + '%;' +
+      'background:' + colors[i%colors.length] + ';pointer-events:none;z-index:9999;' +
+      'animation:cfall 1s ease-in forwards;';
     document.body.appendChild(el);
     setTimeout(() => el.remove(), 1200);
   }
-}
+};
+
 const style = document.createElement('style');
 style.textContent = '@keyframes cfall{0%{opacity:1;transform:translateY(0) rotate(0)}100%{opacity:0;transform:translateY(160px) rotate(360deg)}}';
 document.head.appendChild(style);
 
-// ── TOAST ─────────────────────────────────────────────────────────
-function showToast(msg) {
+window.showToast = function(msg) {
   const el = document.createElement('div');
   el.className = 'toast';
   el.textContent = msg;
   document.body.appendChild(el);
   setTimeout(() => el.remove(), 2200);
-}
+};
 
-// ── UTILS ─────────────────────────────────────────────────────────
 function esc(s) {
   return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
 }
 
-// ── USER MENU ─────────────────────────────────────────────────────
-function toggleUserMenu() {
+window.toggleUserMenu = function() {
   document.getElementById('user-menu').classList.toggle('show');
-}
-function closeMenus() {
+};
+
+window.closeMenus = function() {
   document.getElementById('user-menu').classList.remove('show');
-}
+};
+
 document.addEventListener('click', e => {
-  if (!e.target.closest('#user-btn') && !e.target.closest('#user-menu')) closeMenus();
+  if (!e.target.closest('#user-btn') && !e.target.closest('#user-menu')) window.closeMenus();
 });
 
-// ── AUTH WRAPPERS ─────────────────────────────────────────────────
-window.signInGoogle = () => window._signInGoogle?.() ?? signInDemo();
-window.signOut = () => window._signOut?.() ?? location.reload();
+window.signInGoogle = () => window._signInGoogle ? window._signInGoogle() : window.signInDemo();
+window.signOut = () => window._signOut ? window._signOut() : location.reload();
 
 window.signInDemo = () => {
   document.getElementById('auth-screen').style.display = 'none';
   const app = document.getElementById('app');
   app.classList.remove('hidden');
   app.style.display = 'flex';
-  loadLocal();
+  window.loadLocal();
   S.weekStart = sunOf(today());
-  render();
-  setSyncDot('');
+  window.render();
+  window.setSyncDot('');
   document.getElementById('user-btn').textContent = '👤';
   document.getElementById('um-name').textContent = 'Demo mode';
 };
 
-window._render = () => render();
+window._render = () => window.render();
 window._onAuth = window._onAuth || (() => {});
 
-// ── GLOBALS ───────────────────────────────────────────────────────
-Object.assign(window, {
-  setView, shiftWeek, goToday, toggleCat, switchCatContext,
-  addTask, toggleDone, deleteTask, editTask,
-  dragStart, dragEnd, dropTo,
-  reorderStart, reorderOver, reorderLeave, reorderEnd, reorderDrop,
-  mNavMonth, gotoDay, togglePanelExpand,
-  mergeRemote, setSyncDot, showToast, render, save
-});
-
-// ── INIT ──────────────────────────────────────────────────────────
 function init() {
   S.weekStart = sunOf(today());
-  // If Firebase hasn't taken over, show auth or auto-demo
   setTimeout(() => {
-    // If auth screen still showing and no firebase
     if (document.getElementById('auth-screen').style.display !== 'none') {
       if (!window._fb) {
         document.getElementById('setup-notice').classList.add('show');
