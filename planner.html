@@ -1574,8 +1574,8 @@ function renderAllTasksView() {
     <div style="margin-bottom:16px">
       <h2 style="font-family:var(--font-display);font-size:24px;color:var(--ink);margin-bottom:8px">All tasks</h2>
       <div style="display:flex;gap:8px">
-        <button style="background:var(--personal-bg);color:var(--personal-ink);border:1.5px solid var(--personal-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer" onclick="switchCatContext('personal');render()" ${currentCat === 'personal' ? 'style="opacity:1"' : 'style="opacity:.6"'}>🌸 Personal</button>
-        <button style="background:var(--work-bg);color:var(--work-ink);border:1.5px solid var(--work-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer" onclick="switchCatContext('work');render()" ${currentCat === 'work' ? 'style="opacity:1"' : 'style="opacity:.6"'}>💙 Work</button>
+        <button style="background:var(--personal-bg);color:var(--personal-ink);border:1.5px solid var(--personal-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;opacity:${currentCat === 'personal' ? '1' : '.6'}" onclick="switchCatContext('personal');render()">🌸 Personal</button>
+        <button style="background:var(--work-bg);color:var(--work-ink);border:1.5px solid var(--work-border);padding:4px 12px;border-radius:6px;font-weight:600;font-size:11px;cursor:pointer;opacity:${currentCat === 'work' ? '1' : '.6'}" onclick="switchCatContext('work');render()">💙 Work</button>
       </div>
     </div>`;
 
