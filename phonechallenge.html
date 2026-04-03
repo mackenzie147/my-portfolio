@@ -61,6 +61,14 @@
       margin-bottom: 10px;
     }
 
+    .stats-4col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px;
+      margin-top: 10px;
+      margin-bottom: 10px;
+    }
+
     .stats-2col {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -80,12 +88,17 @@
     .stat-mini-label {
       color: #999;
       margin-bottom: 4px;
+      font-size: 9px;
     }
 
     .stat-mini-value {
       font-size: 16px;
       font-weight: 600;
       color: #0066cc;
+    }
+
+    .stat-mini.ai .stat-mini-value {
+      color: #00897b;
     }
 
     .start-btn {
@@ -160,11 +173,25 @@
       padding: 0;
     }
 
+    .screen-scroll::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .screen-scroll::-webkit-scrollbar-track {
+      background: #f9f9f9;
+    }
+
+    .screen-scroll::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 3px;
+    }
+
     .notif-card {
       border-bottom: 1px solid #eee;
       padding: 10px;
       cursor: pointer;
       transition: all 0.2s;
+      position: relative;
     }
 
     .notif-card:hover {
@@ -216,19 +243,19 @@
       font-weight: 500;
     }
 
-    .sentiment.pos {
-      background: #e8f5e9;
-      color: #1b5e20;
+    .sentiment.twitter {
+      background: #e1f5fe;
+      color: #01579b;
     }
 
-    .sentiment.neg {
-      background: #ffebee;
-      color: #b71c1c;
+    .sentiment.instagram {
+      background: #fce4ec;
+      color: #c2185b;
     }
 
-    .sentiment.neu {
-      background: #f5f5f5;
-      color: #424242;
+    .sentiment.tiktok {
+      background: #f3e5f5;
+      color: #4a148c;
     }
 
     .action-row {
@@ -376,6 +403,16 @@
       padding: 14px;
     }
 
+    .modal-text {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.5;
+      padding: 12px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      margin-bottom: 12px;
+    }
+
     .convo {
       background: #f5f5f5;
       padding: 10px;
@@ -384,6 +421,11 @@
       max-height: 180px;
       overflow-y: auto;
       font-size: 11px;
+      display: none;
+    }
+
+    .convo.show {
+      display: block;
     }
 
     .msg {
@@ -407,6 +449,11 @@
       font-size: 12px;
       margin-bottom: 8px;
       font-family: inherit;
+      display: none;
+    }
+
+    .reply-input.show {
+      display: block;
     }
 
     .send-btn {
@@ -419,10 +466,118 @@
       cursor: pointer;
       font-size: 12px;
       font-weight: 600;
+      display: none;
+    }
+
+    .send-btn.show {
+      display: block;
     }
 
     .send-btn:hover {
       background: #0052a3;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 8px;
+    }
+
+    .modal-action-btn {
+      padding: 10px;
+      font-size: 12px;
+      border: 1px solid;
+      background: white;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .modal-action-btn:hover {
+      opacity: 0.8;
+    }
+
+    .modal-action-btn.reply {
+      background: #0066cc;
+      border-color: #0066cc;
+    }
+
+    .modal-action-btn.dm {
+      background: #00897b;
+      border-color: #00897b;
+    }
+
+    .modal-action-btn.skip {
+      background: #ff9800;
+      border-color: #ff9800;
+    }
+
+    .modal-action-btn.hide {
+      background: #90a4ae;
+      border-color: #90a4ae;
+    }
+
+    .feedback-popup {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 16px 24px;
+      border-radius: 8px;
+      font-size: 28px;
+      font-weight: 700;
+      animation: slideUp 0.4s ease-out forwards;
+      pointer-events: none;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes slideDown {
+      0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(40px);
+      }
+    }
+
+    .feedback-popup.fadeout {
+      animation: slideDown 0.4s ease-out forwards;
+    }
+
+    .feedback-good {
+      background: #e8f5e9;
+      color: #1b5e20;
+      border: 2px solid #4caf50;
+    }
+
+    .feedback-bad {
+      background: #ffebee;
+      color: #b71c1c;
+      border: 2px solid #f44336;
+    }
+
+    .feedback-value {
+      font-size: 16px;
+      font-weight: 600;
     }
 
     .results {
@@ -565,8 +720,8 @@
   <div class="phone-section">
     <div class="timer-box">
       <div class="timer-big" id="timer">5:00</div>
-      <div class="timer-label">Manage notifications</div>
-      <div class="stats-2col">
+      <div class="timer-label">Your performance</div>
+      <div class="stats-4col">
         <div class="stat-mini">
           <div class="stat-mini-label">Engaged</div>
           <div class="stat-mini-value" id="humanEng">0</div>
@@ -574,6 +729,14 @@
         <div class="stat-mini">
           <div class="stat-mini-label">Revenue</div>
           <div class="stat-mini-value">$<span id="humanRev">0</span></div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-label">Open Rate</div>
+          <div class="stat-mini-value">85%</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-label">CTR</div>
+          <div class="stat-mini-value">72%</div>
         </div>
       </div>
       <button class="start-btn" id="startBtn" onclick="startChallenge()">Start challenge</button>
@@ -584,7 +747,7 @@
       <div class="phone-screen">
         <div class="screen-header">
           Notifications
-          <div class="screen-subheader">Manage DMs & Comments</div>
+          <div class="screen-subheader">Click to reply or DM</div>
         </div>
         <div class="screen-scroll" id="humanFeed"></div>
       </div>
@@ -598,11 +761,25 @@
   <div class="phone-section">
     <div class="timer-box">
       <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">
-        <span style="color: #00897b;">Blueberry</span> <span style="color: #999; font-size: 10px;">Instance 1</span>
+        <span style="color: #00897b;">Blueberry</span> <span style="color: #999; font-size: 10px;">Metrics</span>
       </div>
-      <div style="font-size: 10px; color: #666; margin-bottom: 10px;">Auto-replying in real-time</div>
-      <div class="ai-log-box" id="aiLog">
-        <div style="color: #999; font-size: 10px;">Waiting to start...</div>
+      <div class="stats-4col">
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Engaged</div>
+          <div class="stat-mini-value" id="aiEng">0</div>
+        </div>
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Revenue</div>
+          <div class="stat-mini-value">$<span id="aiRev">0</span></div>
+        </div>
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Open Rate</div>
+          <div class="stat-mini-value">89%</div>
+        </div>
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">CTR</div>
+          <div class="stat-mini-value">94%</div>
+        </div>
       </div>
     </div>
     
@@ -631,6 +808,15 @@
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
+      <div class="modal-text" id="modText">Comment text</div>
+      
+      <div class="modal-buttons" id="actionButtons">
+        <button class="modal-action-btn reply" onclick="respondAction('reply')">💬 Reply</button>
+        <button class="modal-action-btn dm" onclick="respondAction('dm')">📩 DM</button>
+        <button class="modal-action-btn skip" onclick="respondAction('skip')">⏭️ Skip</button>
+        <button class="modal-action-btn hide" onclick="respondAction('hide')">👁️ Hide</button>
+      </div>
+
       <div class="convo" id="modConvo"></div>
       <textarea class="reply-input" id="modReply" placeholder="Type your reply..."></textarea>
       <button class="send-btn" onclick="sendReply()">Send reply</button>
@@ -669,61 +855,157 @@
 </div>
 
 <script>
-const data = [
-  { id: 1, user: 'sarah.marks', type: 'dm', text: 'Do you offer bulk pricing for agencies?', hi: true, val: 280, sent: 'positive' },
-  { id: 2, user: 'spam_bot', type: 'comment', text: 'BUY CRYPTO NOW!!!', hi: false, val: 0, sent: 'negative' },
-  { id: 3, user: 'emma.shop', type: 'dm', text: 'What payment plans do you have? We want to upgrade this month', hi: true, val: 350, sent: 'positive' },
-  { id: 4, user: 'trollface', type: 'comment', text: 'This is trash lol', hi: false, val: 0, sent: 'negative' },
-  { id: 5, user: 'lisa.com', type: 'dm', text: 'Does this integrate with Shopify? We manage 50+ stores', hi: true, val: 420, sent: 'positive' },
-  { id: 6, user: 'random_guy', type: 'comment', text: 'cool i guess', hi: false, val: 0, sent: 'neutral' },
-  { id: 7, user: 'agency_lead', type: 'dm', text: 'We need this ASAP. Available for a call?', hi: true, val: 520, sent: 'positive' },
-  { id: 8, user: 'angry_customer', type: 'comment', text: 'Worst product ever made', hi: false, val: 0, sent: 'negative' },
-  { id: 9, user: 'nadia.agency', type: 'dm', text: 'Implementation timeline? Our team is ready', hi: true, val: 380, sent: 'positive' },
-  { id: 10, user: 'hater_2024', type: 'comment', text: 'overpriced garbage', hi: false, val: 0, sent: 'negative' }
-];
+function generateComments() {
+  const names = ['sarah.marks', 'emma.shop', 'lisa.com', 'agency_lead', 'nadia.agency', 'john_dev', 'casual_fan', 'maya.founder'];
+  const badNames = ['spam_bot', 'trollface', 'angry_customer', 'hater_2024', 'troll_king'];
+  
+  const goodTexts = [
+    'Do you offer bulk pricing for agencies?', 'What payment plans do you have?', 
+    'Does this integrate with Shopify?', 'We need this ASAP. Available for a call?',
+    'Implementation timeline?', 'Interested in partnership', 'Demo available?', 
+    'Enterprise plans?', 'Team pricing?', 'We manage 50+ stores'
+  ];
+  
+  const badTexts = ['BUY CRYPTO NOW!!!', 'This is trash', 'Worst product ever', 'overpriced', 'Scam'];
+  const platforms = ['twitter', 'instagram', 'tiktok'];
+  
+  let comments = [];
+  let id = 1;
+  
+  for (let i = 0; i < 80; i++) {
+    comments.push({
+      id: id++,
+      user: names[Math.floor(Math.random() * names.length)],
+      type: Math.random() > 0.3 ? 'dm' : 'comment',
+      text: goodTexts[Math.floor(Math.random() * goodTexts.length)],
+      hi: true,
+      val: Math.round(200 + Math.random() * 400),
+      sent: 'positive',
+      platform: platforms[Math.floor(Math.random() * platforms.length)]
+    });
+  }
+  
+  for (let i = 0; i < 30; i++) {
+    comments.push({
+      id: id++,
+      user: badNames[Math.floor(Math.random() * badNames.length)],
+      type: Math.random() > 0.5 ? 'dm' : 'comment',
+      text: badTexts[Math.floor(Math.random() * badTexts.length)],
+      hi: false,
+      val: 0,
+      sent: Math.random() > 0.5 ? 'negative' : 'neutral',
+      platform: platforms[Math.floor(Math.random() * platforms.length)]
+    });
+  }
+  
+  return comments.sort(() => Math.random() - 0.5);
+}
 
+const allData = generateComments();
+let commentIndex = 0;
 let running = false;
 let timeL = 300;
 let human = [];
 let ai = [];
 let curMod = null;
+let streamInterval;
+let aiStreamInterval;
+let humanRevenue = 0;
 
-function renderFeed() {
-  const feed = document.getElementById('humanFeed');
-  feed.innerHTML = data.map(d => {
-    const sentClass = d.sent === 'positive' ? 'pos' : d.sent === 'negative' ? 'neg' : 'neu';
-    return `
-      <div class="notif-card new" id="n${d.id}">
-        <div class="notif-user">${d.user}</div>
-        <span class="notif-type ${d.type}">${d.type.toUpperCase()}</span>
-        <div class="notif-text">"${d.text}"</div>
-        <span class="sentiment ${sentClass}">${d.sent}</span>
-        <div class="action-row">
-          <button class="action-btn reply" onclick="openMod(${d.id})">💬</button>
-          <button class="action-btn dm" onclick="openMod(${d.id})">📩</button>
-          <button class="action-btn skip" onclick="skip(${d.id})">⏭️</button>
-          <button class="action-btn hide" onclick="hide(${d.id})">👁️</button>
-        </div>
+function renderComment(d) {
+  return `
+    <div class="notif-card new" id="n${d.id}" onclick="openModal(${d.id})">
+      <div class="notif-user">${d.user}</div>
+      <span class="notif-type ${d.type}">${d.type.toUpperCase()}</span>
+      <div class="notif-text">"${d.text}"</div>
+      <span class="sentiment ${d.platform}" style="text-transform: capitalize;">${d.platform}</span>
+      ${d.hi ? '<span class="sentiment pos" style="margin-left: 6px;">✓ High-intent</span>' : ''}
+      <div class="action-row">
+        <button class="action-btn reply" onclick="event.stopPropagation()">💬</button>
+        <button class="action-btn dm" onclick="event.stopPropagation()">📩</button>
+        <button class="action-btn skip" onclick="event.stopPropagation(); skip(${d.id})">⏭️</button>
+        <button class="action-btn hide" onclick="event.stopPropagation(); hide(${d.id})">👁️</button>
       </div>
-    `;
-  }).join('');
-  
-  document.getElementById('aiScreen').innerHTML = '<div style="padding: 10px; color: #999; font-size: 10px; text-align: center;">Waiting to start...</div>';
+    </div>
+  `;
 }
 
-function openMod(id) {
+function streamNextComment() {
+  if (!running || commentIndex >= allData.length) return;
+  
+  const d = allData[commentIndex++];
+  const feed = document.getElementById('humanFeed');
+  feed.innerHTML += renderComment(d);
+  feed.scrollTop = feed.scrollHeight;
+}
+
+function streamAiReply() {
   if (!running) return;
-  const d = data.find(x => x.id === id);
+  
+  const highIntent = allData.filter(c => c.hi);
+  const random = highIntent[Math.floor(Math.random() * highIntent.length)];
+  
+  if (!random || ai.includes(random.id)) return;
+  
+  ai.push(random.id);
+  updateAiMetrics();
+  
+  const aiScr = document.getElementById('aiScreen');
+  if (aiScr && !aiScr.querySelector(`[data-id="${random.id}"]`)) {
+    aiScr.innerHTML += `
+      <div class="notif-card" data-id="${random.id}" style="background: #e8f5e9; border-left: 3px solid #00897b;">
+        <div class="notif-user">${random.user}</div>
+        <span class="notif-type comment" style="background: #c8e6c9; color: #1b5e20;">REPLIED</span>
+        <div class="notif-text" style="font-size: 10px; color: #1b5e20; font-style: italic; margin-top: 4px;">[Auto-reply sent]</div>
+      </div>
+    `;
+    aiScr.scrollTop = aiScr.scrollHeight;
+  }
+}
+
+function openModal(id) {
+  if (!running) return;
+  const d = allData.find(x => x.id === id);
   curMod = { id, d };
+  
   document.getElementById('modUser').textContent = d.user;
   document.getElementById('modPlatform').textContent = d.type.toUpperCase();
-  document.getElementById('modConvo').innerHTML = `<div class="msg">${d.text}</div>`;
+  document.getElementById('modText').textContent = `"${d.text}"`;
+  
+  document.getElementById('actionButtons').style.display = 'grid';
+  document.getElementById('modConvo').classList.remove('show');
+  document.getElementById('modReply').classList.remove('show');
   document.getElementById('modReply').value = '';
+  document.querySelector('.send-btn').classList.remove('show');
+  
   document.getElementById('modal').classList.add('show');
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('show');
+function respondAction(action) {
+  if (!curMod || !running) return;
+  
+  const d = curMod.d;
+  
+  if ((action === 'dm' || action === 'reply') && d.hi) {
+    showFeedback(curMod.id, Math.round(d.val), 'good', d.hi);
+    if (!human.includes(curMod.id)) {
+      human.push(curMod.id);
+      humanRevenue += Math.round(d.val);
+      updateScore();
+    }
+  } else if ((action === 'skip' || action === 'hide') && d.hi) {
+    showFeedback(curMod.id, Math.round(d.val), 'bad', d.hi);
+  }
+  
+  if (action === 'dm' || action === 'reply') {
+    document.getElementById('actionButtons').style.display = 'none';
+    document.getElementById('modConvo').classList.add('show');
+    document.getElementById('modConvo').innerHTML = `<div class="msg">${d.text}</div>`;
+    document.getElementById('modReply').classList.add('show');
+    document.querySelector('.send-btn').classList.add('show');
+  } else {
+    closeModal();
+  }
 }
 
 function sendReply() {
@@ -731,12 +1013,33 @@ function sendReply() {
   const reply = document.getElementById('modReply').value.trim();
   if (!reply) return;
   document.getElementById('modConvo').innerHTML += `<div class="msg self">${reply}</div>`;
-  if (curMod.d.hi && !human.includes(curMod.id)) {
-    human.push(curMod.id);
-    updateScore();
-  }
   document.getElementById('modReply').value = '';
-  setTimeout(closeModal, 200);
+  setTimeout(closeModal, 300);
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('show');
+  curMod = null;
+}
+
+function showFeedback(id, amount, type, isHighIntent) {
+  const popup = document.createElement('div');
+  popup.className = `feedback-popup feedback-${type}`;
+  
+  const symbol = type === 'good' ? '+' : '-';
+  popup.innerHTML = `
+    <span>${symbol}$${amount}</span>
+    <span class="feedback-value">${isHighIntent ? '✓' : '✗'}</span>
+  `;
+  
+  document.body.appendChild(popup);
+  
+  setTimeout(() => {
+    popup.classList.add('fadeout');
+    setTimeout(() => {
+      popup.remove();
+    }, 400);
+  }, 2500);
 }
 
 function skip(id) {
@@ -748,50 +1051,35 @@ function hide(id) {
 }
 
 function updateScore() {
-  const h = human.filter(id => data.find(x => x.id === id)?.hi).length;
-  const rev = human.reduce((s, id) => s + (data.find(x => x.id === id)?.val || 0), 0);
+  const h = human.filter(id => allData.find(x => x.id === id)?.hi).length;
   document.getElementById('humanEng').textContent = h;
-  document.getElementById('humanRev').textContent = rev;
+  document.getElementById('humanRev').textContent = humanRevenue;
+}
+
+function updateAiMetrics() {
+  const aHi = ai.filter(id => allData.find(x => x.id === id)?.hi).length;
+  const aRev = Math.round(ai.reduce((s, id) => s + (allData.find(x => x.id === id)?.val || 0), 0));
+  document.getElementById('aiEng').textContent = aHi;
+  document.getElementById('aiRev').textContent = aRev;
 }
 
 function startChallenge() {
   running = true;
   human = [];
   ai = [];
+  humanRevenue = 0;
+  commentIndex = 0;
   document.getElementById('startBtn').disabled = true;
-  renderFeed();
+  document.getElementById('humanFeed').innerHTML = '';
+  document.getElementById('aiScreen').innerHTML = '<div style="padding: 10px; color: #999; font-size: 10px; text-align: center;">Analyzing...</div>';
+  document.getElementById('humanEng').textContent = '0';
+  document.getElementById('humanRev').textContent = '0';
+  document.getElementById('aiEng').textContent = '0';
+  document.getElementById('aiRev').textContent = '0';
+  
   startTimer();
-  startAiSimulation();
-}
-
-function startAiSimulation() {
-  const log = document.getElementById('aiLog');
-  log.innerHTML = '<div style="color: #999; font-size: 10px;">Analyzing...</div>';
-  let delay = 500;
-  data.filter(d => d.hi).forEach(d => {
-    setTimeout(() => {
-      const action = Math.random() > 0.4 ? 'Replied to' : 'DMed';
-      const existing = document.getElementById('aiLog').innerHTML;
-      document.getElementById('aiLog').innerHTML = existing + `
-        <div class="ai-entry">
-          <div class="ai-entry-text">✓ ${action} ${d.user}</div>
-          <div class="ai-entry-time">Just now</div>
-        </div>
-      `;
-      ai.push(d.id);
-      const aiScr = document.getElementById('aiScreen');
-      if (!aiScr.querySelector(`[data-id="${d.id}"]`)) {
-        aiScr.innerHTML += `
-          <div class="notif-card" data-id="${d.id}" style="background: #e8f5e9; border-left: 3px solid #00897b;">
-            <div class="notif-user">${d.user}</div>
-            <span class="notif-type comment" style="background: #c8e6c9; color: #1b5e20;">REPLIED</span>
-            <div class="notif-text" style="font-size: 10px; color: #1b5e20; font-style: italic; margin-top: 4px;">[Auto-reply sent]</div>
-          </div>
-        `;
-      }
-    }, delay);
-    delay += 600;
-  });
+  streamInterval = setInterval(streamNextComment, 200);
+  aiStreamInterval = setInterval(streamAiReply, 500);
 }
 
 function startTimer() {
@@ -812,15 +1100,20 @@ function startTimer() {
 
 function endChallenge() {
   running = false;
-  const hRev = human.reduce((s, id) => s + (data.find(x => x.id === id)?.val || 0), 0);
-  const aRev = ai.reduce((s, id) => s + (data.find(x => x.id === id)?.val || 0), 0);
-  const hHi = human.filter(id => data.find(x => x.id === id)?.hi).length;
-  const aHi = ai.filter(id => data.find(x => x.id === id)?.hi).length;
+  clearInterval(streamInterval);
+  clearInterval(aiStreamInterval);
+  
+  const hRev = humanRevenue;
+  const aRev = ai.reduce((s, id) => s + (allData.find(x => x.id === id)?.val || 0), 0);
+  const hHi = human.filter(id => allData.find(x => x.id === id)?.hi).length;
+  const aHi = ai.filter(id => allData.find(x => x.id === id)?.hi).length;
+  
   document.getElementById('resFinalHuman').textContent = hHi;
   document.getElementById('resFinalHumanRev').textContent = hRev;
   document.getElementById('resFinalAi').textContent = aHi;
   document.getElementById('resFinalAiRev').textContent = aRev;
   document.getElementById('resGap').textContent = aRev - hRev;
+  
   document.getElementById('results').classList.add('show');
 }
 
@@ -828,15 +1121,19 @@ function resetChallenge() {
   running = false;
   human = [];
   ai = [];
+  humanRevenue = 0;
+  commentIndex = 0;
   document.getElementById('results').classList.remove('show');
   document.getElementById('startBtn').disabled = false;
   document.getElementById('timer').textContent = '5:00';
   document.getElementById('humanEng').textContent = '0';
   document.getElementById('humanRev').textContent = '0';
-  renderFeed();
+  document.getElementById('aiEng').textContent = '0';
+  document.getElementById('aiRev').textContent = '0';
+  document.getElementById('humanFeed').innerHTML = '';
+  document.getElementById('aiScreen').innerHTML = '<div style="padding: 10px; color: #999; font-size: 10px; text-align: center;">Waiting to start...</div>';
+  closeModal();
 }
-
-renderFeed();
 </script>
 
 </body>
