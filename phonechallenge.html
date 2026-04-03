@@ -1,412 +1,579 @@
-<div style="font-family: var(--font-sans); background: #000; padding: 20px; min-height: 1200px;">
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blueberry Challenge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
 
-<style>
-  * { box-sizing: border-box; }
-  
-  .wrapper { 
-    display: grid; 
-    grid-template-columns: 1fr 50px 1fr; 
-    gap: 20px; 
-    max-width: 1400px; 
-    margin: 0 auto;
-  }
-  
-  .phone-container {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  
-  .timer-section {
-    background: var(--color-background-secondary);
-    padding: 16px;
-    border-radius: 12px;
-    text-align: center;
-    border: 0.5px solid var(--color-border-tertiary);
-  }
-  
-  .timer-display {
-    font-size: 36px;
-    font-weight: 500;
-    font-family: var(--font-mono);
-    color: #378ADD;
-    margin-bottom: 8px;
-  }
-  
-  .timer-display.critical { color: #C62828; }
-  
-  .stats-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    margin-top: 12px;
-  }
-  
-  .stat { text-align: center; font-size: 12px; }
-  .stat-label { color: var(--color-text-secondary); }
-  .stat-value { font-size: 18px; font-weight: 500; color: #378ADD; margin-top: 4px; }
-  
-  .phone-frame {
-    background: #1a1a1a;
-    border-radius: 40px;
-    border: 12px solid #000;
-    padding: 12px;
-    height: 750px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 0 0 1px rgba(255,255,255,0.1);
-    position: relative;
-  }
-  
-  .phone-notch {
-    background: #000;
-    height: 30px;
-    border-radius: 0 0 20px 20px;
-    margin-bottom: 8px;
-  }
-  
-  .phone-screen {
-    background: var(--color-background-primary);
-    border-radius: 20px;
-    flex: 1;
-    overflow: hidden;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .screen-header {
-    background: var(--color-background-secondary);
-    padding: 12px 16px;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-  }
-  
-  .brand-label {
-    font-size: 10px;
-    color: var(--color-text-tertiary);
-    margin-top: 2px;
-    font-weight: 400;
-  }
-  
-  .screen-content {
-    flex: 1;
-    overflow-y: auto;
-    padding: 0;
-  }
-  
-  .notification {
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-    padding: 12px;
-    cursor: pointer;
-    transition: all 0.2s;
-    animation: slideDown 0.3s ease-out;
-  }
-  
-  @keyframes slideDown {
-    from { opacity: 0; transform: translateY(-12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-  
-  .notification:hover { background: var(--color-background-secondary); }
-  .notification.new { background: #E6F1FB; border-left: 3px solid #378ADD; }
-  
-  .notif-avatar {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: white;
-    font-weight: 500;
-    font-size: 14px;
-    margin-bottom: 8px;
-  }
-  
-  .notif-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 6px;
-  }
-  
-  .notif-user { font-weight: 500; font-size: 13px; color: var(--color-text-primary); }
-  .notif-platform { font-size: 10px; padding: 2px 6px; border-radius: 3px; }
-  .notif-platform.dm { background: #FCE4EC; color: #C2185B; }
-  .notif-platform.comment { background: #E1F5FE; color: #01579B; }
-  
-  .notif-text {
-    font-size: 12px;
-    color: var(--color-text-secondary);
-    line-height: 1.4;
-    margin-bottom: 8px;
-  }
-  
-  .notif-sentiment {
-    font-size: 10px;
-    padding: 3px 6px;
-    border-radius: 3px;
-    display: inline-block;
-  }
-  
-  .sentiment-positive { background: #E8F5E9; color: #1B5E20; }
-  .sentiment-negative { background: #FFEBEE; color: #B71C1C; }
-  .sentiment-neutral { background: #F5F5F5; color: #424242; }
-  
-  .action-row {
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr 1fr;
-    gap: 4px;
-    margin-top: 6px;
-  }
-  
-  .action-btn {
-    padding: 6px 4px;
-    font-size: 10px;
-    border: 0.5px solid var(--color-border-tertiary);
-    background: var(--color-background-tertiary);
-    color: var(--color-text-primary);
-    border-radius: 4px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-  
-  .action-btn:hover { background: var(--color-background-secondary); }
-  .action-btn.reply { background: #378ADD; color: white; border-color: #378ADD; }
-  .action-btn.dm { background: #1D9E75; color: white; border-color: #1D9E75; }
-  .action-btn.skip { background: #FFA726; color: white; border-color: #FFA726; }
-  .action-btn.hide { background: #90A4AE; color: white; border-color: #90A4AE; }
-  
-  .app-modal {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 2000;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .app-modal.show { display: flex; }
-  
-  .modal-content {
-    background: white;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
-    max-height: 80vh;
-    overflow-y: auto;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-  }
-  
-  .modal-header {
-    background: var(--color-background-secondary);
-    padding: 16px;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-  
-  .modal-close { background: none; border: none; font-size: 20px; cursor: pointer; }
-  
-  .modal-body {
-    padding: 16px;
-  }
-  
-  .conversation {
-    max-height: 200px;
-    overflow-y: auto;
-    margin-bottom: 16px;
-    padding: 12px;
-    background: var(--color-background-secondary);
-    border-radius: 6px;
-  }
-  
-  .message {
-    margin-bottom: 8px;
-    padding: 8px;
-    background: var(--color-background-primary);
-    border-radius: 6px;
-    font-size: 12px;
-  }
-  
-  .message.other { text-align: left; }
-  .message.self { text-align: right; background: #E6F1FB; }
-  
-  .reply-input {
-    width: 100%;
-    padding: 10px;
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: 6px;
-    font-size: 12px;
-    margin-bottom: 8px;
-    font-family: var(--font-sans);
-  }
-  
-  .send-btn {
-    width: 100%;
-    padding: 8px;
-    background: #378ADD;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-  }
-  
-  .ai-log {
-    background: var(--color-background-secondary);
-    padding: 12px;
-    border-radius: 6px;
-    font-size: 10px;
-    max-height: 150px;
-    overflow-y: auto;
-  }
-  
-  .ai-action {
-    padding: 6px;
-    margin-bottom: 4px;
-    background: var(--color-background-primary);
-    border-left: 2px solid #1D9E75;
-    border-radius: 3px;
-  }
-  
-  .ai-action-time { color: var(--color-text-tertiary); font-size: 9px; }
-  .ai-action-text { color: var(--color-text-primary); font-weight: 500; font-size: 10px; }
-  
-  .start-section {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-  
-  .start-btn {
-    width: 100%;
-    padding: 12px;
-    background: #378ADD;
-    color: white;
-    border: none;
-    border-radius: 6px;
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 13px;
-  }
-  
-  .start-btn:disabled { background: var(--color-text-tertiary); }
-  
-  .center-divider {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text-tertiary);
-    font-size: 24px;
-  }
-  
-  .results-overlay {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0,0,0,0.8);
-    z-index: 3000;
-    align-items: center;
-    justify-content: center;
-  }
-  
-  .results-overlay.show { display: flex; }
-  
-  .results-card {
-    background: var(--color-background-primary);
-    border-radius: 12px;
-    padding: 32px;
-    max-width: 600px;
-    text-align: center;
-  }
-  
-  .results-title { font-size: 28px; font-weight: 500; margin-bottom: 24px; }
-  
-  .results-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 16px;
-    margin: 24px 0;
-  }
-  
-  .result-col {
-    background: var(--color-background-secondary);
-    padding: 16px;
-    border-radius: 8px;
-  }
-  
-  .result-name { font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px; text-transform: uppercase; }
-  .result-stat { font-size: 24px; font-weight: 500; margin-bottom: 4px; }
-  .result-stat.human { color: #378ADD; }
-  .result-stat.ai { color: #1D9E75; }
-  .result-detail { font-size: 11px; color: var(--color-text-tertiary); }
-  
-  .gap-box {
-    background: #FFEBEE;
-    border: 0.5px solid #C62828;
-    padding: 16px;
-    border-radius: 8px;
-    margin: 16px 0;
-    color: #C62828;
-  }
-  
-  .gap-label { font-size: 12px; margin-bottom: 6px; }
-  .gap-value { font-size: 28px; font-weight: 500; }
-  
-  .dm-cta {
-    background: var(--color-background-secondary);
-    padding: 12px;
-    border-radius: 8px;
-    margin: 16px 0;
-    font-size: 11px;
-  }
-  
-  .dm-link { 
-    background: var(--color-background-primary);
-    padding: 6px;
-    border-radius: 4px;
-    margin-top: 6px;
-    font-family: var(--font-mono);
-    word-break: break-all;
-  }
-  
-  .retry-btn {
-    background: var(--color-background-secondary);
-    border: 0.5px solid var(--color-border-tertiary);
-    padding: 10px 16px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    margin-top: 12px;
-  }
-</style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #000;
+      color: #333;
+      padding: 20px;
+      min-height: 100vh;
+    }
 
-<div class="wrapper">
-  <!-- LEFT PHONE (HUMAN) -->
-  <div class="phone-container">
-    <div class="timer-section">
-      <div class="timer-display" id="timerDisplay">5:00</div>
-      <div style="font-size: 12px; color: var(--color-text-secondary); margin-bottom: 8px;">Manage notifications</div>
-      <div class="stats-row">
-        <div class="stat">
-          <div class="stat-label">Engaged</div>
-          <div class="stat-value" id="humanEngaged">0</div>
+    .main-wrapper {
+      display: flex;
+      gap: 24px;
+      max-width: 1200px;
+      margin: 0 auto;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .phone-section {
+      flex: 0 1 340px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .timer-box {
+      background: #f5f5f5;
+      padding: 16px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #e0e0e0;
+    }
+
+    .timer-big {
+      font-size: 36px;
+      font-weight: 600;
+      font-family: 'Courier New', monospace;
+      color: #0066cc;
+      margin-bottom: 8px;
+    }
+
+    .timer-big.critical {
+      color: #d32f2f;
+    }
+
+    .timer-label {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .stats-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .stat-mini {
+      background: white;
+      padding: 8px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 11px;
+      border: 1px solid #ddd;
+    }
+
+    .stat-mini-label {
+      color: #999;
+      margin-bottom: 4px;
+    }
+
+    .stat-mini-value {
+      font-size: 16px;
+      font-weight: 600;
+      color: #0066cc;
+    }
+
+    .start-btn {
+      width: 100%;
+      padding: 10px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 8px;
+      transition: all 0.2s;
+    }
+
+    .start-btn:hover:not(:disabled) {
+      background: #0052a3;
+    }
+
+    .start-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .phone-frame {
+      background: #1a1a1a;
+      border-radius: 36px;
+      border: 12px solid #000;
+      padding: 10px;
+      height: 580px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.1);
+    }
+
+    .phone-notch {
+      background: #000;
+      height: 28px;
+      border-radius: 0 0 18px 18px;
+      margin-bottom: 6px;
+    }
+
+    .phone-screen {
+      background: white;
+      border-radius: 18px;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-header {
+      background: #f9f9f9;
+      padding: 12px 14px;
+      border-bottom: 1px solid #eee;
+      font-size: 13px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .screen-subheader {
+      font-size: 10px;
+      color: #999;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .screen-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .notif-card {
+      border-bottom: 1px solid #eee;
+      padding: 10px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .notif-card:hover {
+      background: #f9f9f9;
+    }
+
+    .notif-card.new {
+      background: #e3f2fd;
+    }
+
+    .notif-user {
+      font-weight: 600;
+      font-size: 12px;
+      margin-bottom: 4px;
+      color: #333;
+    }
+
+    .notif-type {
+      display: inline-block;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-bottom: 4px;
+      font-weight: 500;
+    }
+
+    .notif-type.dm {
+      background: #fce4ec;
+      color: #c2185b;
+    }
+
+    .notif-type.comment {
+      background: #e1f5fe;
+      color: #01579b;
+    }
+
+    .notif-text {
+      font-size: 11px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 6px;
+    }
+
+    .sentiment {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      display: inline-block;
+      font-weight: 500;
+    }
+
+    .sentiment.pos {
+      background: #e8f5e9;
+      color: #1b5e20;
+    }
+
+    .sentiment.neg {
+      background: #ffebee;
+      color: #b71c1c;
+    }
+
+    .sentiment.neu {
+      background: #f5f5f5;
+      color: #424242;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 4px;
+      margin-top: 6px;
+    }
+
+    .action-btn {
+      padding: 5px 3px;
+      font-size: 10px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #333;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+
+    .action-btn.reply {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
+
+    .action-btn.dm {
+      background: #00897b;
+      color: white;
+      border-color: #00897b;
+    }
+
+    .action-btn.skip {
+      background: #ff9800;
+      color: white;
+      border-color: #ff9800;
+    }
+
+    .action-btn.hide {
+      background: #90a4ae;
+      color: white;
+      border-color: #90a4ae;
+    }
+
+    .center-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #666;
+      font-size: 24px;
+      flex-shrink: 0;
+      margin: 20px 0;
+    }
+
+    .ai-log-box {
+      background: #f5f5f5;
+      padding: 12px;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 10px;
+      max-height: 140px;
+      overflow-y: auto;
+    }
+
+    .ai-entry {
+      padding: 6px;
+      margin-bottom: 4px;
+      background: white;
+      border-left: 2px solid #00897b;
+      border-radius: 3px;
+    }
+
+    .ai-entry-text {
+      font-weight: 600;
+      color: #00897b;
+      font-size: 10px;
+    }
+
+    .ai-entry-time {
+      font-size: 9px;
+      color: #999;
+      margin-top: 2px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.6);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-inner {
+      background: white;
+      border-radius: 10px;
+      width: 90%;
+      max-width: 450px;
+      max-height: 70vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-header {
+      background: #f9f9f9;
+      padding: 14px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 13px;
+    }
+
+    .modal-header-user {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .modal-header-platform {
+      font-size: 11px;
+      color: #999;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .modal-body {
+      padding: 14px;
+    }
+
+    .convo {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 6px;
+      margin-bottom: 12px;
+      max-height: 180px;
+      overflow-y: auto;
+      font-size: 11px;
+    }
+
+    .msg {
+      padding: 6px;
+      margin-bottom: 6px;
+      background: white;
+      border-radius: 4px;
+      line-height: 1.4;
+    }
+
+    .msg.self {
+      background: #e3f2fd;
+      text-align: right;
+    }
+
+    .reply-input {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      font-size: 12px;
+      margin-bottom: 8px;
+      font-family: inherit;
+    }
+
+    .send-btn {
+      width: 100%;
+      padding: 8px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .send-btn:hover {
+      background: #0052a3;
+    }
+
+    .results {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .results.show {
+      display: flex;
+    }
+
+    .results-card {
+      background: white;
+      border-radius: 10px;
+      padding: 28px;
+      max-width: 500px;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .results-title {
+      font-size: 24px;
+      font-weight: 600;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .results-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin: 20px 0;
+    }
+
+    .result-box {
+      background: #f9f9f9;
+      padding: 14px;
+      border-radius: 8px;
+      font-size: 11px;
+      border: 1px solid #eee;
+    }
+
+    .result-name {
+      color: #999;
+      margin-bottom: 6px;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+
+    .result-stat {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 3px;
+    }
+
+    .result-stat.human {
+      color: #0066cc;
+    }
+
+    .result-stat.ai {
+      color: #00897b;
+    }
+
+    .gap-warning {
+      background: #ffebee;
+      border: 1px solid #d32f2f;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 12px;
+      color: #d32f2f;
+    }
+
+    .gap-value {
+      font-size: 22px;
+      font-weight: 600;
+      margin-top: 6px;
+    }
+
+    .cta {
+      background: #f9f9f9;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 16px 0;
+      font-size: 11px;
+      border: 1px solid #eee;
+    }
+
+    .cta-link {
+      background: white;
+      padding: 6px;
+      margin-top: 6px;
+      border-radius: 4px;
+      font-family: 'Courier New', monospace;
+      word-break: break-all;
+      font-size: 10px;
+    }
+
+    .retry {
+      background: #f5f5f5;
+      border: 1px solid #ddd;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+      transition: all 0.2s;
+    }
+
+    .retry:hover {
+      background: #eee;
+    }
+
+    @media (max-width: 800px) {
+      .phone-section {
+        flex: 0 1 100%;
+      }
+      .center-divider {
+        transform: rotate(90deg);
+        margin: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<div class="main-wrapper">
+  
+  <!-- LEFT PHONE -->
+  <div class="phone-section">
+    <div class="timer-box">
+      <div class="timer-big" id="timer">5:00</div>
+      <div class="timer-label">Manage notifications</div>
+      <div class="stats-2col">
+        <div class="stat-mini">
+          <div class="stat-mini-label">Engaged</div>
+          <div class="stat-mini-value" id="humanEng">0</div>
         </div>
-        <div class="stat">
-          <div class="stat-label">Revenue</div>
-          <div class="stat-value">$<span id="humanRevenue">0</span></div>
+        <div class="stat-mini">
+          <div class="stat-mini-label">Revenue</div>
+          <div class="stat-mini-value">$<span id="humanRev">0</span></div>
         </div>
       </div>
       <button class="start-btn" id="startBtn" onclick="startChallenge()">Start challenge</button>
@@ -417,25 +584,25 @@
       <div class="phone-screen">
         <div class="screen-header">
           Notifications
-          <div class="brand-label">Manage DMs & Comments</div>
+          <div class="screen-subheader">Manage DMs & Comments</div>
         </div>
-        <div class="screen-content" id="humanNotifications"></div>
+        <div class="screen-scroll" id="humanFeed"></div>
       </div>
     </div>
   </div>
   
-  <!-- CENTER DIVIDER -->
+  <!-- CENTER -->
   <div class="center-divider">⚡</div>
   
-  <!-- RIGHT PHONE (BLUEBERRY AI) -->
-  <div class="phone-container">
-    <div class="timer-section">
-      <div style="font-size: 14px; font-weight: 500; margin-bottom: 8px;">
-        <span style="color: #1D9E75;">Blueberry</span> <span style="color: var(--color-text-tertiary); font-size: 10px;">Instance 1</span>
+  <!-- RIGHT PHONE -->
+  <div class="phone-section">
+    <div class="timer-box">
+      <div style="font-size: 12px; font-weight: 600; margin-bottom: 8px;">
+        <span style="color: #00897b;">Blueberry</span> <span style="color: #999; font-size: 10px;">Instance 1</span>
       </div>
-      <div style="font-size: 11px; color: var(--color-text-secondary); margin-bottom: 12px;">Auto-responding in real-time</div>
-      <div class="ai-log" id="aiLog">
-        <div style="color: var(--color-text-tertiary); font-size: 10px;">Waiting to start...</div>
+      <div style="font-size: 10px; color: #666; margin-bottom: 10px;">Auto-replying in real-time</div>
+      <div class="ai-log-box" id="aiLog">
+        <div style="color: #999; font-size: 10px;">Waiting to start...</div>
       </div>
     </div>
     
@@ -444,229 +611,181 @@
       <div class="phone-screen">
         <div class="screen-header">
           Sent
-          <div class="brand-label">Blueberry Auto-replies</div>
+          <div class="screen-subheader">Blueberry Auto-replies</div>
         </div>
-        <div class="screen-content" id="aiNotifications"></div>
+        <div class="screen-scroll" id="aiScreen"></div>
       </div>
     </div>
   </div>
+  
 </div>
 
-<!-- App modal (for detailed view) -->
-<div class="app-modal" id="appModal">
-  <div class="modal-content">
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-inner">
     <div class="modal-header">
       <div>
-        <div id="modalUser" style="font-weight: 500;">User name</div>
-        <div id="modalPlatform" style="font-size: 11px; color: var(--color-text-secondary);">DM</div>
+        <div class="modal-header-user" id="modUser">User</div>
+        <div class="modal-header-platform" id="modPlatform">DM</div>
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
     </div>
     <div class="modal-body">
-      <div class="conversation" id="modalConversation"></div>
-      <textarea class="reply-input" id="replyText" placeholder="Type your reply..."></textarea>
+      <div class="convo" id="modConvo"></div>
+      <textarea class="reply-input" id="modReply" placeholder="Type your reply..."></textarea>
       <button class="send-btn" onclick="sendReply()">Send reply</button>
     </div>
   </div>
 </div>
 
-<!-- Results screen -->
-<div class="results-overlay" id="resultsOverlay">
+<!-- Results -->
+<div class="results" id="results">
   <div class="results-card">
     <div class="results-title">Challenge complete</div>
-    
     <div class="results-grid">
-      <div class="result-col">
+      <div class="result-box">
         <div class="result-name">You</div>
-        <div class="result-stat human" id="finalHumanEngaged">0</div>
-        <div class="result-detail">High-intent engaged</div>
-        <div style="margin-top: 12px;">
-          <div class="result-stat human" style="font-size: 20px;">$<span id="finalHumanRev">0</span></div>
-          <div class="result-detail">Revenue captured</div>
-        </div>
+        <div class="result-stat human" id="resFinalHuman">0</div>
+        <div style="font-size: 10px; color: #999;">High-intent engaged</div>
+        <div class="result-stat human" style="font-size: 18px; margin-top: 8px;">$<span id="resFinalHumanRev">0</span></div>
       </div>
-      <div class="result-col">
+      <div class="result-box">
         <div class="result-name">Blueberry</div>
-        <div class="result-stat ai" id="finalAiEngaged">0</div>
-        <div class="result-detail">High-intent engaged</div>
-        <div style="margin-top: 12px;">
-          <div class="result-stat ai" style="font-size: 20px;">$<span id="finalAiRev">0</span></div>
-          <div class="result-detail">Revenue captured</div>
-        </div>
+        <div class="result-stat ai" id="resFinalAi">0</div>
+        <div style="font-size: 10px; color: #999;">High-intent engaged</div>
+        <div class="result-stat ai" style="font-size: 18px; margin-top: 8px;">$<span id="resFinalAiRev">0</span></div>
       </div>
     </div>
-    
-    <div class="gap-box">
-      <div class="gap-label">Revenue left on the table</div>
-      <div class="gap-value">$<span id="revenueGap">0</span></div>
+    <div class="gap-warning">
+      <div>Revenue left on the table</div>
+      <div class="gap-value">$<span id="resGap">0</span></div>
     </div>
-    
-    <div class="dm-cta">
+    <div class="cta">
       <div>Interested in Blueberry?</div>
-      <div class="dm-link">DM us: blueberry.io/challenge</div>
+      <div class="cta-link">DM us: blueberry.io/challenge</div>
     </div>
-    
-    <button class="retry-btn" onclick="resetChallenge()">Try again</button>
+    <button class="retry" onclick="resetChallenge()">Try again</button>
   </div>
 </div>
 
 <script>
-const mockData = [
-  { id: 1, user: 'sarah.marks', avatar: '#667eea', platform: 'dm', text: 'Hey! Do you offer bulk pricing for agencies?', highIntent: true, value: 280, sentiment: 'positive' },
-  { id: 2, user: 'spam_bot', avatar: '#FF6B6B', platform: 'comment', text: 'BUY CRYPTO NOW!!!', highIntent: false, value: 0, sentiment: 'negative' },
-  { id: 3, user: 'emma.shop', avatar: '#4ECDC4', platform: 'dm', text: 'What payment plans do you have? We want to upgrade this month', highIntent: true, value: 350, sentiment: 'positive' },
-  { id: 4, user: 'trollface', avatar: '#FF6B6B', platform: 'comment', text: 'This is trash lol', highIntent: false, value: 0, sentiment: 'negative' },
-  { id: 5, user: 'lisa.com', avatar: '#95E1D3', platform: 'dm', text: 'Does this work with Shopify? We manage 50+ stores', highIntent: true, value: 420, sentiment: 'positive' },
-  { id: 6, user: 'random.guy', avatar: '#F0E68C', platform: 'comment', text: 'cool i guess', highIntent: false, value: 0, sentiment: 'neutral' },
-  { id: 7, user: 'agency_lead', avatar: '#9D84B7', platform: 'dm', text: 'We need something like this ASAP. Available for a call?', highIntent: true, value: 520, sentiment: 'positive' },
-  { id: 8, user: 'angry_customer', avatar: '#FF6B6B', platform: 'comment', text: 'Worst product ever made', highIntent: false, value: 0, sentiment: 'negative' },
-  { id: 9, user: 'nadia.agency', avatar: '#A8D8D8', platform: 'dm', text: 'Implementation timeline? Our team is ready to go', highIntent: true, value: 380, sentiment: 'positive' },
-  { id: 10, user: 'hater_2024', avatar: '#FF6B6B', platform: 'comment', text: 'overpriced garbage', highIntent: false, value: 0, sentiment: 'negative' }
+const data = [
+  { id: 1, user: 'sarah.marks', type: 'dm', text: 'Do you offer bulk pricing for agencies?', hi: true, val: 280, sent: 'positive' },
+  { id: 2, user: 'spam_bot', type: 'comment', text: 'BUY CRYPTO NOW!!!', hi: false, val: 0, sent: 'negative' },
+  { id: 3, user: 'emma.shop', type: 'dm', text: 'What payment plans do you have? We want to upgrade this month', hi: true, val: 350, sent: 'positive' },
+  { id: 4, user: 'trollface', type: 'comment', text: 'This is trash lol', hi: false, val: 0, sent: 'negative' },
+  { id: 5, user: 'lisa.com', type: 'dm', text: 'Does this integrate with Shopify? We manage 50+ stores', hi: true, val: 420, sent: 'positive' },
+  { id: 6, user: 'random_guy', type: 'comment', text: 'cool i guess', hi: false, val: 0, sent: 'neutral' },
+  { id: 7, user: 'agency_lead', type: 'dm', text: 'We need this ASAP. Available for a call?', hi: true, val: 520, sent: 'positive' },
+  { id: 8, user: 'angry_customer', type: 'comment', text: 'Worst product ever made', hi: false, val: 0, sent: 'negative' },
+  { id: 9, user: 'nadia.agency', type: 'dm', text: 'Implementation timeline? Our team is ready', hi: true, val: 380, sent: 'positive' },
+  { id: 10, user: 'hater_2024', type: 'comment', text: 'overpriced garbage', hi: false, val: 0, sent: 'negative' }
 ];
 
-let gameActive = false;
-let timeLeft = 300;
-let humanEngaged = [];
-let currentModal = null;
-let aiResponses = [];
+let running = false;
+let timeL = 300;
+let human = [];
+let ai = [];
+let curMod = null;
 
-function getAvatarColor(color) {
-  return color;
-}
-
-function renderNotifications() {
-  const humanContainer = document.getElementById('humanNotifications');
-  const aiContainer = document.getElementById('aiNotifications');
-  
-  humanContainer.innerHTML = mockData.map(item => {
-    const sentimentClass = item.sentiment === 'positive' ? 'sentiment-positive' : item.sentiment === 'negative' ? 'sentiment-negative' : 'sentiment-neutral';
-    const platformClass = item.platform === 'dm' ? 'dm' : 'comment';
-    
+function renderFeed() {
+  const feed = document.getElementById('humanFeed');
+  feed.innerHTML = data.map(d => {
+    const sentClass = d.sent === 'positive' ? 'pos' : d.sent === 'negative' ? 'neg' : 'neu';
     return `
-      <div class="notification new" id="notif-${item.id}">
-        <div class="notif-header">
-          <div style="flex: 1;">
-            <div class="notif-user">${item.user}</div>
-            <span class="notif-platform ${platformClass}">${item.platform.toUpperCase()}</span>
-          </div>
-        </div>
-        <div class="notif-text">"${item.text}"</div>
-        <span class="notif-sentiment ${sentimentClass}">${item.sentiment}</span>
+      <div class="notif-card new" id="n${d.id}">
+        <div class="notif-user">${d.user}</div>
+        <span class="notif-type ${d.type}">${d.type.toUpperCase()}</span>
+        <div class="notif-text">"${d.text}"</div>
+        <span class="sentiment ${sentClass}">${d.sent}</span>
         <div class="action-row">
-          <button class="action-btn reply" onclick="openModal(${item.id}, 'reply')">💬</button>
-          <button class="action-btn dm" onclick="openModal(${item.id}, 'dm')">📩</button>
-          <button class="action-btn skip" onclick="skipNotification(${item.id})">⏭️</button>
-          <button class="action-btn hide" onclick="hideNotification(${item.id})">👁️‍🗨️</button>
+          <button class="action-btn reply" onclick="openMod(${d.id})">💬</button>
+          <button class="action-btn dm" onclick="openMod(${d.id})">📩</button>
+          <button class="action-btn skip" onclick="skip(${d.id})">⏭️</button>
+          <button class="action-btn hide" onclick="hide(${d.id})">👁️</button>
         </div>
       </div>
     `;
   }).join('');
   
-  aiContainer.innerHTML = '<div style="padding: 12px; color: var(--color-text-tertiary); font-size: 11px; text-align: center;">Waiting to start...</div>';
+  document.getElementById('aiScreen').innerHTML = '<div style="padding: 10px; color: #999; font-size: 10px; text-align: center;">Waiting to start...</div>';
 }
 
-function openModal(id, action) {
-  if (!gameActive) return;
-  
-  const item = mockData.find(i => i.id === id);
-  currentModal = { id, action, item };
-  
-  document.getElementById('modalUser').textContent = item.user;
-  document.getElementById('modalPlatform').textContent = item.platform.toUpperCase();
-  document.getElementById('modalConversation').innerHTML = `
-    <div class="message other">${item.text}</div>
-  `;
-  document.getElementById('replyText').value = '';
-  document.getElementById('appModal').classList.add('show');
+function openMod(id) {
+  if (!running) return;
+  const d = data.find(x => x.id === id);
+  curMod = { id, d };
+  document.getElementById('modUser').textContent = d.user;
+  document.getElementById('modPlatform').textContent = d.type.toUpperCase();
+  document.getElementById('modConvo').innerHTML = `<div class="msg">${d.text}</div>`;
+  document.getElementById('modReply').value = '';
+  document.getElementById('modal').classList.add('show');
 }
 
 function closeModal() {
-  document.getElementById('appModal').classList.remove('show');
-  currentModal = null;
+  document.getElementById('modal').classList.remove('show');
 }
 
 function sendReply() {
-  if (!currentModal || !gameActive) return;
-  
-  const reply = document.getElementById('replyText').value.trim();
+  if (!curMod || !running) return;
+  const reply = document.getElementById('modReply').value.trim();
   if (!reply) return;
-  
-  const conversation = document.getElementById('modalConversation');
-  conversation.innerHTML += `<div class="message self">${reply}</div>`;
-  
-  if (currentModal.item.highIntent) {
-    if (!humanEngaged.includes(currentModal.id)) {
-      humanEngaged.push(currentModal.id);
-      updateHumanScore();
-    }
+  document.getElementById('modConvo').innerHTML += `<div class="msg self">${reply}</div>`;
+  if (curMod.d.hi && !human.includes(curMod.id)) {
+    human.push(curMod.id);
+    updateScore();
   }
-  
-  document.getElementById('replyText').value = '';
-  setTimeout(() => closeModal(), 300);
+  document.getElementById('modReply').value = '';
+  setTimeout(closeModal, 200);
 }
 
-function skipNotification(id) {
-  if (!gameActive) return;
-  const notif = document.getElementById(`notif-${id}`);
-  if (notif) notif.style.opacity = '0.5';
+function skip(id) {
+  if (running) document.getElementById(`n${id}`).style.opacity = '0.5';
 }
 
-function hideNotification(id) {
-  if (!gameActive) return;
-  const notif = document.getElementById(`notif-${id}`);
-  if (notif) notif.style.display = 'none';
+function hide(id) {
+  if (running) document.getElementById(`n${id}`).style.display = 'none';
 }
 
-function updateHumanScore() {
-  const engaged = humanEngaged.filter(id => mockData.find(i => i.id === id)?.highIntent);
-  const revenue = humanEngaged.reduce((sum, id) => {
-    const item = mockData.find(i => i.id === id);
-    return sum + (item?.value || 0);
-  }, 0);
-  
-  document.getElementById('humanEngaged').textContent = engaged.length;
-  document.getElementById('humanRevenue').textContent = revenue;
+function updateScore() {
+  const h = human.filter(id => data.find(x => x.id === id)?.hi).length;
+  const rev = human.reduce((s, id) => s + (data.find(x => x.id === id)?.val || 0), 0);
+  document.getElementById('humanEng').textContent = h;
+  document.getElementById('humanRev').textContent = rev;
 }
 
 function startChallenge() {
-  gameActive = true;
-  humanEngaged = [];
-  aiResponses = [];
+  running = true;
+  human = [];
+  ai = [];
   document.getElementById('startBtn').disabled = true;
-  renderNotifications();
+  renderFeed();
   startTimer();
   startAiSimulation();
 }
 
 function startAiSimulation() {
-  const aiContainer = document.getElementById('aiLog');
-  aiContainer.innerHTML = '<div class="ai-action"><div class="ai-action-time">Starting...</div></div>';
-  
+  const log = document.getElementById('aiLog');
+  log.innerHTML = '<div style="color: #999; font-size: 10px;">Analyzing...</div>';
   let delay = 500;
-  const highIntentItems = mockData.filter(i => i.highIntent);
-  
-  highIntentItems.forEach(item => {
+  data.filter(d => d.hi).forEach(d => {
     setTimeout(() => {
       const action = Math.random() > 0.4 ? 'Replied to' : 'DMed';
-      const html = document.getElementById('aiLog').innerHTML;
-      document.getElementById('aiLog').innerHTML = html + `
-        <div class="ai-action">
-          <div class="ai-action-text">✓ ${action} ${item.user}</div>
-          <div class="ai-action-time">Just now</div>
+      const existing = document.getElementById('aiLog').innerHTML;
+      document.getElementById('aiLog').innerHTML = existing + `
+        <div class="ai-entry">
+          <div class="ai-entry-text">✓ ${action} ${d.user}</div>
+          <div class="ai-entry-time">Just now</div>
         </div>
       `;
-      aiResponses.push(item.id);
-      
-      const aiNotifContainer = document.getElementById('aiNotifications');
-      const existingNotif = aiNotifContainer.querySelector(`[data-id="${item.id}"]`);
-      if (!existingNotif) {
-        aiNotifContainer.innerHTML += `
-          <div class="notification" data-id="${item.id}" style="background: #E8F5E9; border-left: 3px solid #1D9E75;">
-            <div class="notif-header">
-              <div class="notif-user">${item.user}</div>
-              <span class="notif-platform comment" style="background: #C8E6C9; color: #1B5E20;">REPLIED</span>
-            </div>
-            <div class="notif-text" style="font-size: 11px; color: #1B5E20; font-style: italic;">[Auto-reply sent]</div>
+      ai.push(d.id);
+      const aiScr = document.getElementById('aiScreen');
+      if (!aiScr.querySelector(`[data-id="${d.id}"]`)) {
+        aiScr.innerHTML += `
+          <div class="notif-card" data-id="${d.id}" style="background: #e8f5e9; border-left: 3px solid #00897b;">
+            <div class="notif-user">${d.user}</div>
+            <span class="notif-type comment" style="background: #c8e6c9; color: #1b5e20;">REPLIED</span>
+            <div class="notif-text" style="font-size: 10px; color: #1b5e20; font-style: italic; margin-top: 4px;">[Auto-reply sent]</div>
           </div>
         `;
       }
@@ -676,60 +795,49 @@ function startAiSimulation() {
 }
 
 function startTimer() {
-  timeLeft = 300;
-  const interval = setInterval(() => {
-    timeLeft--;
-    const mins = Math.floor(timeLeft / 60);
-    const secs = timeLeft % 60;
-    const display = `${mins}:${secs.toString().padStart(2, '0')}`;
-    const timerEl = document.getElementById('timerDisplay');
-    timerEl.textContent = display;
-    timerEl.classList.toggle('critical', timeLeft < 61);
-    
-    if (timeLeft === 0) {
-      clearInterval(interval);
+  timeL = 300;
+  const tick = setInterval(() => {
+    timeL--;
+    const m = Math.floor(timeL / 60);
+    const s = timeL % 60;
+    const t = document.getElementById('timer');
+    t.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+    t.classList.toggle('critical', timeL < 61);
+    if (timeL === 0) {
+      clearInterval(tick);
       endChallenge();
     }
   }, 1000);
 }
 
 function endChallenge() {
-  gameActive = false;
-  const humanRevenue = humanEngaged.reduce((sum, id) => {
-    const item = mockData.find(i => i.id === id);
-    return sum + (item?.value || 0);
-  }, 0);
-  const aiRevenue = aiResponses.reduce((sum, id) => {
-    const item = mockData.find(i => i.id === id);
-    return sum + (item?.value || 0);
-  }, 0);
-  const gap = aiRevenue - humanRevenue;
-  
-  const humanHighIntent = humanEngaged.filter(id => mockData.find(i => i.id === id)?.highIntent).length;
-  const aiHighIntent = aiResponses.filter(id => mockData.find(i => i.id === id)?.highIntent).length;
-  
-  document.getElementById('finalHumanEngaged').textContent = humanHighIntent;
-  document.getElementById('finalHumanRev').textContent = humanRevenue;
-  document.getElementById('finalAiEngaged').textContent = aiHighIntent;
-  document.getElementById('finalAiRev').textContent = aiRevenue;
-  document.getElementById('revenueGap').textContent = gap;
-  
-  document.getElementById('resultsOverlay').classList.add('show');
+  running = false;
+  const hRev = human.reduce((s, id) => s + (data.find(x => x.id === id)?.val || 0), 0);
+  const aRev = ai.reduce((s, id) => s + (data.find(x => x.id === id)?.val || 0), 0);
+  const hHi = human.filter(id => data.find(x => x.id === id)?.hi).length;
+  const aHi = ai.filter(id => data.find(x => x.id === id)?.hi).length;
+  document.getElementById('resFinalHuman').textContent = hHi;
+  document.getElementById('resFinalHumanRev').textContent = hRev;
+  document.getElementById('resFinalAi').textContent = aHi;
+  document.getElementById('resFinalAiRev').textContent = aRev;
+  document.getElementById('resGap').textContent = aRev - hRev;
+  document.getElementById('results').classList.add('show');
 }
 
 function resetChallenge() {
-  gameActive = false;
-  humanEngaged = [];
-  aiResponses = [];
-  document.getElementById('resultsOverlay').classList.remove('show');
+  running = false;
+  human = [];
+  ai = [];
+  document.getElementById('results').classList.remove('show');
   document.getElementById('startBtn').disabled = false;
-  document.getElementById('timerDisplay').textContent = '5:00';
-  document.getElementById('humanEngaged').textContent = '0';
-  document.getElementById('humanRevenue').textContent = '0';
-  renderNotifications();
+  document.getElementById('timer').textContent = '5:00';
+  document.getElementById('humanEng').textContent = '0';
+  document.getElementById('humanRev').textContent = '0';
+  renderFeed();
 }
 
-renderNotifications();
+renderFeed();
 </script>
 
-</div>
+</body>
+</html>
