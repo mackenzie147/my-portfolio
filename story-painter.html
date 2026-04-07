@@ -359,7 +359,6 @@ const transcriptArea = document.getElementById('transcript-area');
 const promptInput = document.getElementById('prompt-input');
 const btnListen = document.getElementById('btn-listen');
 const btnClear = document.getElementById('btn-clear');
-const loadingDots = document.getElementById('loading-dots');
 const keywordsDiv = document.getElementById('keywords');
 const sceneBg = document.getElementById('scene-bg');
 const warn = document.getElementById('warn');
@@ -500,7 +499,6 @@ async function paintScene() {
   const paintedAt = fullTranscript.trim().split(/\s+/).filter(Boolean).length;
 
   setStatus('thinking');
-  loadingDots.style.display = 'none';
   sceneText.style.opacity = '1';
   showWarn('');
 
