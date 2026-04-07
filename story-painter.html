@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>story painter</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #f5f2eb;
+    --surface: #ffffff;
+    --surface2: #f0ece3;
+    --border: #ddd8cc;
+    --border2: #b8b0a0;
+    --text: #1a1714;
+    --text2: #3d3830;
+    --muted: #7a7268;
+    --dim: #a09890;
+    --red: #c0392b;
+    --gold: #b07d20;
+    --gold-bg: #fdf3dc;
+    --gold-border: #d4a840;
+    --green: #2e7d57;
+  }
+
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Space Mono', monospace;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  #app {
+    max-width: 640px;
+    margin: 0 auto;
+    min-height: 100vh;
+    padding: 1.25rem 1rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* HEADER */
+  #header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    border-bottom: 0.5px solid var(--border);
+    padding-bottom: 0.75rem;
+  }
+
+  #title {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 22px;
+    color: var(--text);
+    letter-spacing: -0.5px;
+  }
+
+  #status-wrap { display: flex; align-items: center; gap: 6px; }
+
+  #status-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: #333;
+    transition: background 0.3s;
+  }
+  #status-dot.listening { background: var(--red); animation: pulse 1.2s infinite; }
+  #status-dot.thinking  { background: var(--gold); animation: pulse 0.8s infinite; }
+  #status-dot.done      { background: var(--green); animation: none; }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.25; }
+  }
+
+  #status-label {
+    font-size: 10px;
+    color: var(--muted);
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+
+  /* CANVAS */
+  #canvas-area {
+    background: var(--surface);
+    border-radius: 10px;
+    border: 0.5px solid var(--border);
+    min-height: 280px;
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+
+  .vignette {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 35%, #f5f2eb 100%);
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  #scene-bg {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 90px;
+    opacity: 0.1;
+    filter: blur(2px);
+    z-index: 0;
+    pointer-events: none;
+    transition: opacity 0.6s;
+  }
+
+  #scene-text {
+    font-family: 'Playfair Display', serif;
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--text2);
+    padding: 1.5rem;
+    text-align: center;
+    max-width: 520px;
+    position: relative;
+    z-index: 2;
+    transition: opacity 0.3s;
+  }
+
+  #scene-text .scene-title {
+    font-style: italic;
+    font-size: 19px;
+    color: var(--text);
+    display: block;
+    margin-bottom: 0.85rem;
+    line-height: 1.4;
+  }
+
+  #scene-text .placeholder {
+    color: #c0b8a8;
+    font-style: italic;
+    font-size: 14px;
+  }
+
+  #loading-dots {
+    display: none;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+  }
+  #loading-dots span {
+    width: 7px; height: 7px;
+    background: var(--gold);
+    border-radius: 50%;
+    animation: bounce 1.2s infinite;
+  }
+  #loading-dots span:nth-child(2) { animation-delay: 0.2s; }
+  #loading-dots span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes bounce {
+    0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
+    40% { transform: translateY(-9px); opacity: 1; }
+  }
+
+  /* TRANSCRIPT */
+  #transcript-area {
+    background: var(--surface2);
+    border-radius: 6px;
+    border: 0.5px solid var(--border);
+    padding: 0.7rem 0.9rem;
+    font-size: 12px;
+    color: var(--text2);
+    line-height: 1.7;
+    max-height: 72px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+  #transcript-area em { color: #555; font-style: italic; }
+
+  /* KEYWORDS */
+  #keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    min-height: 22px;
+  }
+  .kw {
+    font-size: 10px;
+    padding: 2px 9px;
+    border-radius: 20px;
+    background: var(--surface2);
+    color: var(--muted);
+    border: 0.5px solid var(--border);
+    letter-spacing: 0.05em;
+    animation: fadein 0.35s ease;
+  }
+  @keyframes fadein { from { opacity: 0; transform: scale(0.88); } to { opacity: 1; transform: scale(1); } }
+
+
+
+  /* PROMPT */
+  #prompt-area { display: flex; flex-direction: column; gap: 0.4rem; }
+  #prompt-label {
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--dim);
+  }
+  #prompt-input {
+    background: var(--surface);
+    border: 0.5px solid var(--border);
+    border-radius: 6px;
+    color: var(--text2);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 0.65rem 0.85rem;
+    width: 100%;
+    resize: vertical;
+    min-height: 72px;
+    line-height: 1.65;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  #prompt-input:focus { border-color: var(--border2); }
+
+  /* PRESETS */
+  #presets {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .preset-btn {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    padding: 4px 10px;
+    border-radius: 20px;
+    border: 0.5px solid var(--border);
+    background: transparent;
+    color: var(--dim);
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  .preset-btn:hover { color: var(--text); border-color: var(--border2); }
+
+  /* CONTROLS */
+  #controls { display: flex; gap: 8px; flex-wrap: wrap; }
+
+  #btn-listen {
+    flex: 1;
+    background: var(--surface);
+    color: var(--text);
+    border: 0.5px solid var(--border2);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+    min-width: 140px;
+  }
+  #btn-listen:hover { background: var(--surface2); }
+  #btn-listen.active { border-color: var(--red); color: var(--red); }
+
+  #btn-visualize {
+    background: var(--gold-bg);
+    color: var(--gold);
+    border: 0.5px solid var(--gold-border);
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    padding: 0.65rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+    letter-spacing: 0.05em;
+  }
+  #btn-visualize:hover { background: #fae8b8; }
+  #btn-visualize:disabled { opacity: 0.35; cursor: default; }
+
+  #btn-clear {
+    background: transparent;
+    color: var(--dim);
+    border: 0.5px solid var(--border);
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    padding: 0.65rem 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  #btn-clear:hover { color: var(--muted); border-color: var(--border2); }
+
+  #warn {
+    font-size: 11px;
+    color: var(--red);
+    display: none;
+    padding: 0.3rem 0;
+  }
+
+  /* FOOTER */
+  #footer {
+    font-size: 10px;
+    color: #c0b8a8;
+    text-align: center;
+    letter-spacing: 0.08em;
+    padding-top: 0.5rem;
+  }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <div id="header">
+    <span id="title">story painter</span>
+    <div id="status-wrap">
+      <div id="status-dot"></div>
+      <span id="status-label">ready</span>
+    </div>
+  </div>
+
+  <div id="canvas-area">
+    <div class="vignette"></div>
+    <div id="scene-bg"></div>
+    <div id="loading-dots"><span></span><span></span><span></span></div>
+    <div id="scene-text">
+      <span class="placeholder">hit listen, start talking —<br>your story becomes a scene</span>
+    </div>
+  </div>
+
+  <div id="transcript-area"><em>transcript will appear here...</em></div>
+
+  <div id="keywords"></div>
+
+  <div id="prompt-area">
+    <div id="prompt-label">style / mood — edit or pick a preset</div>
+    <textarea id="prompt-input">Paint this as a moody, cinematic scene description. Be vivid and sensory — describe lighting, atmosphere, sounds, smells, textures. Write 2-3 short evocative paragraphs. Extract any specific details mentioned and amplify them. Give the scene a one-line title on the first line.</textarea>
+  </div>
+
+  <div id="presets">
+    <button class="preset-btn" data-prompt="Retell this as a noir detective story. Shadows, rain, moral ambiguity. Give it a pulpy one-line title on the first line, then 2-3 paragraphs.">noir</button>
+    <button class="preset-btn" data-prompt="Describe this as a nature documentary narrated by David Attenborough. Majestic, scientific, a little poetic. Title first, then 2-3 paragraphs.">attenborough</button>
+    <button class="preset-btn" data-prompt="Turn this into a fairy tale scene. Enchanted, slightly ominous, magical realism. Title on first line, then 2-3 paragraphs.">fairy tale</button>
+    <button class="preset-btn" data-prompt="Write this as a scene from a 1970s Italian film. Golden hour. Melancholy. Everyone is beautiful and sad. Title first, then 2-3 paragraphs.">italian film</button>
+    <button class="preset-btn" data-prompt="Describe this like a Yelp review written by someone having an existential crisis. Funny, specific, absurd. Title first, then the review.">yelp crisis</button>
+    <button class="preset-btn" data-prompt="Translate this into a tense thriller scene. Short punchy sentences. High stakes. Paranoia. Title on line one, then 2-3 paragraphs.">thriller</button>
+  </div>
+
+  <div id="controls">
+    <button id="btn-listen">⬤ start listening</button>
+    <button id="btn-visualize" disabled>✦ paint scene</button>
+    <button id="btn-clear">clear</button>
+  </div>
+
+  <div id="warn"></div>
+
+  <div id="footer">open in chrome · allow mic · tell a story</div>
+</div>
+
+<script>
+const dot = document.getElementById('status-dot');
+const statusLabel = document.getElementById('status-label');
+const sceneText = document.getElementById('scene-text');
+const transcriptArea = document.getElementById('transcript-area');
+const promptInput = document.getElementById('prompt-input');
+const btnListen = document.getElementById('btn-listen');
+const btnVisualize = document.getElementById('btn-visualize');
+const btnClear = document.getElementById('btn-clear');
+const loadingDots = document.getElementById('loading-dots');
+const keywordsDiv = document.getElementById('keywords');
+const sceneBg = document.getElementById('scene-bg');
+const warn = document.getElementById('warn');
+
+let recognition = null;
+let listening = false;
+let fullTranscript = '';
+let autoVisTimer = null;
+const EMOJIS = ['🌆','🌃','🌉','🏙️','🌌','🍂','🌊','🏔️','🕯️','🌙','🌲','🌺','🍷','🎭','🌀'];
+
+function setStatus(state) {
+  dot.className = state;
+  const map = { '': 'ready', listening: 'listening', thinking: 'thinking...', done: 'painted' };
+  statusLabel.textContent = map[state] || state;
+}
+
+function showWarn(msg) {
+  warn.textContent = msg;
+  warn.style.display = msg ? 'block' : 'none';
+}
+
+const STOP_WORDS = new Set('the a an and or but in on at to for of is was it he she they we i you this that with had her his my our so as be do did have has not from by just when then what where there were been into its like more some all who can will said over about'.split(' '));
+
+function extractKeywords(text) {
+  const words = text.toLowerCase().replace(/[^a-z\s]/g, '').split(/\s+/);
+  const counts = {};
+  words.forEach(w => { if (w.length > 4 && !STOP_WORDS.has(w)) counts[w] = (counts[w]||0)+1; });
+  const top = Object.entries(counts).sort((a,b)=>b[1]-a[1]).slice(0,8).map(e=>e[0]);
+  keywordsDiv.innerHTML = top.map(k=>`<span class="kw">${k}</span>`).join('');
+}
+
+function updateTranscript() {
+  transcriptArea.innerHTML = fullTranscript || '<em>transcript will appear here...</em>';
+  transcriptArea.scrollTop = transcriptArea.scrollHeight;
+}
+
+function initRecognition() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) {
+    showWarn('speech recognition not available — use Chrome on desktop or Android');
+    return false;
+  }
+  recognition = new SR();
+  recognition.continuous = true;
+  recognition.interimResults = true;
+  recognition.lang = 'en-US';
+
+  recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const t = e.results[i][0].transcript;
+      if (e.results[i].isFinal) {
+        fullTranscript += t + ' ';
+      } else {
+        interim = t;
+      }
+    }
+    const displayed = fullTranscript + (interim ? `<em style="color:#a09890">${interim}</em>` : '');
+    transcriptArea.innerHTML = displayed;
+    transcriptArea.scrollTop = transcriptArea.scrollHeight;
+    extractKeywords(fullTranscript);
+    btnVisualize.disabled = fullTranscript.trim().length < 10;
+
+    clearTimeout(autoVisTimer);
+    if (fullTranscript.trim().split(/\s+/).length > 20) {
+      autoVisTimer = setTimeout(() => { if (listening) paintScene(); }, 7000);
+    }
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'not-allowed') {
+      showWarn('microphone access denied — check browser permissions');
+      stopListening();
+    }
+  };
+
+  recognition.onend = () => {
+    if (listening) {
+      try { recognition.start(); } catch(e) {}
+    }
+  };
+
+  return true;
+}
+
+function startListening() {
+  showWarn('');
+  if (!recognition && !initRecognition()) return;
+  try {
+    recognition.start();
+    listening = true;
+    btnListen.textContent = '◼ stop listening';
+    btnListen.classList.add('active');
+    setStatus('listening');
+  } catch(e) {}
+}
+
+function stopListening() {
+  listening = false;
+  if (recognition) try { recognition.stop(); } catch(e) {}
+  btnListen.textContent = '⬤ start listening';
+  btnListen.classList.remove('active');
+  if (fullTranscript) setStatus('done');
+  else setStatus('');
+}
+
+async function paintScene() {
+  const text = fullTranscript.trim();
+  if (!text) { showWarn('nothing to paint yet — start talking first'); return; }
+
+  clearTimeout(autoVisTimer);
+  setStatus('thinking');
+  loadingDots.style.display = 'flex';
+  sceneText.style.opacity = '0.15';
+  btnVisualize.disabled = true;
+  showWarn('');
+
+  sceneBg.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+  try {
+    const res = await fetch('/api/anthropic', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: 1000,
+        system: promptInput.value.trim(),
+        messages: [{ role: 'user', content: `Here's what someone just described:\n\n"${text}"\n\nVisualize this as a rich scene.` }]
+      })
+    });
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      showWarn(`api error: ${err.error?.message || res.statusText}`);
+      sceneText.style.opacity = '1';
+      setStatus('');
+      loadingDots.style.display = 'none';
+      btnVisualize.disabled = false;
+      return;
+    }
+
+    const data = await res.json();
+    const output = data.content?.filter(b=>b.type==='text').map(b=>b.text).join('') || '';
+    const lines = output.trim().split('\n').filter(Boolean);
+    const titleLine = lines[0].replace(/^#+\s*/, '');
+    const body = lines.slice(1).join('\n').trim();
+
+    sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>${body}`;
+    sceneText.style.opacity = '1';
+    setStatus('done');
+
+  } catch(e) {
+    showWarn('network error — check your connection');
+    sceneText.style.opacity = '1';
+    setStatus('');
+  }
+
+  loadingDots.style.display = 'none';
+  btnVisualize.disabled = false;
+}
+
+btnListen.addEventListener('click', () => {
+  if (listening) stopListening(); else startListening();
+});
+
+btnVisualize.addEventListener('click', paintScene);
+
+btnClear.addEventListener('click', () => {
+  fullTranscript = '';
+  updateTranscript();
+  keywordsDiv.innerHTML = '';
+  sceneText.innerHTML = '<span class="placeholder">hit listen, start talking —<br>your story becomes a scene</span>';
+  sceneBg.textContent = '';
+  setStatus('');
+  btnVisualize.disabled = true;
+  clearTimeout(autoVisTimer);
+  showWarn('');
+});
+
+document.querySelectorAll('.preset-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    promptInput.value = btn.dataset.prompt;
+  });
+});
+</script>
+</body>
+</html>
