@@ -369,13 +369,14 @@ let recognition = null;
 let listening = false;
 let painting = false;
 let fullTranscript = '';
-let lastPaintedLength = 0;
-let autoVisTimer = null;
+let lastPaintedWordCount = 0;
+let currentScene = '';
+const WORDS_PER_REPAINT = 15; // repaint every N new words
 const EMOJIS = ['🌆','🌃','🌉','🏙️','🌌','🍂','🌊','🏔️','🕯️','🌙','🌲','🌺','🍷','🎭','🌀'];
 
 function setStatus(state) {
   dot.className = state;
-  const map = { '': 'ready', listening: 'listening', thinking: 'thinking...', done: 'painted' };
+  const map = { '': 'ready', listening: 'listening', thinking: 'painting...', done: 'painted' };
   statusLabel.textContent = map[state] || state;
 }
 
@@ -394,13 +395,14 @@ function extractKeywords(text) {
   keywordsDiv.innerHTML = top.map(k=>`<span class="kw">${k}</span>`).join('');
 }
 
-function scheduleNextPaint() {
-  clearTimeout(autoVisTimer);
-  const wordCount = fullTranscript.trim().split(/\s+/).length;
-  // Only schedule if we have enough new words since last paint
-  const newWords = fullTranscript.trim().split(/\s+/).length - lastPaintedLength;
-  if (wordCount >= 10 && newWords >= 8 && !painting) {
-    autoVisTimer = setTimeout(() => paintScene(), 4000);
+function checkAndPaint() {
+  if (painting) return;
+  const wordCount = fullTranscript.trim().split(/\s+/).filter(Boolean).length;
+  const newWords = wordCount - lastPaintedWordCount;
+  // First paint: 10 words. Subsequent paints: every WORDS_PER_REPAINT new words
+  const threshold = lastPaintedWordCount === 0 ? 10 : WORDS_PER_REPAINT;
+  if (newWords >= threshold) {
+    paintScene();
   }
 }
 
@@ -416,9 +418,11 @@ function initRecognition() {
   recognition.lang = 'en-US';
 
   recognition.onresult = (e) => {
+    console.log('onresult fired, results:', e.results.length);
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
       const t = e.results[i][0].transcript;
+      console.log('transcript chunk:', t, 'final:', e.results[i].isFinal);
       if (e.results[i].isFinal) {
         fullTranscript += t + ' ';
       } else {
@@ -429,19 +433,39 @@ function initRecognition() {
     transcriptArea.innerHTML = displayed;
     transcriptArea.scrollTop = transcriptArea.scrollHeight;
     extractKeywords(fullTranscript);
-    scheduleNextPaint();
+    checkAndPaint();
   };
 
   recognition.onerror = (e) => {
-    if (e.error === 'not-allowed') {
-      showWarn('microphone access denied — check browser permissions');
+    console.error('speech recognition error:', e.error);
+    if (e.error === 'not-allowed' || e.error === 'permission-denied') {
+      showWarn('microphone access denied — click the lock icon in your address bar and allow microphone');
+      stopListening();
+    } else if (e.error === 'audio-capture') {
+      showWarn('no microphone found — check your device settings');
       stopListening();
     }
+    // no-speech, network, aborted: let onend handle restart
   };
 
+  recognition.onstart = () => {
+    console.log('recognition started ok');
+    showWarn('');
+  };
+
+  recognition.onsoundstart = () => console.log('sound detected');
+  recognition.onspeechstart = () => console.log('speech detected');
+  recognition.onspeechend = () => console.log('speech ended');
+
   recognition.onend = () => {
+    console.log('recognition ended, listening:', listening);
     if (listening) {
-      try { recognition.start(); } catch(e) {}
+      // Small delay prevents the "already started" InvalidStateError
+      setTimeout(() => {
+        if (listening) {
+          try { recognition.start(); } catch(err) { console.warn('restart failed:', err.message); }
+        }
+      }, 100);
     }
   };
 
@@ -462,7 +486,6 @@ function startListening() {
 
 function stopListening() {
   listening = false;
-  clearTimeout(autoVisTimer);
   if (recognition) try { recognition.stop(); } catch(e) {}
   btnListen.textContent = '⬤ start listening';
   btnListen.classList.remove('active');
@@ -475,13 +498,20 @@ async function paintScene() {
   if (!text || painting) return;
 
   painting = true;
-  clearTimeout(autoVisTimer);
+  // Snapshot word count at paint start so we count correctly while API is in flight
+  const paintedAt = fullTranscript.trim().split(/\s+/).filter(Boolean).length;
+
   setStatus('thinking');
   loadingDots.style.display = 'flex';
-  sceneText.style.opacity = '0.15';
+  sceneText.style.opacity = '0.3';
   showWarn('');
 
   sceneBg.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
+
+  // Build messages — if we have a prior scene, pass it so Claude builds on it
+  const userContent = currentScene
+    ? `Everything heard so far:\n"${text}"\n\nCurrent scene:\n${currentScene}\n\nNew details have come in. Update and enrich the scene with anything new, keeping what still fits. Evolve it — don't start over.`
+    : `Here's what someone just described:\n\n"${text}"\n\nVisualize this as a rich scene.`;
 
   try {
     const res = await fetch('/api/anthropic', {
@@ -491,7 +521,7 @@ async function paintScene() {
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
         system: promptInput.value.trim(),
-        messages: [{ role: 'user', content: `Here's what someone just described:\n\n"${text}"\n\nVisualize this as a rich scene.` }]
+        messages: [{ role: 'user', content: userContent }]
       })
     });
 
@@ -506,9 +536,10 @@ async function paintScene() {
       const lines = output.trim().split('\n').filter(Boolean);
       const titleLine = lines[0].replace(/^#+\s*/, '');
       const body = lines.slice(1).join('\n').trim();
+      currentScene = output.trim();
       sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>${body}`;
       sceneText.style.opacity = '1';
-      lastPaintedLength = fullTranscript.trim().split(/\s+/).length;
+      lastPaintedWordCount = paintedAt;
       setStatus(listening ? 'listening' : 'done');
     }
   } catch(e) {
@@ -520,8 +551,8 @@ async function paintScene() {
   loadingDots.style.display = 'none';
   painting = false;
 
-  // If still listening, schedule the next repaint
-  if (listening) scheduleNextPaint();
+  // Immediately check if more words came in while we were painting
+  if (listening) checkAndPaint();
 }
 
 btnListen.addEventListener('click', () => {
@@ -530,13 +561,13 @@ btnListen.addEventListener('click', () => {
 
 btnClear.addEventListener('click', () => {
   fullTranscript = '';
-  lastPaintedLength = 0;
+  lastPaintedWordCount = 0;
+  currentScene = '';
   transcriptArea.innerHTML = '<em>transcript will appear here...</em>';
   keywordsDiv.innerHTML = '';
   sceneText.innerHTML = '<span class="placeholder">hit listen, start talking —<br>your story becomes a scene</span>';
   sceneBg.textContent = '';
   setStatus(listening ? 'listening' : '');
-  clearTimeout(autoVisTimer);
   showWarn('');
 });
 
