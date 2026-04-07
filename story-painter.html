@@ -318,7 +318,6 @@
   <div id="canvas-area">
     <div class="vignette"></div>
     <div id="scene-bg"></div>
-    <div id="loading-dots"><span></span><span></span><span></span></div>
     <div id="scene-text">
       <span class="placeholder">hit listen, start talking —<br>your story becomes a scene</span>
     </div>
@@ -498,28 +497,41 @@ async function paintScene() {
   if (!text || painting) return;
 
   painting = true;
-  // Snapshot word count at paint start so we count correctly while API is in flight
   const paintedAt = fullTranscript.trim().split(/\s+/).filter(Boolean).length;
 
   setStatus('thinking');
-  loadingDots.style.display = 'flex';
-  sceneText.style.opacity = '0.3';
+  loadingDots.style.display = 'none';
+  sceneText.style.opacity = '1';
   showWarn('');
 
   sceneBg.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
 
-  // Build messages — if we have a prior scene, pass it so Claude builds on it
   const userContent = currentScene
     ? `Everything heard so far:\n"${text}"\n\nCurrent scene:\n${currentScene}\n\nNew details have come in. Update and enrich the scene with anything new, keeping what still fits. Evolve it — don't start over.`
     : `Here's what someone just described:\n\n"${text}"\n\nVisualize this as a rich scene.`;
 
+  let streamedText = '';
+
+  function renderStreamedText(raw) {
+    const lines = raw.trim().split('\n').filter(Boolean);
+    if (lines.length === 0) return;
+    const titleLine = lines[0].replace(/^#+\s*/, '');
+    const body = lines.slice(1).join('\n').trim();
+    if (body) {
+      sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>${body}`;
+    } else {
+      sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>`;
+    }
+  }
+
   try {
-    const res = await fetch('/api/anthropic', {
+    const res = await fetch('/api/story', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
         max_tokens: 1000,
+        stream: true,
         system: promptInput.value.trim(),
         messages: [{ role: 'user', content: userContent }]
       })
@@ -528,30 +540,46 @@ async function paintScene() {
     if (!res.ok) {
       const err = await res.json().catch(() => ({}));
       showWarn(`api error: ${err.error?.message || res.statusText}`);
-      sceneText.style.opacity = '1';
       setStatus(listening ? 'listening' : '');
-    } else {
-      const data = await res.json();
-      const output = data.content?.filter(b=>b.type==='text').map(b=>b.text).join('') || '';
-      const lines = output.trim().split('\n').filter(Boolean);
-      const titleLine = lines[0].replace(/^#+\s*/, '');
-      const body = lines.slice(1).join('\n').trim();
-      currentScene = output.trim();
-      sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>${body}`;
-      sceneText.style.opacity = '1';
-      lastPaintedWordCount = paintedAt;
-      setStatus(listening ? 'listening' : 'done');
+      painting = false;
+      if (listening) checkAndPaint();
+      return;
     }
+
+    const reader = res.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n');
+
+      for (const line of lines) {
+        if (!line.startsWith('data: ')) continue;
+        const data = line.slice(6).trim();
+        if (data === '[DONE]') continue;
+        try {
+          const json = JSON.parse(data);
+          if (json.type === 'content_block_delta' && json.delta?.type === 'text_delta') {
+            streamedText += json.delta.text;
+            renderStreamedText(streamedText);
+          }
+        } catch(e) {}
+      }
+    }
+
+    currentScene = streamedText.trim();
+    lastPaintedWordCount = paintedAt;
+    setStatus(listening ? 'listening' : 'done');
+
   } catch(e) {
     showWarn('network error — check your connection');
-    sceneText.style.opacity = '1';
     setStatus(listening ? 'listening' : '');
   }
 
-  loadingDots.style.display = 'none';
   painting = false;
-
-  // Immediately check if more words came in while we were painting
   if (listening) checkAndPaint();
 }
 
