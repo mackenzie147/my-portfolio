@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>story painter</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='26' font-size='28'>🎭</text></svg>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
@@ -273,21 +274,6 @@
   #btn-listen:hover { background: var(--surface2); }
   #btn-listen.active { border-color: var(--red); color: var(--red); }
 
-  #btn-visualize {
-    background: var(--gold-bg);
-    color: var(--gold);
-    border: 0.5px solid var(--gold-border);
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    padding: 0.65rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.15s;
-    letter-spacing: 0.05em;
-  }
-  #btn-visualize:hover { background: #fae8b8; }
-  #btn-visualize:disabled { opacity: 0.35; cursor: default; }
-
   #btn-clear {
     background: transparent;
     color: var(--dim);
@@ -358,8 +344,7 @@
 
   <div id="controls">
     <button id="btn-listen">⬤ start listening</button>
-    <button id="btn-visualize" disabled>✦ paint scene</button>
-    <button id="btn-clear">clear</button>
+    <button id="btn-clear">clear scene</button>
   </div>
 
   <div id="warn"></div>
@@ -374,7 +359,6 @@ const sceneText = document.getElementById('scene-text');
 const transcriptArea = document.getElementById('transcript-area');
 const promptInput = document.getElementById('prompt-input');
 const btnListen = document.getElementById('btn-listen');
-const btnVisualize = document.getElementById('btn-visualize');
 const btnClear = document.getElementById('btn-clear');
 const loadingDots = document.getElementById('loading-dots');
 const keywordsDiv = document.getElementById('keywords');
@@ -383,7 +367,9 @@ const warn = document.getElementById('warn');
 
 let recognition = null;
 let listening = false;
+let painting = false;
 let fullTranscript = '';
+let lastPaintedLength = 0;
 let autoVisTimer = null;
 const EMOJIS = ['🌆','🌃','🌉','🏙️','🌌','🍂','🌊','🏔️','🕯️','🌙','🌲','🌺','🍷','🎭','🌀'];
 
@@ -408,9 +394,14 @@ function extractKeywords(text) {
   keywordsDiv.innerHTML = top.map(k=>`<span class="kw">${k}</span>`).join('');
 }
 
-function updateTranscript() {
-  transcriptArea.innerHTML = fullTranscript || '<em>transcript will appear here...</em>';
-  transcriptArea.scrollTop = transcriptArea.scrollHeight;
+function scheduleNextPaint() {
+  clearTimeout(autoVisTimer);
+  const wordCount = fullTranscript.trim().split(/\s+/).length;
+  // Only schedule if we have enough new words since last paint
+  const newWords = fullTranscript.trim().split(/\s+/).length - lastPaintedLength;
+  if (wordCount >= 10 && newWords >= 8 && !painting) {
+    autoVisTimer = setTimeout(() => paintScene(), 4000);
+  }
 }
 
 function initRecognition() {
@@ -438,12 +429,7 @@ function initRecognition() {
     transcriptArea.innerHTML = displayed;
     transcriptArea.scrollTop = transcriptArea.scrollHeight;
     extractKeywords(fullTranscript);
-    btnVisualize.disabled = fullTranscript.trim().length < 10;
-
-    clearTimeout(autoVisTimer);
-    if (fullTranscript.trim().split(/\s+/).length > 20) {
-      autoVisTimer = setTimeout(() => { if (listening) paintScene(); }, 7000);
-    }
+    scheduleNextPaint();
   };
 
   recognition.onerror = (e) => {
@@ -476,6 +462,7 @@ function startListening() {
 
 function stopListening() {
   listening = false;
+  clearTimeout(autoVisTimer);
   if (recognition) try { recognition.stop(); } catch(e) {}
   btnListen.textContent = '⬤ start listening';
   btnListen.classList.remove('active');
@@ -485,13 +472,13 @@ function stopListening() {
 
 async function paintScene() {
   const text = fullTranscript.trim();
-  if (!text) { showWarn('nothing to paint yet — start talking first'); return; }
+  if (!text || painting) return;
 
+  painting = true;
   clearTimeout(autoVisTimer);
   setStatus('thinking');
   loadingDots.style.display = 'flex';
   sceneText.style.opacity = '0.15';
-  btnVisualize.disabled = true;
   showWarn('');
 
   sceneBg.textContent = EMOJIS[Math.floor(Math.random() * EMOJIS.length)];
@@ -512,46 +499,43 @@ async function paintScene() {
       const err = await res.json().catch(() => ({}));
       showWarn(`api error: ${err.error?.message || res.statusText}`);
       sceneText.style.opacity = '1';
-      setStatus('');
-      loadingDots.style.display = 'none';
-      btnVisualize.disabled = false;
-      return;
+      setStatus(listening ? 'listening' : '');
+    } else {
+      const data = await res.json();
+      const output = data.content?.filter(b=>b.type==='text').map(b=>b.text).join('') || '';
+      const lines = output.trim().split('\n').filter(Boolean);
+      const titleLine = lines[0].replace(/^#+\s*/, '');
+      const body = lines.slice(1).join('\n').trim();
+      sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>${body}`;
+      sceneText.style.opacity = '1';
+      lastPaintedLength = fullTranscript.trim().split(/\s+/).length;
+      setStatus(listening ? 'listening' : 'done');
     }
-
-    const data = await res.json();
-    const output = data.content?.filter(b=>b.type==='text').map(b=>b.text).join('') || '';
-    const lines = output.trim().split('\n').filter(Boolean);
-    const titleLine = lines[0].replace(/^#+\s*/, '');
-    const body = lines.slice(1).join('\n').trim();
-
-    sceneText.innerHTML = `<span class="scene-title">${titleLine}</span>${body}`;
-    sceneText.style.opacity = '1';
-    setStatus('done');
-
   } catch(e) {
     showWarn('network error — check your connection');
     sceneText.style.opacity = '1';
-    setStatus('');
+    setStatus(listening ? 'listening' : '');
   }
 
   loadingDots.style.display = 'none';
-  btnVisualize.disabled = false;
+  painting = false;
+
+  // If still listening, schedule the next repaint
+  if (listening) scheduleNextPaint();
 }
 
 btnListen.addEventListener('click', () => {
   if (listening) stopListening(); else startListening();
 });
 
-btnVisualize.addEventListener('click', paintScene);
-
 btnClear.addEventListener('click', () => {
   fullTranscript = '';
-  updateTranscript();
+  lastPaintedLength = 0;
+  transcriptArea.innerHTML = '<em>transcript will appear here...</em>';
   keywordsDiv.innerHTML = '';
   sceneText.innerHTML = '<span class="placeholder">hit listen, start talking —<br>your story becomes a scene</span>';
   sceneBg.textContent = '';
-  setStatus('');
-  btnVisualize.disabled = true;
+  setStatus(listening ? 'listening' : '');
   clearTimeout(autoVisTimer);
   showWarn('');
 });
