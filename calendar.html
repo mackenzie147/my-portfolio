@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Blueberry Campaign Calendar</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #1F4E78 0%, #2d5fa3 100%);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 320px;
+            gap: 2rem;
+            align-items: start;
+        }
+        
+        .calendar-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .checklist-wrapper {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .checklist-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+            background: #1F4E78;
+            padding: 10px;
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            text-align: center;
+            text-transform: uppercase;
+        }
+        
+        .checklist-section {
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1.5rem;
+        }
+        
+        .checklist-section:last-child {
+            border-bottom: none;
+        }
+        
+        .campaign-name {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1F4E78;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .checklist-item {
+            font-size: 12px;
+            padding: 6px 0;
+            padding-left: 18px;
+            position: relative;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        .checklist-item::before {
+            content: "☐";
+            position: absolute;
+            left: 0;
+            color: #999;
+        }
+        
+        .month-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #1F4E78;
+            margin-bottom: 1.5rem;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .day-header {
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+            padding: 12px 0;
+            font-size: 13px;
+            text-transform: uppercase;
+            border-bottom: 2px solid #eee;
+        }
+        
+        .day-cell {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            min-height: 120px;
+            background: white;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        
+        .day-cell:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .day-cell.other-month {
+            background: #f9f9f9;
+            opacity: 0.5;
+        }
+        
+        .day-number {
+            font-size: 12px;
+            font-weight: 600;
+            color: #999;
+            margin-bottom: 6px;
+        }
+        
+        .daily-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        
+        .campaign-bar {
+            height: 3px;
+            border-radius: 2px;
+            cursor: pointer;
+            transition: height 0.2s;
+        }
+        
+        .campaign-bar:hover {
+            height: 5px;
+        }
+        
+        .action-button {
+            font-size: 9px;
+            font-weight: 700;
+            padding: 5px 6px;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            display: inline-block;
+            width: 100%;
+            text-align: center;
+        }
+        
+        .action-button:hover {
+            transform: scale(1.05);
+        }
+        
+        .box-pet { background: #B5D4F4; color: #0C447C; }
+        .box-pet-btn { background: #B5D4F4; color: #0C447C; border-color: #0C447C; }
+        
+        .box-laundry { background: #C0DD97; color: #27500A; }
+        .box-laundry-btn { background: #C0DD97; color: #27500A; border-color: #27500A; }
+        
+        .box-earth { background: #9FE1CB; color: #085041; }
+        .box-earth-btn { background: #9FE1CB; color: #085041; border-color: #085041; }
+        
+        .box-emoji { background: #FAC775; color: #633806; }
+        .box-emoji-btn { background: #FAC775; color: #633806; border-color: #633806; }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-bottom: 2rem;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 11px;
+        }
+        
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 3px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .modal.open {
+            display: flex;
+        }
+        
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 700px;
+            width: 100%;
+            max-height: 85vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        
+        .modal-close {
+            float: right;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+        }
+        
+        .modal-close:hover {
+            color: #333;
+        }
+        
+        .modal-header {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 2px solid #1F4E78;
+            clear: both;
+        }
+        
+        .modal-title {
+            font-size: 22px;
+            font-weight: 600;
+            color: #1F4E78;
+            margin: 0 0 0.5rem;
+        }
+        
+        .modal-date {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 1rem;
+        }
+        
+        .daily-action-box {
+            background: linear-gradient(135deg, #FFF9E6 0%, #FFFBF0 100%);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border-left: 4px solid #BA7517;
+            margin-bottom: 1.5rem;
+        }
+        
+        .daily-action-label {
+            font-size: 10px;
+            font-weight: 700;
+            color: #BA7517;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .daily-action-text {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .info-box {
+            background: #f9f9f9;
+            padding: 1.5rem;
+            border-radius: 8px;
+            border-left: 4px solid #1F4E78;
+        }
+        
+        .info-section {
+            margin-bottom: 1.5rem;
+        }
+        
+        .info-section:last-child {
+            margin-bottom: 0;
+        }
+        
+        .info-label {
+            font-size: 11px;
+            font-weight: 700;
+            color: #1F4E78;
+            text-transform: uppercase;
+            margin-bottom: 0.75rem;
+            letter-spacing: 0.5px;
+        }
+        
+        .info-content {
+            font-size: 13px;
+            line-height: 1.6;
+            color: #333;
+        }
+        
+        .footer {
+            text-align: center;
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid #eee;
+            color: #999;
+            font-size: 12px;
+            grid-column: 1 / -1;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .checklist-wrapper {
+                position: static;
+            }
+        }
+        
+        @media print {
+            body {
+                background: white;
+            }
+            .modal {
+                display: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📅 Blueberry Campaign Calendar</h1>
+            <p>April - May 2026 Strategic Campaign Plan</p>
+        </div>
+        
+        <div class="main-grid">
+            <div>
+                <div class="calendar-wrapper">
+                    <div class="month-title">April 2026</div>
+                    
+                    <div class="calendar-grid" id="calendar">
+                        <!-- Calendar populated by JavaScript -->
+                    </div>
+                    
+                    <div class="legend">
+                        <div class="legend-item"><div class="legend-color box-pet"></div> <span>Pet Day</span></div>
+                        <div class="legend-item"><div class="legend-color box-laundry"></div> <span>Laundry</span></div>
+                        <div class="legend-item"><div class="legend-color box-earth"></div> <span>Earth</span></div>
+                        <div class="legend-item"><div class="legend-color box-emoji"></div> <span>Emoji</span></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="checklist-wrapper">
+                <div class="checklist-title">Asset Checklist</div>
+                <div id="checklist"></div>
+            </div>
+        </div>
+        
+        <div class="footer">
+            <p>Colored bars show campaign duration. Click action buttons to view full details.</p>
+            <p style="margin-top: 1rem;">Generated for Blueberry • Ready to share and implement</p>
+        </div>
+    </div>
+    
+    <div class="modal" id="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()">×</button>
+            
+            <div class="modal-header">
+                <h2 class="modal-title" id="modalTitle"></h2>
+                <div class="modal-date" id="modalDate"></div>
+            </div>
+            
+            <div class="daily-action-box">
+                <div class="daily-action-label">Action Required Today</div>
+                <div class="daily-action-text" id="dailyActionText"></div>
+            </div>
+            
+            <div class="info-box">
+                <div class="info-section">
+                    <div class="info-label">Campaign Timeline</div>
+                    <div class="info-content" id="modalTimeline"></div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">Offer Message</div>
+                    <div class="info-content" id="modalOffer"></div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">Where to Post</div>
+                    <div class="info-content" id="modalWhere"></div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">User Trigger (What They Do)</div>
+                    <div class="info-content" id="modalTrigger"></div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">Auto Reply (Send To Users)</div>
+                    <div class="info-content" id="modalReply"></div>
+                </div>
+                
+                <div class="info-section">
+                    <div class="info-label">Required Assets & Setup</div>
+                    <div class="info-content" id="modalAssets"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const campaigns = {
+            "11": {
+                name: "National Pet Day",
+                timeline: "April 11 - April 18 (1 week)",
+                offer: "15% off pet-friendly products • Code: PETLOVE15",
+                where: "Story + Feed Post",
+                trigger: "Comment pet emoji (🐕 🐈) OR DM 'pet'",
+                reply: "OMG your pet is adorable! 🐾 Use code PETLOVE15 for 15% off pet-friendly products this week!",
+                assets: [
+                    "Design 3-5 slide carousel with pet photos",
+                    "Create discount code PETLOVE15 in Shopify",
+                    "Set up DM automation for keyword 'pet'",
+                    "Write auto-reply template for DM keyword",
+                    "Prepare 2-3 story posts for the week"
+                ],
+                color: "box-pet",
+                startDay: 11,
+                endDay: 18
+            },
+            "15": {
+                name: "National Laundry Day",
+                timeline: "April 15 - April 18 (3 days)",
+                offer: "20% off all washable products • Code: LAUNDRY20",
+                where: "Story + Feed Post + Care Link",
+                trigger: "Comment 'how clean' OR DM 'washable'",
+                reply: "Great question! All our products are machine washable and built to last. Try code LAUNDRY20 for 20% off this weekend!",
+                assets: [
+                    "Film/create 3-5 before/after content pieces",
+                    "Create discount code LAUNDRY20 in Shopify",
+                    "Set up DM automation for keyword 'washable'",
+                    "Prepare care instruction link/post",
+                    "Design 2-3 story posts with washing tips"
+                ],
+                color: "box-laundry",
+                startDay: 15,
+                endDay: 18
+            },
+            "22": {
+                name: "Earth Day",
+                timeline: "April 22 - April 25 (3 days)",
+                offer: "15% off sustainable line • Code: EARTH15",
+                where: "Story + Feed Carousel + Landing Page",
+                trigger: "DM 'sustainability' OR DM 'eco'",
+                reply: "Love this! We use 100% sustainable materials and carbon-neutral shipping. Learn more at [LINK]. Code EARTH15 saves 15%!",
+                assets: [
+                    "Create 5-slide sustainability carousel",
+                    "Create discount code EARTH15 in Shopify",
+                    "Set up DM automation for 'sustainability' and 'eco'",
+                    "Prepare sustainability landing page link",
+                    "Design 2-3 educational story posts"
+                ],
+                color: "box-earth",
+                startDay: 22,
+                endDay: 25
+            },
+            "20": {
+                name: "Comment Emoji Link",
+                timeline: "April 20 - May 4 (2 weeks)",
+                offer: "20% off exclusive products • Code: EMOJI20",
+                where: "Feed Post Caption Only",
+                trigger: "Comment 💚 emoji on the specific post",
+                reply: "Thanks for the love! 💚 Here's your exclusive link with code EMOJI20 for 20% off. [SHORTENED_LINK]",
+                assets: [
+                    "Design eye-catching feed post graphic",
+                    "Create shortened link (bit.ly) with tracking",
+                    "Create discount code EMOJI20 in Shopify",
+                    "Set up comment trigger automation",
+                    "Enable link tracking analytics"
+                ],
+                color: "box-emoji",
+                startDay: 20,
+                endDay: 30
+            }
+        };
+        
+        const dayActions = {
+            "11": [
+                { campaign: "11", action: "Launch campaign: Post feed carousel + initial story series" }
+            ],
+            "13": [
+                { campaign: "11", action: "Update: Share user engagement highlights in story" }
+            ],
+            "15": [
+                { campaign: "15", action: "Launch campaign: Post before/after carousel + story" },
+                { campaign: "11", action: "Engage: Reshare top comments in story" }
+            ],
+            "16": [
+                { campaign: "15", action: "Update: Post care tips story series" }
+            ],
+            "17": [
+                { campaign: "15", action: "Final push: Last day reminder story" },
+                { campaign: "11", action: "Wrap up: Thank you + results story" }
+            ],
+            "20": [
+                { campaign: "20", action: "Launch campaign: Post emoji feed post" }
+            ],
+            "22": [
+                { campaign: "22", action: "Launch campaign: Post sustainability carousel + story" },
+                { campaign: "20", action: "Engagement: Re-engage audience with story shoutout" }
+            ],
+            "24": [
+                { campaign: "22", action: "Update: Post impact/facts story" }
+            ],
+            "25": [
+                { campaign: "22", action: "Final push: Last day reminder story" }
+            ]
+        };
+        
+        function openModal(day, campaign) {
+            const c = campaigns[campaign];
+            if (!c) return;
+            
+            document.getElementById('modalTitle').textContent = c.name;
+            document.getElementById('modalDate').textContent = "April " + day + ", 2026";
+            
+            const dailyAction = dayActions[day] && dayActions[day].find(a => a.campaign === campaign);
+            if (dailyAction) {
+                document.getElementById('dailyActionText').textContent = dailyAction.action;
+            } else {
+                document.getElementById('dailyActionText').textContent = "Campaign running - no specific action required today";
+            }
+            
+            document.getElementById('modalTimeline').textContent = c.timeline;
+            document.getElementById('modalOffer').textContent = c.offer;
+            document.getElementById('modalWhere').textContent = c.where;
+            document.getElementById('modalTrigger').textContent = c.trigger;
+            document.getElementById('modalReply').textContent = c.reply;
+            
+            const assetsHTML = c.assets.map(a => `• ${a}`).join('<br>');
+            document.getElementById('modalAssets').innerHTML = assetsHTML;
+            
+            document.getElementById('modal').classList.add('open');
+        }
+        
+        function closeModal() {
+            document.getElementById('modal').classList.remove('open');
+        }
+        
+        document.getElementById('modal').addEventListener('click', (e) => {
+            if (e.target.id === 'modal') closeModal();
+        });
+        
+        function buildCalendar() {
+            const cal = document.getElementById('calendar');
+            const headers = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+            
+            headers.forEach(h => {
+                const div = document.createElement('div');
+                div.className = 'day-header';
+                div.textContent = h;
+                cal.appendChild(div);
+            });
+            
+            const firstDay = 3;
+            for (let i = 0; i < firstDay; i++) {
+                const div = document.createElement('div');
+                div.className = 'day-cell other-month';
+                cal.appendChild(div);
+            }
+            
+            const campaignMap = {};
+            Object.keys(campaigns).forEach(id => {
+                const c = campaigns[id];
+                for (let day = c.startDay; day <= c.endDay; day++) {
+                    if (!campaignMap[day]) campaignMap[day] = [];
+                    campaignMap[day].push(id);
+                }
+            });
+            
+            for (let day = 1; day <= 30; day++) {
+                const div = document.createElement('div');
+                div.className = 'day-cell';
+                
+                const numDiv = document.createElement('div');
+                numDiv.className = 'day-number';
+                numDiv.textContent = day;
+                div.appendChild(numDiv);
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.className = 'daily-content';
+                
+                if (campaignMap[day]) {
+                    campaignMap[day].forEach(campaignId => {
+                        const c = campaigns[campaignId];
+                        const bar = document.createElement('div');
+                        bar.className = `campaign-bar ${c.color}`;
+                        bar.style.cursor = 'pointer';
+                        bar.title = c.name;
+                        bar.onclick = (e) => {
+                            e.stopPropagation();
+                            openModal(day, campaignId);
+                        };
+                        contentDiv.appendChild(bar);
+                    });
+                }
+                
+                if (dayActions[day]) {
+                    dayActions[day].forEach(action => {
+                        const c = campaigns[action.campaign];
+                        const btn = document.createElement('button');
+                        btn.className = `action-button box-${c.color.split('-')[1]}-btn`;
+                        btn.textContent = action.action.split(':')[0];
+                        btn.onclick = (e) => {
+                            e.stopPropagation();
+                            openModal(day, action.campaign);
+                        };
+                        contentDiv.appendChild(btn);
+                    });
+                }
+                
+                div.appendChild(contentDiv);
+                cal.appendChild(div);
+            }
+        }
+        
+        function buildChecklist() {
+            const checklist = document.getElementById('checklist');
+            const campaignList = ["11", "15", "22", "20"];
+            
+            campaignList.forEach(id => {
+                const campaign = campaigns[id];
+                const section = document.createElement('div');
+                section.className = 'checklist-section';
+                
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'campaign-name';
+                nameDiv.textContent = campaign.name;
+                section.appendChild(nameDiv);
+                
+                campaign.assets.forEach(asset => {
+                    const item = document.createElement('div');
+                    item.className = 'checklist-item';
+                    item.textContent = asset;
+                    section.appendChild(item);
+                });
+                
+                checklist.appendChild(section);
+            });
+        }
+        
+        buildCalendar();
+        buildChecklist();
+    </script>
+</body>
+</html>
