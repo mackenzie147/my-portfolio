@@ -62,18 +62,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 .activity-item .flt{color:var(--gold);font-family:var(--font-board)}
 .side-yes{color:var(--yes)}.side-no{color:var(--no)}
 @keyframes fadeIn{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:translateY(0)}}
-
-/* ── Leaderboard mini-strip in sidebar ── */
-.lb-mini-section{padding:10px 14px 0;border-bottom:1px solid var(--border)}
-.lb-mini-row{display:flex;align-items:center;gap:6px;padding:4px 0;font-size:10px;border-bottom:1px solid var(--border)}
-.lb-mini-row:last-child{border-bottom:none}
-.lb-mini-rank{font-family:var(--font-board);color:var(--text3);width:14px;font-size:10px;flex-shrink:0}
-.lb-mini-name{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;color:var(--text)}
-.lb-mini-val{font-family:var(--font-mono);color:var(--green);font-size:10px;font-weight:500;flex-shrink:0}
-.lb-mini-me{color:var(--gold);font-weight:600}
-.lb-mini-view{display:block;width:100%;text-align:center;font-size:9px;color:var(--gold);padding:5px 0 8px;cursor:pointer;letter-spacing:.5px;background:none;border:none;font-family:var(--font-ui)}
-.lb-mini-view:hover{text-decoration:underline}
-
 .board-top{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 10px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0}
 .board-airport .name{font-size:17px;font-weight:600}
 .board-airport .meta{font-size:10px;color:var(--text3);letter-spacing:.5px;margin-top:2px}
@@ -81,24 +69,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 .search-box{background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-board);font-size:11px;padding:6px 10px;width:160px;letter-spacing:1px;outline:none;transition:border-color .15s}
 .search-box:focus{border-color:var(--gold)}
 .search-box::placeholder{color:var(--text3)}
-
-/* Airport search in top bar */
-.airport-search-wrap{position:relative;display:inline-block}
-.airport-search-input{background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-board);font-size:12px;padding:6px 10px;width:120px;letter-spacing:2px;outline:none;transition:border-color .15s;text-transform:uppercase}
-.airport-search-input:focus{border-color:var(--gold)}
-.airport-search-input::placeholder{color:var(--text3);letter-spacing:1px}
-.airport-dropdown{position:absolute;top:calc(100% + 4px);right:0;background:var(--bg2);border:1px solid var(--border2);border-radius:7px;box-shadow:0 8px 24px rgba(0,0,0,.1);z-index:200;min-width:220px;max-height:280px;overflow-y:auto;display:none}
-.airport-dropdown.show{display:block}
-.airport-dropdown-item{display:flex;align-items:center;gap:10px;padding:8px 12px;cursor:pointer;transition:background .1s;border-bottom:1px solid var(--border)}
-.airport-dropdown-item:last-child{border-bottom:none}
-.airport-dropdown-item:hover{background:var(--bg3)}
-.airport-dropdown-item .adi-code{font-family:var(--font-board);font-size:14px;color:var(--gold);letter-spacing:2px;width:40px;flex-shrink:0}
-.airport-dropdown-item .adi-info{display:flex;flex-direction:column}
-.airport-dropdown-item .adi-name{font-size:11px;color:var(--text)}
-.airport-dropdown-item .adi-city{font-size:9px;color:var(--text3)}
-.airport-dropdown-item.no-result{color:var(--text3);font-size:11px;cursor:default;padding:12px}
-.airport-dropdown-item.no-result:hover{background:none}
-
 .sort-btn{background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text2);font-size:10px;padding:6px 10px;cursor:pointer;letter-spacing:.5px;transition:all .15s;font-family:var(--font-ui);font-weight:500}
 .sort-btn:hover{border-color:var(--border2);color:var(--text)}
 .sort-btn.active{border-color:var(--gold);color:var(--gold);background:var(--bg3)}
@@ -208,6 +178,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 .modal-switch{font-size:11px;color:var(--text2);text-align:center}
 .modal-switch a{color:var(--gold);cursor:pointer}
 .modal-err{color:var(--red);font-size:11px;margin-bottom:8px;padding:6px 8px;background:rgba(224,70,42,.06);border-radius:4px;border:1px solid rgba(224,70,42,.15)}
+.airport-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:10px;padding:22px;width:440px}
+.airport-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:14px}
+.airport-opt{background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:10px;cursor:pointer;transition:all .12s;text-align:center}
+.airport-opt:hover,.airport-opt.active{border-color:var(--gold);background:var(--bg4)}
+.airport-opt .ap-code{font-family:var(--font-board);font-size:18px;color:var(--gold);letter-spacing:2px}
+.airport-opt .ap-city{font-size:9px;color:var(--text3);margin-top:2px}
 .toast{position:fixed;bottom:20px;right:20px;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:10px 16px;font-size:11px;color:var(--text);opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;z-index:300;max-width:280px;box-shadow:0 4px 16px rgba(0,0,0,.1)}
 .toast.show{opacity:1;transform:translateY(0)}
 ::-webkit-scrollbar{width:3px;height:3px}
@@ -215,38 +191,16 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* Simulated portfolio banner */
-.sim-banner{background:rgba(0,168,126,.06);border:1px solid rgba(0,168,126,.2);border-radius:7px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:flex-start;gap:10px}
-.sim-banner-icon{font-size:20px;flex-shrink:0;margin-top:1px}
-.sim-banner-body{flex:1}
-.sim-banner-title{font-size:12px;font-weight:600;color:var(--text);margin-bottom:3px}
-.sim-banner-sub{font-size:10px;color:var(--text2);line-height:1.6}
-.sim-banner-sub strong{color:var(--text)}
-.sim-result-row{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:16px}
-.sim-card{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 12px}
-.sim-card .sl{font-size:8px;color:var(--text3);letter-spacing:1.5px;font-weight:600;margin-bottom:4px}
-.sim-card .sv{font-family:var(--font-board);font-size:18px}
-.sim-card .ss{font-size:9px;color:var(--text3);margin-top:1px}
-.sim-hist-row{background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:7px 12px;margin-bottom:4px;display:flex;align-items:center;justify-content:space-between;font-size:10px}
-.sim-hist-id{font-family:var(--font-board);color:var(--gold);font-size:11px;width:80px}
-.sim-hist-date{color:var(--text3);width:80px}
-.sim-hist-side{color:var(--text2);width:40px}
-.sim-hist-result{font-family:var(--font-mono);font-weight:500}
 </style>
 </head>
 <body>
 <nav>
   <div class="nav-logo">FLIGHTBET <span>// DELAY MARKETS</span></div>
   <div class="nav-right">
-    <!-- Airport search (replaces picker button) -->
-    <div class="airport-search-wrap" id="ap-search-wrap">
-      <input class="airport-search-input" id="ap-search-input" placeholder="AIRPORT..." maxlength="4"
-        oninput="filterAirportDropdown(this.value)"
-        onfocus="showAirportDropdown()"
-        onblur="setTimeout(hideAirportDropdown,180)"
-        onkeydown="handleApKey(event)">
-      <div class="airport-dropdown" id="ap-dropdown"></div>
+    <div class="nav-airport" onclick="openAirportPicker()">
+      <span class="code" id="nav-code">SFO</span>
+      <span id="nav-airport-name">San Francisco Intl</span>
+      <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
     </div>
     <div id="auth-area"></div>
   </div>
@@ -267,14 +221,6 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
       <div class="sidebar-label">Market Stats</div>
       <div id="market-stats"></div>
     </div>
-
-    <!-- LEADERBOARD mini panel in sidebar -->
-    <div class="lb-mini-section" id="lb-mini-section">
-      <div class="sidebar-label">Leaderboard</div>
-      <div id="lb-mini-rows"><div style="font-size:10px;color:var(--text3);padding:4px 0">Loading...</div></div>
-      <button class="lb-mini-view" onclick="currentUser?showPortfolio():openAuthModal()">VIEW FULL LEADERBOARD →</button>
-    </div>
-
     <div class="sidebar-section" id="watchlist-section" style="border-bottom:none;flex-shrink:0;display:none"><div class="sidebar-label">Watching</div><div id="watchlist-items"></div></div>
     <div class="sidebar-section" style="border-bottom:none;flex-shrink:0"><div class="sidebar-label">Recent Bets</div></div>
     <div class="activity-feed" id="activity-feed"></div>
@@ -301,6 +247,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 </div>
 <div class="toast" id="toast"></div>
 
+<!-- Firebase SDKs -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
 import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, updateProfile } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
@@ -321,117 +268,21 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const STARTING_BALANCE = 500;
 
-// ─── Airport data ──────────────────────────────────────────────
-// baseRate = historical delay probability based on FAA/BTS/Cirium data
 const AIRPORTS = {
-  SFO:{name:'San Francisco International',city:'San Francisco, CA',lat:37.621,lng:-122.379,baseRate:.22,note:'Fog & marine layer cause frequent morning delays. ~78% on-time (Cirium 2024).'},
-  LAX:{name:'Los Angeles International',city:'Los Angeles, CA',lat:33.943,lng:-118.408,baseRate:.20,note:'High traffic volume, afternoon congestion. ~80% on-time historically.'},
-  JFK:{name:'John F Kennedy International',city:'New York, NY',lat:40.641,lng:-73.778,baseRate:.30,note:'Weather & ATC congestion — consistently one of the most delayed in the US.'},
-  LGA:{name:'LaGuardia Airport',city:'New York, NY',lat:40.777,lng:-73.873,baseRate:.33,note:'Tiny airport, massive traffic. Ground stops are frequent.'},
-  EWR:{name:'Newark Liberty International',city:'Newark, NJ',lat:40.693,lng:-74.168,baseRate:.35,note:'Ranked last in J.D. Power 2025 mega-airport satisfaction. Chronically delayed.'},
-  ORD:{name:"O'Hare International",city:'Chicago, IL',lat:41.978,lng:-87.904,baseRate:.30,note:'Severe winters and thunderstorm season drive high delay rates.'},
-  MDW:{name:'Chicago Midway',city:'Chicago, IL',lat:41.786,lng:-87.742,baseRate:.24,note:'Southwest hub, smaller footprint means faster recovery than ORD.'},
-  ATL:{name:'Hartsfield-Jackson Atlanta',city:'Atlanta, GA',lat:33.640,lng:-84.428,baseRate:.21,note:'Busiest airport in the world. Thunderstorms in summer.'},
-  DEN:{name:'Denver International',city:'Denver, CO',lat:39.856,lng:-104.674,baseRate:.24,note:'Snowstorms and high altitude create de-icing pressure.'},
-  SEA:{name:'Seattle-Tacoma International',city:'Seattle, WA',lat:47.449,lng:-122.309,baseRate:.20,note:'Rain is constant but rarely severe enough to cause major delays.'},
-  MIA:{name:'Miami International',city:'Miami, FL',lat:25.795,lng:-80.287,baseRate:.26,note:'Hurricane season and afternoon thunderstorms July–October.'},
-  BOS:{name:'Logan International',city:'Boston, MA',lat:42.365,lng:-71.010,baseRate:.25,note:'Brutal winters, limited runway capacity.'},
-  DFW:{name:'Dallas/Fort Worth International',city:'Dallas, TX',lat:32.897,lng:-97.040,baseRate:.22,note:'Thunderstorms and occasional ice storms in winter.'},
-  IAH:{name:'George Bush Intercontinental',city:'Houston, TX',lat:29.984,lng:-95.341,baseRate:.23,note:'United hub, subject to Gulf Coast storm season.'},
-  PHX:{name:'Phoenix Sky Harbor',city:'Phoenix, AZ',lat:33.438,lng:-112.008,baseRate:.17,note:'One of the most reliably on-time airports in the US. Great weather.'},
-  LAS:{name:'Harry Reid International',city:'Las Vegas, NV',lat:36.080,lng:-115.152,baseRate:.18,note:'Generally on time. Occasional desert wind events.'},
-  SLC:{name:'Salt Lake City International',city:'Salt Lake City, UT',lat:40.788,lng:-111.978,baseRate:.17,note:'Best-performing US airport in May 2024 per Cirium — 82.7% on-time.'},
-  PDX:{name:'Portland International',city:'Portland, OR',lat:45.589,lng:-122.598,baseRate:.19,note:'Pacific Northwest weather is mild; delays are uncommon.'},
-  SAN:{name:'San Diego International',city:'San Diego, CA',lat:32.733,lng:-117.190,baseRate:.19,note:'Marine layer can cause morning delays, otherwise reliable.'},
-  MSP:{name:'Minneapolis-St Paul International',city:'Minneapolis, MN',lat:44.882,lng:-93.222,baseRate:.26,note:'Harsh winters. Delta hub with generally solid recovery.'},
-  DTW:{name:'Detroit Metropolitan Wayne County',city:'Detroit, MI',lat:42.213,lng:-83.353,baseRate:.22,note:'Delta hub. Winter weather but good infrastructure.'},
-  CLT:{name:'Charlotte Douglas International',city:'Charlotte, NC',lat:35.214,lng:-80.943,baseRate:.22,note:'American hub. Thunderstorm season in summer.'},
-  PHL:{name:'Philadelphia International',city:'Philadelphia, PA',lat:39.873,lng:-75.241,baseRate:.29,note:'Chronic delays, congested airspace.'},
-  BWI:{name:'Baltimore/Washington International',city:'Baltimore, MD',lat:39.175,lng:-76.669,baseRate:.28,note:'Mid-Atlantic weather, ATC congestion.'},
-  IAD:{name:'Washington Dulles International',city:'Washington, DC',lat:38.944,lng:-77.456,baseRate:.25,note:'United hub. More reliable than DCA.'},
-  DCA:{name:'Ronald Reagan Washington National',city:'Arlington, VA',lat:38.852,lng:-77.037,baseRate:.27,note:'Slot-controlled, perimeter rule causes cascading delays.'},
-  HNL:{name:'Daniel K. Inouye International',city:'Honolulu, HI',lat:21.324,lng:-157.928,baseRate:.15,note:'4th most on-time large airport globally per Cirium 2025. Excellent weather.'},
-  MCO:{name:'Orlando International',city:'Orlando, FL',lat:28.430,lng:-81.308,baseRate:.22,note:'Afternoon thunderstorms in summer. High leisure traffic.'},
-  TPA:{name:'Tampa International',city:'Tampa, FL',lat:27.976,lng:-82.533,baseRate:.21,note:'Summer storm season. Generally efficient operations.'},
-  MSY:{name:'Louis Armstrong New Orleans Intl',city:'New Orleans, LA',lat:29.993,lng:-90.258,baseRate:.25,note:'Hurricane risk in season. Festive but occasionally chaotic.'},
-  // CANADIAN AIRPORTS
-  YYZ:{name:'Toronto Pearson International',city:'Toronto, ON',lat:43.677,lng:-79.630,baseRate:.30,note:'Ranked #1 worst airport in the world for delays in 2022 (FlightAware/CNN). ~70% on-time in 2024 per Cirium — improved but still among the worst in North America. Ranked 2nd-to-last in J.D. Power 2025 mega-airport satisfaction (above only Newark). Air Canada (primary carrier) was 9th of 10 North American airlines for on-time performance in 2024. Yes, it snows there every winter. They are always surprised.'},
-  YVR:{name:'Vancouver International',city:'Vancouver, BC',lat:49.194,lng:-123.184,baseRate:.18,note:'Best airport in Canada. Ranked 10th in world by Skytrax 2026. ~82% on-time.'},
-  YUL:{name:'Montréal-Trudeau International',city:'Montréal, QC',lat:45.470,lng:-73.741,baseRate:.26,note:'Cold winters. Air Canada hub. Ranked 46th globally by Skytrax 2026.'},
-  YYC:{name:'Calgary International',city:'Calgary, AB',lat:51.131,lng:-114.013,baseRate:.22,note:'Best-performing Canadian airport in May 2024 per Cirium — 77% on-time.'},
-  YEG:{name:'Edmonton International',city:'Edmonton, AB',lat:53.310,lng:-113.580,baseRate:.24,note:'Cold winters, de-icing required frequently.'},
-  YOW:{name:'Ottawa Macdonald-Cartier Intl',city:'Ottawa, ON',lat:45.323,lng:-75.669,baseRate:.25,note:'Cold and snowy. Government travel hub.'},
-  // UK/EUROPE
-  LHR:{name:'Heathrow Airport',city:'London, UK',lat:51.477,lng:-0.461,baseRate:.28,note:'One of the busiest airports in the world. High volume + UK weather = frequent delays.'},
-  LGW:{name:'Gatwick Airport',city:'London, UK',lat:51.153,lng:-0.182,baseRate:.26,note:'Single-runway airport. Any incident causes cascading delays.'},
-  CDG:{name:'Charles de Gaulle Airport',city:'Paris, France',lat:49.009,lng:2.547,baseRate:.27,note:'French ATC strikes and complex terminal layout cause delays.'},
-  AMS:{name:'Amsterdam Schiphol',city:'Amsterdam, Netherlands',lat:52.308,lng:4.764,baseRate:.24,note:'Capacity-constrained. Slot cuts have improved things somewhat.'},
-  FRA:{name:'Frankfurt Airport',city:'Frankfurt, Germany',lat:50.037,lng:8.562,baseRate:.25,note:'Major European hub. Was 3rd most delayed globally in summer 2022.'},
-  IST:{name:'Istanbul Airport',city:'Istanbul, Turkey',lat:41.261,lng:28.742,baseRate:.19,note:'Cirium Platinum Award 2025. 80.7% on-time — one of the best-run mega-hubs in the world.'},
-  DXB:{name:'Dubai International',city:'Dubai, UAE',lat:25.253,lng:55.365,baseRate:.15,note:'Extremely reliable. Emirates hub. Desert climate means few weather delays.'},
-  SIN:{name:'Singapore Changi Airport',city:'Singapore',lat:1.359,lng:103.989,baseRate:.12,note:'Frequently ranked world\'s best airport. Exceptional on-time performance.'},
-  NRT:{name:'Tokyo Narita International',city:'Tokyo, Japan',lat:35.773,lng:140.386,baseRate:.13,note:'Japanese airports are among the world\'s most punctual. Typhoon season is the main risk.'},
-  HND:{name:'Tokyo Haneda Airport',city:'Tokyo, Japan',lat:35.552,lng:139.780,baseRate:.12,note:'The most punctual major airport in Japan. World-class operations.'},
-  SYD:{name:'Sydney Kingsford Smith Airport',city:'Sydney, Australia',lat:-33.947,lng:151.177,baseRate:.21,note:'Australian airports are generally reliable. Summer storm season in Dec–Feb.'},
-  MEX:{name:'Mexico City Benito Juárez Intl',city:'Mexico City, Mexico',lat:19.436,lng:-99.072,baseRate:.17,note:'Top 3 most on-time large airports in the world per Cirium 2024 & 2025.'},
-  SCL:{name:'Santiago Arturo Merino Benítez Intl',city:'Santiago, Chile',lat:-33.393,lng:-70.786,baseRate:.13,note:'#1 most on-time large airport in the world per Cirium 2025 (87% on-time). The anti-YYZ.'},
+  SFO:{name:'San Francisco International',city:'San Francisco, CA',lat:37.621,lng:-122.379,baseRate:.22,note:'Fog & marine layer cause frequent morning delays'},
+  LAX:{name:'Los Angeles International',city:'Los Angeles, CA',lat:33.943,lng:-118.408,baseRate:.19,note:'High traffic volume, afternoon congestion'},
+  JFK:{name:'John F Kennedy International',city:'New York, NY',lat:40.641,lng:-73.778,baseRate:.28,note:'Weather & ATC congestion — among the most delayed in the US'},
+  ORD:{name:"O'Hare International",city:'Chicago, IL',lat:41.978,lng:-87.904,baseRate:.30,note:'Severe winters and thunderstorm season drive high delay rates'},
+  ATL:{name:'Hartsfield-Jackson Atlanta',city:'Atlanta, GA',lat:33.640,lng:-84.428,baseRate:.21,note:'Busiest airport in the world — thunderstorms in summer'},
+  DEN:{name:'Denver International',city:'Denver, CO',lat:39.856,lng:-104.674,baseRate:.24,note:'Snowstorms and high altitude create deicing pressure'},
+  SEA:{name:'Seattle-Tacoma International',city:'Seattle, WA',lat:47.449,lng:-122.309,baseRate:.20,note:'Rain is constant, rarely severe enough to cause major delays'},
+  MIA:{name:'Miami International',city:'Miami, FL',lat:25.795,lng:-80.287,baseRate:.26,note:'Hurricane season and afternoon thunderstorms July-October'},
+  BOS:{name:'Logan International',city:'Boston, MA',lat:42.365,lng:-71.010,baseRate:.25,note:'Brutal winters, small airport with limited runway capacity'},
+  DFW:{name:'Dallas/Fort Worth International',city:'Dallas, TX',lat:32.897,lng:-97.040,baseRate:.22,note:'Thunderstorms and occasional ice storms in winter'},
+  YYZ:{name:'Toronto Pearson International',city:'Toronto, ON',lat:43.677,lng:-79.630,baseRate:.65,note:'Consistently ranked among the most delayed airports in the world. It snows there every winter. They are always surprised.'},
 };
 
 function getAirportBaseRate(iata) { return AIRPORTS[iata]?.baseRate || 0.22; }
-
-// ─── Airport search ─────────────────────────────────────────────
-const ALL_AIRPORT_CODES = Object.keys(AIRPORTS);
-
-window.filterAirportDropdown = function(val) {
-  const q = val.toUpperCase().trim();
-  const dd = document.getElementById('ap-dropdown');
-  dd.innerHTML = '';
-  if (!q) {
-    // show all
-    ALL_AIRPORT_CODES.forEach(code => renderApOption(code, dd));
-  } else {
-    const matches = ALL_AIRPORT_CODES.filter(code =>
-      code.includes(q) ||
-      (AIRPORTS[code].name||'').toUpperCase().includes(q) ||
-      (AIRPORTS[code].city||'').toUpperCase().includes(q)
-    );
-    if (!matches.length) {
-      const d = document.createElement('div');
-      d.className = 'airport-dropdown-item no-result';
-      d.textContent = 'No airport found for "' + val + '"';
-      dd.appendChild(d);
-    } else {
-      matches.forEach(code => renderApOption(code, dd));
-    }
-  }
-  dd.classList.add('show');
-};
-
-function renderApOption(code, dd) {
-  const a = AIRPORTS[code];
-  const el = document.createElement('div');
-  el.className = 'airport-dropdown-item' + (code === ap ? ' active' : '');
-  el.innerHTML = '<span class="adi-code">' + code + '</span><div class="adi-info"><span class="adi-name">' + a.name + '</span><span class="adi-city">' + a.city + '</span></div>';
-  el.onmousedown = () => { pickAP(code); };
-  dd.appendChild(el);
-}
-
-window.showAirportDropdown = function() {
-  const inp = document.getElementById('ap-search-input');
-  filterAirportDropdown(inp.value || '');
-};
-window.hideAirportDropdown = function() {
-  document.getElementById('ap-dropdown').classList.remove('show');
-};
-window.handleApKey = function(e) {
-  const dd = document.getElementById('ap-dropdown');
-  const items = dd.querySelectorAll('.airport-dropdown-item:not(.no-result)');
-  if (e.key === 'Enter') {
-    const first = items[0];
-    if (first) { const code = first.querySelector('.adi-code').textContent; pickAP(code); }
-  }
-  if (e.key === 'Escape') hideAirportDropdown();
-};
 
 const MOCK_FLIGHTS = [
   {id:'UA847',dest:'ORD',destName:"Chicago O'Hare",time:'06:15',gate:'B22',status:'On Time',airline:'United',aircraft:'B737',delayProb:.18,vol:14200},
@@ -444,21 +295,9 @@ const MOCK_FLIGHTS = [
   {id:'UA341',dest:'JFK',destName:'New York JFK',time:'12:35',gate:'B11',status:'On Time',airline:'United',aircraft:'B777',delayProb:.52,vol:13200},
 ];
 
-const YYZ_AC_FLIGHTS = [
-  {id:'AC001',dest:'YVR',destName:'Vancouver',airline:'Air Canada',aircraft:'B787'},
-  {id:'AC093',dest:'LHR',destName:'London Heathrow',airline:'Air Canada',aircraft:'B787'},
-  {id:'AC781',dest:'FRA',destName:'Frankfurt',airline:'Air Canada',aircraft:'A333'},
-  {id:'AC816',dest:'CDG',destName:'Paris CDG',airline:'Air Canada',aircraft:'A333'},
-  {id:'AC048',dest:'NRT',destName:'Tokyo Narita',airline:'Air Canada',aircraft:'B787'},
-  {id:'AC804',dest:'AMS',destName:'Amsterdam',airline:'Air Canada',aircraft:'A333'},
-  {id:'AC544',dest:'ORD',destName:"Chicago O'Hare",airline:'Air Canada',aircraft:'E190'},
-  {id:'AC7534',dest:'DFW',destName:'Dallas Fort Worth',airline:'Air Canada',aircraft:'A320'},
-];
-
 let ap='SFO', flights=[], sel=null, filter='all', sort='time', betSide='YES';
 let currentUser=null, userProfile=null, view='board';
 const bCache={}, BTTL=3*60*1000;
-let lbCache = [];
 
 async function loadUserProfile(uid) {
   const ref = doc(db, 'users', uid);
@@ -483,38 +322,14 @@ async function loadLeaderboard() {
   return snap.docs.map(d => d.data());
 }
 
-async function refreshLbMini() {
-  try {
-    lbCache = await loadLeaderboard();
-    renderLbMini();
-  } catch(e) {}
-}
-
-function renderLbMini() {
-  const el = document.getElementById('lb-mini-rows');
-  if (!el) return;
-  if (!lbCache.length) { el.innerHTML = '<div style="font-size:10px;color:var(--text3);padding:4px 0">No players yet.</div>'; return; }
-  el.innerHTML = lbCache.slice(0, 5).map((l, i) => {
-    const isMe = l.uid === currentUser?.uid;
-    const pnl = Math.round(l.balance - 500);
-    return '<div class="lb-mini-row">'
-      + '<span class="lb-mini-rank">' + (i+1) + '</span>'
-      + '<span class="lb-mini-name' + (isMe?' lb-mini-me':'') + '">' + (isMe ? '★ ' : '') + (l.displayName||'?').substring(0,14) + '</span>'
-      + '<span class="lb-mini-val" style="color:' + (pnl>=0?'var(--green)':'var(--red)') + '">' + (pnl>=0?'+':'') + '$' + pnl + '</span>'
-      + '</div>';
-  }).join('');
-}
-
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     await loadUserProfile(user.uid);
     renderAuthArea(); renderAll(); renderWatchlist();
-    refreshLbMini();
   } else {
     currentUser = null; userProfile = null;
     renderAuthArea(); renderAll();
-    refreshLbMini();
   }
 });
 
@@ -556,8 +371,8 @@ function detectAirport() {
 
 function setAirport(code) {
   ap=code;
-  const inp = document.getElementById('ap-search-input');
-  if (inp) inp.value = code;
+  document.getElementById('nav-code').textContent=code;
+  document.getElementById('nav-airport-name').textContent=AIRPORTS[code]?.name||code;
   document.getElementById('board-title').textContent=AIRPORTS[code]?.name||code;
   document.getElementById('board-meta').textContent=code+' — Departures — ';
   sel=null;
@@ -571,17 +386,9 @@ function setAirport(code) {
   });
 }
 
-window.pickAP = function(code) {
-  document.getElementById('ap-dropdown').classList.remove('show');
-  const inp = document.getElementById('ap-search-input');
-  if (inp) inp.value = code;
-  setAirport(code);
-};
-
 setInterval(()=>{ const n=new Date(),el=document.getElementById('board-time'); if(el) el.textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':'); },1000);
 setInterval(()=>{ flights.forEach(f=>{ if(f.status==='Departed'||f.status==='Cancelled') return; f.delayProb=Math.max(.04,Math.min(.96,(f.delayProb||.2)+(Math.random()-.5)*.03)); }); renderAll(); updateTicker(); updateStats(); },5000);
 setInterval(()=>fetchFlights(ap).then(d=>{ flights=d.flights||[]; flights.forEach(f=>{if(f.delayProb==null)f.delayProb=getAirportBaseRate(ap);if(f.vol==null)f.vol=5000;}); renderAll(); updateCounts(); updateStats(); }),3*60*1000);
-setInterval(refreshLbMini, 60000);
 
 function updateTicker() {
   if(!flights.length) return;
@@ -629,7 +436,7 @@ function updateCounts() {
 
 function updateStats() {
   const a=flights.filter(f=>f.status!=='Departed'),avg=a.reduce((s,f)=>s+(f.delayProb||0),0)/Math.max(1,a.length),vol=flights.reduce((s,f)=>s+(f.vol||0),0);
-  document.getElementById('market-stats').innerHTML='<div class="stat-row"><span class="lbl">Avg Delay Prob</span><span class="val">'+Math.round(avg*100)+'%</span></div><div class="stat-row"><span class="lbl">24h Volume</span><span class="val">$'+(vol/1000).toFixed(0)+'K</span></div><div class="stat-row"><span class="lbl">High Risk</span><span class="val">'+flights.filter(f=>(f.delayProb||0)>.6).length+'</span></div><div class="stat-row"><span class="lbl">Base Rate</span><span class="val">'+Math.round(getAirportBaseRate(ap)*100)+'%</span></div>';
+  document.getElementById('market-stats').innerHTML='<div class="stat-row"><span class="lbl">Avg Delay Prob</span><span class="val">'+Math.round(avg*100)+'%</span></div><div class="stat-row"><span class="lbl">24h Volume</span><span class="val">$'+(vol/1000).toFixed(0)+'K</span></div><div class="stat-row"><span class="lbl">High Risk</span><span class="val">'+flights.filter(f=>(f.delayProb||0)>.6).length+'</span></div><div class="stat-row"><span class="lbl">Active Markets</span><span class="val">'+a.length+'</span></div>';
 }
 
 function renderAll() {
@@ -671,7 +478,7 @@ function renderDetail(id) {
     +(airlineDelayRate!==null?'<div><div class="lbl">AIRLINE TODAY</div>'+Math.round(airlineDelayRate*100)+'% avg delay prob</div>':'')
     +(pos?'<div style="margin-left:auto"><span class="pos-badge '+(pos.side==='YES'?'pos-yes-badge':'pos-no-badge')+'">YOUR POS: '+pos.side+' $'+pos.amount+'</span></div>':'')
     +'</div>'
-    +'<div style="margin-top:10px;padding:8px 10px;background:var(--bg3);border-radius:5px;border:1px solid var(--border);font-size:9px;color:var(--text3);line-height:1.6"><strong style="color:var(--text2)">How delay probability is calculated:</strong> Based on live AviationStack data where available. Active delays map to probability (>60min=92%, >30min=80%, >15min=68%, >0=55%). Scheduled flights use a base rate of <strong style="color:var(--text2)">'+(Math.round(getAirportBaseRate(ap)*100))+'%</strong> for '+ap+' — derived from FAA/BTS/Cirium historical on-time data'+(AIRPORTS[ap]?.note?' — '+AIRPORTS[ap].note:'')+'. Adjusts with route and airline trends. Drifts ±3% every 5s to simulate live trading.</div>'
+    +'<div style="margin-top:10px;padding:8px 10px;background:var(--bg3);border-radius:5px;border:1px solid var(--border);font-size:9px;color:var(--text3);line-height:1.6"><strong style="color:var(--text2)">How delay probability is calculated:</strong> Based on live AviationStack data. Active delays map to probability (>60min=92%, >30min=80%, >15min=68%, >0=55%). Scheduled flights use a base rate of <strong style="color:var(--text2)">'+(Math.round(getAirportBaseRate(ap)*100))+'%</strong> for '+ap+' (FAA/BTS historical data)'+(AIRPORTS[ap]?.note?' — '+AIRPORTS[ap].note:'')+'. Adjusts with route and airline trends. Drifts ±3% every 5s to simulate live trading.</div>'
     +'</div><div class="detail-right"><div class="bet-title">PLACE BET</div>'
     +'<div class="side-toggle"><button class="side-btn '+(betSide==='YES'?'active-yes':'')+'" onclick="setSide(\'YES\')">DELAYED (YES)</button><button class="side-btn '+(betSide==='NO'?'active-no':'')+'" onclick="setSide(\'NO\')">ON TIME (NO)</button></div>'
     +'<div class="bet-row"><span class="bet-label">AMOUNT</span><input class="bet-input" type="number" id="bet-amount" value="10" min="1" max="'+(userProfile?Math.floor(userProfile.balance):0)+'" oninput="updatePayout()"></div>'
@@ -683,6 +490,7 @@ function renderDetail(id) {
 
   panel.classList.add('open');
   updatePayout();
+  // Attach watch button via DOM to avoid quote issues
   document.getElementById('watch-btn').onclick = () => toggleWatch(f.id, f.dest, f.airline);
 }
 
@@ -715,107 +523,19 @@ window.placeBet=async function(id){
 window.showPortfolio=async function(){if(!currentUser){openAuthModal();return;}view='portfolio';document.getElementById('board-content').style.display='none';renderPortfolio();};
 window.showBoard=function(){view='board';const bc=document.getElementById('board-content');if(bc)bc.style.display='flex';const pv=document.getElementById('portfolio-view');if(pv)pv.remove();renderAll();};
 
-// ─── Simulated Air Canada history (71 days of betting NO on AC flights from YYZ) ───
-function buildACSimulation() {
-  // Air Canada delay rate at YYZ: ~30% per Cirium 2024 (29% delayed / 71% on-time).
-  // Betting NO (on-time) at 70¢ per $1 payout: win rate 71%, loss when flight delayed.
-  // We bet $10/flight. 71 days × 8 AC departures/day = 568 bets.
-  const DAYS = 71;
-  const AC_DELAY_RATE = 0.29; // 29% of flights delayed (Cirium 2024)
-  const BET_AMT = 10;
-  const SIDE = 'NO'; // betting ON TIME
-  const STAKE = STARTING_BALANCE;
-
-  let balance = STAKE;
-  let wins = 0, losses = 0;
-  let totalStaked = 0;
-  const history = [];
-  const today = new Date();
-
-  // seed-based deterministic "random" for consistent display
-  function seededRng(seed) {
-    let s = seed;
-    return function() { s = (s * 1664525 + 1013904223) & 0xFFFFFFFF; return (s >>> 0) / 0xFFFFFFFF; };
-  }
-  const rng = seededRng(20240315);
-
-  for (let d = DAYS - 1; d >= 0; d--) {
-    const date = new Date(today);
-    date.setDate(date.getDate() - d);
-    const dateStr = date.toLocaleDateString('en-CA', {month:'short',day:'numeric'});
-
-    for (let i = 0; i < YYZ_AC_FLIGHTS.length; i++) {
-      const f = YYZ_AC_FLIGHTS[i];
-      const delayed = rng() < AC_DELAY_RATE;
-      const won = !delayed; // betting NO (on-time), win if NOT delayed
-      const prob = 1 - AC_DELAY_RATE; // ~0.71
-      const payout = won ? BET_AMT / prob : 0;
-      const profit = won ? payout - BET_AMT : -BET_AMT;
-
-      balance += profit;
-      totalStaked += BET_AMT;
-      if (won) wins++; else losses++;
-
-      history.push({
-        id: f.id, dest: f.dest, date: dateStr, side: SIDE,
-        staked: BET_AMT, won, payout, profit: Math.round(profit*100)/100,
-        balance: Math.round(balance*100)/100
-      });
-    }
-  }
-
-  const netPnl = Math.round(balance - STAKE);
-  const wr = Math.round(wins / (wins + losses) * 100);
-  return { history, balance: Math.round(balance*100)/100, netPnl, wins, losses, totalStaked, wr };
-}
-
 async function renderPortfolio() {
   let pv=document.getElementById('portfolio-view');
   if(!pv){pv=document.createElement('div');pv.id='portfolio-view';pv.className='portfolio-view';document.getElementById('main-area').appendChild(pv);}
   pv.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px"><span class="spinner"></span>Loading portfolio...</div>';
   const pos=Object.entries(userProfile.positions||{}),staked=pos.reduce((s,[,p])=>s+p.amount,0),res=userProfile.resolved||[],won=res.filter(r=>r.won).reduce((s,r)=>s+r.payout,0),lost=res.filter(r=>!r.won).reduce((s,r)=>s+r.staked,0),wr=res.length?Math.round(res.filter(r=>r.won).length/res.length*100):0;
   let lb=[];
-  try{lb=await loadLeaderboard();lbCache=lb;renderLbMini();}catch(e){}
-
-  const sim = buildACSimulation();
-
+  try{lb=await loadLeaderboard();}catch(e){}
   pv.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><div><div style="font-size:17px;font-weight:600">Your Portfolio</div><div style="font-size:10px;color:var(--text3);margin-top:2px">'+currentUser.displayName+' · '+currentUser.email+'</div></div><button class="nav-btn outline" onclick="showBoard()">← BACK TO BOARD</button></div>'
-
-    // YOUR STATS
-    +'<div class="port-section"><div class="port-section-title">YOUR ACCOUNT</div>'
-    +'<div class="port-grid"><div class="port-card"><div class="pc-label">BALANCE</div><div class="pc-val">$'+Math.round(userProfile.balance)+'</div><div class="pc-sub">of $'+STARTING_BALANCE+' starting</div></div><div class="port-card"><div class="pc-label">STAKED</div><div class="pc-val">$'+Math.round(staked)+'</div><div class="pc-sub">'+pos.length+' active bets</div></div><div class="port-card '+(won-lost>=0?'green':'red')+'"><div class="pc-label">NET P&L</div><div class="pc-val">'+(won-lost>=0?'+':'')+'$'+Math.round(won-lost)+'</div><div class="pc-sub">'+res.length+' resolved</div></div><div class="port-card"><div class="pc-label">WIN RATE</div><div class="pc-val">'+wr+'%</div><div class="pc-sub">'+res.filter(r=>r.won).length+'W / '+res.filter(r=>!r.won).length+'L</div></div></div></div>'
-
-    // SIMULATED AC HISTORY
-    +'<div class="port-section"><div class="port-section-title">SIMULATED: 71 DAYS BETTING NO ON ALL AIR CANADA YYZ DEPARTURES</div>'
-    +'<div class="sim-banner"><div class="sim-banner-icon">✈️</div><div class="sim-banner-body"><div class="sim-banner-title">What if you\'d bet NO (on-time) on every Air Canada flight from Toronto Pearson for the last 71 days?</div><div class="sim-banner-sub">Using Cirium\'s reported <strong>29% delay rate for Air Canada in 2024</strong> (9th of 10 major North American carriers for on-time performance), betting $10 per flight at 71¢ odds. This is a simulation using historical delay probability — not real resolved bets.</div></div></div>'
-    +'<div class="sim-result-row">'
-    +'<div class="sim-card"><div class="sl">FINAL BALANCE</div><div class="sv" style="color:'+(sim.netPnl>=0?'var(--green)':'var(--red)')+'">$'+sim.balance+'</div><div class="ss">started at $'+STAKE+'</div></div>'
-    +'<div class="sim-card"><div class="sl">NET P&L</div><div class="sv" style="color:'+(sim.netPnl>=0?'var(--green)':'var(--red)')+'">'+(sim.netPnl>=0?'+':'')+'$'+sim.netPnl+'</div><div class="ss">across '+sim.history.length+' bets</div></div>'
-    +'<div class="sim-card"><div class="sl">WIN RATE</div><div class="sv">'+sim.wr+'%</div><div class="ss">'+sim.wins+'W / '+sim.losses+'L</div></div>'
-    +'<div class="sim-card"><div class="sl">TOTAL STAKED</div><div class="sv">$'+sim.totalStaked+'</div><div class="ss">$10/flight</div></div>'
-    +'<div class="sim-card"><div class="sl">DAYS COVERED</div><div class="sv">71</div><div class="ss">×8 AC flights/day</div></div>'
-    +'</div>'
-    +'<div style="font-size:10px;color:var(--text3);margin-bottom:10px">Most recent 20 simulated bets (scroll up for full history):</div>'
-    +'<div style="max-height:260px;overflow-y:auto">'
-    + sim.history.slice().reverse().slice(0,40).map(h =>
-        '<div class="sim-hist-row">'
-        +'<span class="sim-hist-id">'+h.id+'</span>'
-        +'<span class="sim-hist-date">'+h.date+'</span>'
-        +'<span class="sim-hist-side">NO</span>'
-        +'<span class="sim-hist-result" style="color:'+(h.won?'var(--green)':'var(--red)')+'">'+(h.won?'WON +$'+(h.payout-h.staked).toFixed(0):'LOST -$'+h.staked)+'</span>'
-        +'<span style="font-family:var(--font-mono);font-size:9px;color:var(--text3)">bal $'+h.balance+'</span>'
-        +'</div>'
-      ).join('')
-    +'</div></div>'
-
-    // ACTIVE POSITIONS
+    +'<div class="port-grid"><div class="port-card"><div class="pc-label">BALANCE</div><div class="pc-val">$'+Math.round(userProfile.balance)+'</div><div class="pc-sub">of $'+STARTING_BALANCE+' starting</div></div><div class="port-card"><div class="pc-label">STAKED</div><div class="pc-val">$'+Math.round(staked)+'</div><div class="pc-sub">'+pos.length+' active bets</div></div><div class="port-card '+(won-lost>=0?'green':'red')+'"><div class="pc-label">NET P&L</div><div class="pc-val">'+(won-lost>=0?'+':'')+'$'+Math.round(won-lost)+'</div><div class="pc-sub">'+res.length+' resolved</div></div><div class="port-card"><div class="pc-label">WIN RATE</div><div class="pc-val">'+wr+'%</div><div class="pc-sub">'+res.filter(r=>r.won).length+'W / '+res.filter(r=>!r.won).length+'L</div></div></div>'
     +'<div class="port-section"><div class="port-section-title">ACTIVE POSITIONS ('+pos.length+')</div>'
     +(pos.length?pos.map(([id,p])=>{const f=flights.find(x=>x.id===id),cur=f?Math.round((f.delayProb||.2)*100):Math.round((p.prob||.2)*100),mv=p.side==='YES'?(p.amount/(p.prob||.2))*((f?.delayProb||p.prob||.2)):(p.amount/(1-(p.prob||.2)))*((1-(f?.delayProb||p.prob||.2))),pnl=mv-p.amount;return '<div class="position-card"><div class="pos-left"><div class="pos-fid">'+id+'</div><div><div class="pos-dest">'+p.dest+' · '+(p.airline||'')+'</div><div style="font-size:9px;color:var(--text3);margin-top:2px">'+(p.time||'')+' · Current: '+cur+'%</div></div></div><div class="pos-right"><div class="pos-val-col"><div class="pos-val-label">SIDE</div><span class="pos-badge '+(p.side==='YES'?'pos-yes-badge':'pos-no-badge')+'">'+p.side+'</span></div><div class="pos-val-col"><div class="pos-val-label">STAKED</div><div class="pos-val-num">$'+p.amount.toFixed(0)+'</div></div><div class="pos-val-col"><div class="pos-val-label">MKT VALUE</div><div class="pos-val-num" style="color:'+(pnl>=0?'var(--green)':'var(--red)')+'">$'+mv.toFixed(0)+'</div></div><div class="pos-val-col"><div class="pos-val-label">P&L</div><div class="pos-val-num" style="color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+pnl.toFixed(0)+'</div></div><button class="q-btn q-no" style="font-size:9px;padding:3px 8px" onclick="resolvePos(\''+id+'\','+(Math.random()>.5)+')">RESOLVE</button></div></div>';}).join(''):'<div style="color:var(--text3);font-size:11px;padding:16px 0">No active positions. Go place some bets!</div>')
     +'</div>'
-
     +(res.length?'<div class="port-section"><div class="port-section-title">RESOLVED MARKETS ('+res.length+')</div>'+res.slice().reverse().slice(0,15).map(r=>'<div class="resolved-card"><div class="pos-left"><div class="pos-fid" style="font-size:13px">'+r.id+'</div><div><div class="pos-dest">'+(r.destName||r.dest||'')+'</div><div style="font-size:9px;color:var(--text3)">'+r.side+' · Staked $'+r.staked+(r.date?' · '+r.date:'')+'</div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="'+(r.won?'res-win':'res-loss')+'">'+(r.won?'WON':'LOST')+'</span><div style="font-family:var(--font-board);font-size:13px;color:'+(r.won?'var(--green)':'var(--red)')+'">'+(r.won?'+$'+(r.payout-r.staked).toFixed(0):'-$'+r.staked)+'</div></div></div>').join('')+'</div>':'')
-
-    // LEADERBOARD
     +'<div class="port-section"><div class="port-section-title">LEADERBOARD — ALL PLAYERS</div><div style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden">'
     +(lb.length===0?'<div style="padding:20px;text-align:center;font-size:11px;color:var(--text3)">No other players yet. Share this with friends!</div>'
     :lb.map((l,i)=>{const isMe=l.uid===currentUser?.uid,pnl=Math.round(l.balance-500);return '<div class="leaderboard-row '+(isMe?'lb-row-me':'')+'"><span class="lb-rank">'+(i+1)+'</span><span class="lb-name">'+(isMe?'<strong>'+l.displayName+' (you)</strong>':l.displayName)+'</span><span class="lb-acc">'+(l.totalBets||0)+' bets · '+(l.wins||0)+' wins</span><span style="font-size:10px;font-family:var(--font-mono);margin-right:12px;color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+pnl+'</span><span class="lb-val">$'+Math.round(l.balance).toLocaleString()+'</span></div>';}).join(''))
@@ -921,59 +641,57 @@ window.submitAuth=async function(mode){
 };
 window.doLogout=async function(){await signOut(auth);if(view==='portfolio')showBoard();showToast('Logged out','ok');};
 
+window.openAirportPicker=function(){
+  const o=document.createElement('div');o.className='modal-overlay';o.id='ap-overlay';
+  o.onclick=e=>{if(e.target===o)closeAP();};
+  o.innerHTML='<div class="airport-modal"><div class="modal-title" style="font-size:16px">Select Airport</div><div style="font-size:11px;color:var(--text2);margin-top:3px">View departure markets for any major airport.</div><div class="airport-grid">'+Object.entries(AIRPORTS).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div></div>').join('')+'</div></div>';
+  document.body.appendChild(o);
+};
+window.closeAP=()=>{const o=document.getElementById('ap-overlay');if(o)o.remove();};
+window.pickAP=code=>{closeAP();setAirport(code);};
+
 let tt;
 window.showToast=function(msg,type='ok'){const t=document.getElementById('toast');t.innerHTML=msg;t.style.borderColor=type==='ok'?'var(--green)':type==='err'?'var(--red)':'var(--border2)';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);};
 
 function showIntro(){
-  if(localStorage.getItem('fb_introdismissed')==='1') return;
+  if(localStorage.getItem('fb_introdismissed')==='1'){setTimeout(showYYZ,800);return;}
   const o=document.createElement('div');
   o.id='intro-overlay';
   o.style.cssText='position:fixed;inset:0;background:rgba(247,248,250,.96);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);';
-  o.innerHTML=`<style>
-@keyframes introIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-#intro-card{width:440px;max-width:94vw;background:#fff;border:1px solid #e2e5ea;border-radius:14px;padding:36px;box-shadow:0 8px 48px rgba(0,0,0,.08);animation:introIn .5s cubic-bezier(.22,.9,.36,1) both}
-.intro-logo{font-family:'Share Tech Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}
-.intro-tagline{font-size:11px;color:#9aa0ab;letter-spacing:2px;margin-bottom:28px;text-transform:uppercase}
-.intro-body{font-size:13px;color:#5a6070;line-height:1.8;margin-bottom:20px}
-.intro-body strong{color:#0d1117}
-.intro-inspo{background:#f0f8ff;border:1px solid #c8def5;border-radius:7px;padding:14px 16px;font-size:11px;color:#2a4a6a;line-height:1.8;margin-bottom:24px}
-.intro-inspo strong{color:#0d1117}
-.intro-inspo .yyznote{font-size:10px;color:#4a6a8a;margin-top:8px;padding-top:8px;border-top:1px solid #c8def5}
-.intro-cta{width:100%;padding:12px;background:#00a87e;border:none;border-radius:6px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .15s;margin-bottom:10px}
-.intro-cta:hover{background:#008f6b}
-.intro-skip{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}
-.intro-by{font-size:10px;color:#9aa0ab;margin-top:20px}
-.intro-by a{color:#00a87e;text-decoration:none}
-</style>
-<div id="intro-card">
-  <div class="intro-logo">FLIGHTBET</div>
-  <div class="intro-tagline">delay prediction markets</div>
-  <div class="intro-body">
-    <strong>What is this?</strong> A simulated prediction market for flight delays. Pick a departure, decide if it'll be delayed or on time, and track your accuracy over time.<br><br>
-    Everyone starts with <strong>$500</strong> in play money. No real money, no real stakes — just the satisfaction of being right about something airlines refuse to be honest about.
-  </div>
-  <div class="intro-inspo">
-    <strong>✈️ Inspiration</strong><br>
-    This is inspired by my dear home airport, <strong>Toronto Pearson (YYZ)</strong> — ranked <strong>#1 worst airport in the world for flight delays</strong> in 2022, with over 52.5% of flights delayed (FlightAware/CNN/Wall Street Journal). It has since "improved" to roughly 30% delayed in 2024 — still placing it among the worst major airports in North America, and ranking it <strong>2nd-to-last in J.D. Power's 2025 mega-airport satisfaction survey</strong> (above only Newark). Air Canada, its primary carrier, ranked 9th out of 10 major North American airlines for on-time performance in 2024.
-    <div class="yyznote">Helsinki runs on time. Oslo runs on time. Santiago, Chile is literally the most on-time large airport in the world. Pearson is consistently surprised that it snows there in November. Every year. This is my love letter to everyone who has ever stood at carousel D74 for two hours waiting for a bag.</div>
-  </div>
-  <button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button><br>
-  <button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button>
-  <div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson ♡</div>
-</div>`;
+  o.innerHTML=`<style>@keyframes introIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}#intro-card{width:420px;max-width:94vw;background:#fff;border:1px solid #e2e5ea;border-radius:14px;padding:36px;box-shadow:0 8px 48px rgba(0,0,0,.08);animation:introIn .5s cubic-bezier(.22,.9,.36,1) both;text-align:center}.intro-logo{font-family:'Share Tech Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}.intro-tagline{font-size:11px;color:#9aa0ab;letter-spacing:2px;margin-bottom:28px;text-transform:uppercase}.intro-body{font-size:13px;color:#5a6070;line-height:1.8;margin-bottom:24px}.intro-body strong{color:#0d1117}.intro-yyznote{background:#fff8f0;border:1px solid #fcd9b0;border-radius:7px;padding:12px 16px;font-size:11px;color:#8a5a20;line-height:1.7;margin-bottom:24px;text-align:left}.intro-cta{width:100%;padding:12px;background:#00a87e;border:none;border-radius:6px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .15s;margin-bottom:10px}.intro-cta:hover{background:#008f6b}.intro-skip{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}.intro-by{font-size:10px;color:#9aa0ab;margin-top:20px}.intro-by a{color:#00a87e;text-decoration:none}</style><div id="intro-card"><div class="intro-logo">FLIGHTBET</div><div class="intro-tagline">delay prediction markets</div><div class="intro-body"><strong>What is this?</strong> A simulated prediction market for flight delays. Pick a departure, decide if it'll be delayed or on time, and track your accuracy over time.<br><br>Everyone starts with <strong>$500</strong> in play money. No real money, no real stakes — just the satisfaction of being right about something airlines refuse to be honest about.</div><div class="intro-yyznote">✈️ <strong>Why does this exist?</strong> Every single time I've flown into Toronto Pearson, my flight has been delayed. Helsinki runs on time. Oslo runs on time. Pearson is consistently ranked among the most delayed airports in the world — and yet every November they seem genuinely surprised that it snows there.<br><br>This is my love letter to everyone who has stood at carousel D74 for two hours waiting for a bag.</div><button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button><br><button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button><div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson ♡</div></div>`;
   document.body.appendChild(o);
 }
-
 window.dismissIntro=function(permanent){
   if(permanent)localStorage.setItem('fb_introdismissed','1');
   const o=document.getElementById('intro-overlay');
-  if(o){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>o.remove(),300);}
+  if(o){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>{o.remove();setTimeout(showYYZ,600);},300);}
 };
+
+const SC=['❄','❅','❆','·','✦'];
+const YM=[
+  {emoji:'🌨️',headline:'oh, it snowed',subhead:'in toronto. in winter.',body:"you've flown out of pearson enough times to know the drill. it snowed — like it does, every single year — and yet here we are. gate D74. indefinitely.",gate:'D74',delay:'2h 40m',reason:'WEATHER',temp:'-3°C'},
+  {emoji:'🛫',headline:'the plane is here',subhead:'the crew is... somewhere',body:"the aircraft is sitting right there on the tarmac. you can see it from the window. the crew is coming from another terminal. that terminal is also in toronto. it's been 90 minutes.",gate:'C18',delay:'1h 55m',reason:'CREW',temp:'-1°C'},
+  {emoji:'🧊',headline:'de-icing',subhead:'they found ice. on a plane. in canada.',body:"the de-icing truck has been dispatched. there is a queue. the queue is not short. you have a connection in chicago. you will not make the connection in chicago.",gate:'F11',delay:'3h 10m',reason:'DE-ICING',temp:'-6°C'},
+  {emoji:'🔧',headline:'a small maintenance thing',subhead:"they're calling it 'routine'",body:"something needs a part. the part is in mississauga. a technician is driving it here right now, in traffic, on the 427. your gate agent has the face of someone who has delivered this news before.",gate:'A03',delay:'4h 00m',reason:'MAINTENANCE',temp:'-2°C'},
+  {emoji:'🌫️',headline:'reduced visibility',subhead:'it is also foggy now, actually',body:"it snowed earlier and now there's fog. pearson is doing everything. you've been here long enough to have strong opinions about which terminal tim hortons is better. (it's not a debate.)",gate:'B29',delay:'2h 15m',reason:'VISIBILITY',temp:'-4°C'},
+];
+function showYYZ(){
+  if(localStorage.getItem('fb_yyzdismissed')==='1')return;
+  const m=YM[Math.floor(Math.random()*YM.length)],o=document.createElement('div');
+  o.id='yyp-overlay';
+  o.style.cssText='position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:500;backdrop-filter:blur(3px);';
+  o.innerHTML='<style>@keyframes yyzIn{from{opacity:0;transform:translateY(14px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}@keyframes sf{0%{transform:translateY(-8px);opacity:0}8%{opacity:1}100%{transform:translateY(360px);opacity:0}}@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}@keyframes drift{0%{transform:rotate(-1deg)}50%{transform:rotate(1.5deg)}100%{transform:rotate(-1deg)}}#yyp-card{width:380px;max-width:93vw;border-radius:12px;overflow:hidden;background:var(--bg2);border:1px solid var(--border2);box-shadow:0 20px 60px rgba(0,0,0,.2);animation:yyzIn .35s cubic-bezier(.22,.9,.36,1) both}.yyp-top{position:relative;overflow:hidden;padding:20px 20px 16px;background:#06080f;border-bottom:1px solid rgba(255,255,255,.06)}.yyp-fl{position:absolute;inset:0;pointer-events:none;overflow:hidden}.yyp-f{position:absolute;top:-12px;color:rgba(180,210,255,.45);animation:sf linear infinite}.yyp-ti{position:relative;z-index:1;display:flex;align-items:flex-start;gap:12px}.yyp-ic{width:48px;height:48px;border-radius:9px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;animation:drift 4s ease-in-out infinite}.yyp-tt{flex:1}.yyp-ey{font-size:8px;letter-spacing:3px;color:rgba(255,255,255,.3);margin-bottom:4px;font-family:var(--font-board)}.yyp-h1{font-size:17px;font-weight:600;color:#fff;line-height:1.2;margin-bottom:2px}.yyp-h2{font-size:10px;color:rgba(255,255,255,.4)}.yyp-ch{display:flex;gap:5px;margin-top:10px;flex-wrap:wrap}.yyp-cp{font-family:var(--font-board);font-size:8px;letter-spacing:1.5px;padding:2px 8px;border-radius:3px}.yyp-cr{background:rgba(224,96,80,.15);color:#e06050;border:1px solid rgba(224,96,80,.25)}.yyp-cd{background:rgba(255,255,255,.04);color:rgba(255,255,255,.3);border:1px solid rgba(255,255,255,.07)}.yyp-dt{display:inline-block;width:5px;height:5px;border-radius:50%;background:#e06050;margin-right:4px;animation:pulse 1.3s infinite;vertical-align:middle}.yyp-bs{padding:16px 20px 18px}.yyp-st{font-size:12px;color:var(--text2);line-height:1.7;margin-bottom:14px}.yyp-mb{background:var(--bg3);border:1px solid var(--border);border-radius:7px;padding:8px 10px;margin-bottom:14px;display:flex}.yyp-mc{flex:1;text-align:center;border-right:1px solid var(--border)}.yyp-mc:last-child{border-right:none}.yyp-mv{font-family:var(--font-board);font-size:14px;color:var(--yes)}.yyp-ml{font-size:7px;color:var(--text3);letter-spacing:1.5px;margin-top:2px}.yyp-ac{display:flex;gap:8px;align-items:center}.yyp-cta{flex:1;padding:10px 12px;background:var(--gold);border:none;border-radius:5px;color:#fff;font-family:var(--font-ui);font-size:10px;font-weight:600;letter-spacing:1px;cursor:pointer}.yyp-sk{font-size:10px;color:var(--text3);cursor:pointer;font-family:var(--font-ui);padding:4px 6px;background:none;border:none}</style>'
+    +'<div id="yyp-card"><div class="yyp-top"><div class="yyp-fl" id="yyp-fl"></div><div class="yyp-ti"><div class="yyp-ic">'+m.emoji+'</div><div class="yyp-tt"><div class="yyp-ey">YYZ · TORONTO PEARSON · GATE '+m.gate+'</div><div class="yyp-h1">'+m.headline+'</div><div class="yyp-h2">'+m.subhead+'</div><div class="yyp-ch"><span class="yyp-cp yyp-cr"><span class="yyp-dt"></span>DELAYED '+m.delay+'</span><span class="yyp-cp yyp-cd">'+m.reason+'</span><span class="yyp-cp yyp-cd">'+m.temp+'</span></div></div></div></div><div class="yyp-bs"><p class="yyp-st">'+m.body+'</p><div class="yyp-mb"><div class="yyp-mc"><div class="yyp-mv">94%</div><div class="yyp-ml">DELAY ODDS</div></div><div class="yyp-mc"><div class="yyp-mv">'+m.delay+'</div><div class="yyp-ml">TYPICAL WAIT</div></div><div class="yyp-mc"><div class="yyp-mv">∞</div><div class="yyp-ml">TIM HORTONS Q</div></div></div><div class="yyp-ac"><button class="yyp-cta" onclick="closeYYZ();openAuthModal(\'signup\')">bet on your next one →</button><button class="yyp-sk" onclick="closeYYZ(true)">been there, sadly</button></div></div></div>';
+  document.body.appendChild(o);
+  o.addEventListener('click',e=>{if(e.target===o)closeYYZ();});
+  const c=document.getElementById('yyp-fl');
+  for(let i=0;i<18;i++){const f=document.createElement('span');f.className='yyp-f';f.textContent=SC[Math.floor(Math.random()*SC.length)];f.style.left=Math.random()*100+'%';f.style.fontSize=(6+Math.random()*8)+'px';f.style.animationDuration=(5+Math.random()*6)+'s';f.style.animationDelay=(-Math.random()*10)+'s';c.appendChild(f);}
+}
+window.closeYYZ=function(dismiss){if(dismiss)localStorage.setItem('fb_yyzdismissed','1');const o=document.getElementById('yyp-overlay');if(o){o.style.opacity='0';o.style.transition='opacity .2s';setTimeout(()=>o.remove(),220);}};
 
 renderAuthArea();
 detectAirport();
-setTimeout(showIntro, 600);
-refreshLbMini();
+setTimeout(showIntro,600);
 </script>
 </body>
 </html>
