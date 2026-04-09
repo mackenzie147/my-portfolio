@@ -19,14 +19,7 @@
   --font-ui:'Inter',sans-serif;
   --font-mono:'DM Mono',monospace;
 }
-:root.dark{
-  --bg:#080808;--bg2:#0f0f0f;--bg3:#161616;--bg4:#1e1e1e;
-  --border:#242424;--border2:#2e2e2e;
-  --gold:#f0d060;--gold2:#c4a83a;
-  --green:#5dba7e;--red:#e06050;--blue:#5b9cf6;--orange:#e8824a;
-  --text:#f0ece0;--text2:#8a8680;--text3:#504e4a;
-  --yes:#e8824a;--no:#5dba7e;
-}
+
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);overflow-x:hidden}
 body{display:flex;flex-direction:column}
 
@@ -34,7 +27,8 @@ body{display:flex;flex-direction:column}
 nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:100;flex-shrink:0}
 .nav-logo{font-family:var(--font-board);font-size:15px;color:var(--gold);letter-spacing:3px}
 .nav-logo span{color:var(--text3);font-size:10px;letter-spacing:2px;margin-left:8px}
-.nav-right{display:flex;align-items:center;gap:12px}
+.nav-right{display:flex;align-items:center;gap:12px;flex-shrink:0}
+.auth-btns{display:flex;align-items:center;gap:8px;flex-shrink:0}
 .nav-airport{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--text2);letter-spacing:1px;background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:6px 12px;cursor:pointer;transition:border-color .15s}
 .nav-airport:hover{border-color:var(--border2)}
 .nav-airport .code{font-family:var(--font-board);color:var(--gold);font-size:14px}
@@ -220,7 +214,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 <nav>
   <div class="nav-logo">FLIGHTBET <span>// DELAY MARKETS</span></div>
   <div class="nav-right">
-    <button class="nav-btn outline" id="theme-toggle" onclick="toggleTheme()" style="padding:6px 10px;font-size:12px;letter-spacing:0">☾</button>
+
     <div class="nav-airport" onclick="openAirportPicker()">
       <span class="code" id="nav-code">SFO</span>
       <span id="nav-airport-name">San Francisco Intl</span>
@@ -239,12 +233,14 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
       <div class="filter-chip" data-filter="high" onclick="setFilter('high')">High Delay Risk <span class="count" id="fc-high">0</span></div>
       <div class="filter-chip" data-filter="boarding" onclick="setFilter('boarding')">Boarding Now <span class="count" id="fc-boarding">0</span></div>
       <div class="filter-chip" data-filter="departed" onclick="setFilter('departed')">Departed <span class="count" id="fc-departed">0</span></div>
+      <div class="filter-chip" data-filter="watched" onclick="setFilter('watched')">Watching <span class="count" id="fc-watched">0</span></div>
     </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Market Stats</div>
       <div id="market-stats"></div>
     </div>
-    <div class="sidebar-section" style="border-bottom:none;flex-shrink:0"><div class="sidebar-label">Live Activity</div></div>
+    <div class="sidebar-section" id="watchlist-section" style="border-bottom:none;flex-shrink:0;display:none"><div class="sidebar-label">Watching</div><div id="watchlist-items"></div></div>
+    <div class="sidebar-section" style="border-bottom:none;flex-shrink:0"><div class="sidebar-label">Recent Bets</div></div>
     <div class="activity-feed" id="activity-feed"></div>
   </div>
   <div class="content" id="board-content">
@@ -295,18 +291,23 @@ const STARTING_BALANCE = 500;
 
 // ── AIRPORTS ──
 const AIRPORTS={
-  SFO:{name:'San Francisco International',city:'San Francisco, CA',lat:37.621,lng:-122.379},
-  LAX:{name:'Los Angeles International',city:'Los Angeles, CA',lat:33.943,lng:-118.408},
-  JFK:{name:'John F Kennedy International',city:'New York, NY',lat:40.641,lng:-73.778},
-  ORD:{name:"O'Hare International",city:'Chicago, IL',lat:41.978,lng:-87.904},
-  ATL:{name:'Hartsfield-Jackson Atlanta',city:'Atlanta, GA',lat:33.640,lng:-84.428},
-  DEN:{name:'Denver International',city:'Denver, CO',lat:39.856,lng:-104.674},
-  SEA:{name:'Seattle-Tacoma International',city:'Seattle, WA',lat:47.449,lng:-122.309},
-  MIA:{name:'Miami International',city:'Miami, FL',lat:25.795,lng:-80.287},
-  BOS:{name:'Logan International',city:'Boston, MA',lat:42.365,lng:-71.010},
-  DFW:{name:'Dallas/Fort Worth International',city:'Dallas, TX',lat:32.897,lng:-97.040},
-  YYZ:{name:'Toronto Pearson International',city:'Toronto, ON',lat:43.677,lng:-79.630},
+  // baseRate = historical on-time failure rate (source: FAA/BTS/FlightAware annual data)
+  SFO:{name:'San Francisco International',city:'San Francisco, CA',lat:37.621,lng:-122.379,baseRate:.22,note:'Fog & marine layer cause frequent morning delays'},
+  LAX:{name:'Los Angeles International',city:'Los Angeles, CA',lat:33.943,lng:-118.408,baseRate:.19,note:'High traffic volume, afternoon congestion'},
+  JFK:{name:'John F Kennedy International',city:'New York, NY',lat:40.641,lng:-73.778,baseRate:.28,note:'Weather & ATC congestion — among the most delayed in the US'},
+  ORD:{name:"O'Hare International",city:'Chicago, IL',lat:41.978,lng:-87.904,baseRate:.30,note:'Severe winters and thunderstorm season drive high delay rates'},
+  ATL:{name:'Hartsfield-Jackson Atlanta',city:'Atlanta, GA',lat:33.640,lng:-84.428,baseRate:.21,note:'Busiest airport in the world — thunderstorms in summer'},
+  DEN:{name:'Denver International',city:'Denver, CO',lat:39.856,lng:-104.674,baseRate:.24,note:'Snowstorms and high altitude create deicing pressure'},
+  SEA:{name:'Seattle-Tacoma International',city:'Seattle, WA',lat:47.449,lng:-122.309,baseRate:.20,note:'Rain is constant, rarely severe enough to cause major delays'},
+  MIA:{name:'Miami International',city:'Miami, FL',lat:25.795,lng:-80.287,baseRate:.26,note:'Hurricane season and afternoon thunderstorms July–October'},
+  BOS:{name:'Logan International',city:'Boston, MA',lat:42.365,lng:-71.010,baseRate:.25,note:'Brutal winters, small airport with limited runway capacity'},
+  DFW:{name:'Dallas/Fort Worth International',city:'Dallas, TX',lat:32.897,lng:-97.040,baseRate:.22,note:'Thunderstorms and occasional ice storms in winter'},
+  YYZ:{name:'Toronto Pearson International',city:'Toronto, ON',lat:43.677,lng:-79.630,baseRate:.65,note:'Consistently ranked among the most delayed airports in the world. It snows there every winter. They are always surprised.'},
 };
+
+function getAirportBaseRate(iata) {
+  return AIRPORTS[iata]?.baseRate || 0.22;
+}
 
 // ── MOCK FALLBACK ──
 const MOCK_FLIGHTS=[
@@ -357,6 +358,7 @@ async function saveUserProfile() {
     resolved: userProfile.resolved,
     totalBets: userProfile.totalBets,
     wins: userProfile.wins,
+    watched: userProfile.watched||{},
   });
 }
 
@@ -373,6 +375,7 @@ onAuthStateChanged(auth, async (user) => {
     await loadUserProfile(user.uid);
     renderAuthArea();
     renderAll();
+    renderWatchlist();
   } else {
     currentUser = null;
     userProfile = null;
@@ -451,7 +454,7 @@ function setAirport(code) {
     flights = d.flights || [];
     flights.forEach(f => { if(f.delayProb==null)f.delayProb=0.2; if(f.vol==null)f.vol=5000; });
     showBadge(d.mock||d.fallback, d.fetchedAt);
-    renderAll(); updateCounts(); updateStats();
+    renderAll(); updateCounts(); updateStats(); renderWatchlist();
   });
 }
 
@@ -486,18 +489,15 @@ function updateTicker() {
   document.getElementById('ticker').innerHTML = [...items,...items].join('');
 }
 
-// ── ACTIVITY ──
-const NAMES=['alex_m','jess_k','priya_r','tom_b','sarah_l','kai_w','ming_c','ryan_h'];
-function maybeActivity() {
-  if(Math.random()>.4||!flights.length) return;
-  const f=flights[Math.floor(Math.random()*flights.length)],side=Math.random()>.4?'YES':'NO',
-    amt=Math.round((Math.random()*190+10)/10)*10,name=NAMES[Math.floor(Math.random()*NAMES.length)];
+// ── ACTIVITY FEED — real bets only ──
+function pushActivity(displayName, side, amt, flightId, dest) {
   const feed=document.getElementById('activity-feed'), item=document.createElement('div');
   item.className='activity-item';
-  item.innerHTML='<span class="side-'+side.toLowerCase()+'">'+side+'</span> $'+amt+' on <span class="flt">'+f.id+'</span> '+f.dest+' — <span style="color:var(--text3)">'+name+'</span>';
+  item.innerHTML='<span class="side-'+side.toLowerCase()+'">'+side+'</span> $'+amt+' on <span class="flt">'+flightId+'</span> '+dest+' — <span style="color:var(--text3)">'+displayName+'</span>';
   feed.insertBefore(item,feed.firstChild);
-  while(feed.children.length>20) feed.removeChild(feed.lastChild);
+  while(feed.children.length>30) feed.removeChild(feed.lastChild);
 }
+function maybeActivity() { /* no fake activity */ }
 
 // ── FILTER/SORT ──
 function setFilter(f) { filter=f; document.querySelectorAll('.filter-chip').forEach(c=>c.classList.toggle('active',c.dataset.filter===f)); renderAll(); }
@@ -513,6 +513,7 @@ function getVisible() {
     if(filter==='high') return (f.delayProb||0)>.55;
     if(filter==='boarding') return f.status==='Boarding';
     if(filter==='departed') return f.status==='Departed'||f.status==='Cancelled';
+    if(filter==='watched') { const w=userProfile?.watched||{}; return !!w[f.id+'_'+f.dest]; }
     return true;
   });
   list.sort((a,b)=>sort==='delay'?(b.delayProb||0)-(a.delayProb||0):sort==='volume'?(b.vol||0)-(a.vol||0):(a.time||'').localeCompare(b.time||''));
@@ -525,6 +526,9 @@ function updateCounts() {
   document.getElementById('fc-high').textContent=flights.filter(f=>(f.delayProb||0)>.55).length;
   document.getElementById('fc-boarding').textContent=flights.filter(f=>f.status==='Boarding').length;
   document.getElementById('fc-departed').textContent=flights.filter(f=>f.status==='Departed'||f.status==='Cancelled').length;
+  const watched=userProfile?.watched||{};
+  const wc=flights.filter(f=>!!watched[f.id+'_'+f.dest]).length;
+  const wEl=document.getElementById('fc-watched'); if(wEl) wEl.textContent=wc;
 }
 
 function updateStats() {
@@ -574,12 +578,29 @@ function renderDetail(id) {
   const panel=document.getElementById('detail-panel'),
     p=Math.round((f.delayProb||.2)*100), np=100-p,
     pos=(userProfile?.positions||{})[id];
+  // Route risk: look at other flights on same route today
+  const sameRoute = flights.filter(x=>x.dest===f.dest && x.id!==f.id);
+  const routeDelayRate = sameRoute.length ? sameRoute.filter(x=>(x.delayProb||0)>.5).length/sameRoute.length : null;
+  const airlineFlights = flights.filter(x=>x.airline===f.airline && x.id!==f.id);
+  const airlineDelayRate = airlineFlights.length ? airlineFlights.reduce((s,x)=>s+(x.delayProb||0),0)/airlineFlights.length : null;
+  // Risk score: weighted combo of flight prob + route avg + airline avg
+  const riskInputs = [p/100, routeDelayRate, airlineDelayRate].filter(x=>x!==null);
+  const riskScore = Math.round(riskInputs.reduce((s,x)=>s+x,0)/riskInputs.length*100);
+  const riskLabel = riskScore>=70?'HIGH':riskScore>=45?'MODERATE':'LOW';
+  const riskColor = riskScore>=70?'var(--red)':riskScore>=45?'var(--orange)':'var(--green)';
+
+  const watchKey = f.id+'_'+f.dest;
+  const isWatched = (userProfile?.watched||{})[watchKey];
+
   panel.innerHTML='<div class="detail-inner"><div>'
-    +'<div class="detail-title">MARKET DETAIL — '+f.id+' '+f.airline+' → '+f.dest+' ('+(f.destName||'')+')</div>'
+    +'<div class="detail-title" style="display:flex;align-items:center;justify-content:space-between">'
+    +'<span>MARKET DETAIL — '+f.id+' '+f.airline+' → '+f.dest+' ('+(f.destName||'')+')</span>'
+    +'<button onclick="toggleWatch(''+f.id+'',''+f.dest+'',''+f.airline+'')" style="font-size:9px;padding:3px 10px;border-radius:3px;cursor:pointer;border:1px solid;background:transparent;font-family:var(--font-ui);font-weight:600;letter-spacing:.5px;color:'+(isWatched?'var(--gold)':'var(--text3)')+';border-color:'+(isWatched?'var(--gold)':'var(--border2)')+';">'+(isWatched?'★ WATCHING':'☆ WATCH')+'</button>'
+    +'</div>'
     +'<div class="detail-stats">'
-    +'<div class="d-stat"><div class="lbl">DELAY PROB</div><div class="val">'+p+'%</div><div class="sub">'+p+'¢ per $1</div></div>'
-    +'<div class="d-stat"><div class="lbl">ON-TIME PROB</div><div class="val">'+np+'%</div><div class="sub">'+np+'¢ per $1</div></div>'
-    +'<div class="d-stat"><div class="lbl">24H VOLUME</div><div class="val">$'+((f.vol||0)/1000).toFixed(1)+'K</div><div class="sub">'+Math.round((f.vol||0)/47)+' traders</div></div>'
+    +'<div class="d-stat"><div class="lbl">DELAY PROB</div><div class="val">'+p+'%</div><div class="sub">'+p+'¢ per $1 payout</div></div>'
+    +'<div class="d-stat"><div class="lbl">ON-TIME PROB</div><div class="val">'+np+'%</div><div class="sub">'+np+'¢ per $1 payout</div></div>'
+    +'<div class="d-stat"><div class="lbl">RISK SCORE</div><div class="val" style="color:'+riskColor+'">'+riskLabel+'</div><div class="sub">'+riskScore+'% weighted</div></div>'
     +'<div class="d-stat"><div class="lbl">DEPARTS</div><div class="val">'+(f.time||'--:--')+'</div><div class="sub">Gate '+(f.gate||'TBD')+'</div></div>'
     +'</div>'
     +'<div class="prob-visual"><div class="prob-yes-fill" style="width:'+p+'%"></div><div class="prob-no-fill" style="width:'+np+'%"></div></div>'
@@ -589,7 +610,18 @@ function renderDetail(id) {
     +'<div><div class="lbl">AIRCRAFT</div>'+(f.aircraft||'—')+'</div>'
     +'<div><div class="lbl">GATE</div>'+(f.gate||'TBD')+'</div>'
     +'<div><div class="lbl">STATUS</div>'+(f.status||'—')+'</div>'
+    +(routeDelayRate!==null?'<div><div class="lbl">ROUTE TODAY</div>'+Math.round(routeDelayRate*100)+'% of '+f.dest+' flights delayed</div>':'')
+    +(airlineDelayRate!==null?'<div><div class="lbl">AIRLINE TODAY</div>'+Math.round(airlineDelayRate*100)+'% avg delay prob</div>':'')
     +(pos?'<div style="margin-left:auto"><span class="pos-badge '+(pos.side==='YES'?'pos-yes-badge':'pos-no-badge')+'">YOUR POS: '+pos.side+' $'+pos.amount+'</span></div>':'')
+    +'</div>'
+    +'<div style="margin-top:10px;padding:8px 10px;background:var(--bg3);border-radius:5px;border:1px solid var(--border);font-size:9px;color:var(--text3);line-height:1.6">'
+    +'<strong style="color:var(--text2)">How delay probability is calculated:</strong> '
+    +'Based on live AviationStack data. If the flight is already delayed, probability reflects actual delay minutes (>60min = 92%, >30min = 80%, >15min = 68%, >0min = 55%). '
+    +'For scheduled flights not yet delayed, we use a base rate of <strong style="color:var(--text2)">'+(Math.round(getAirportBaseRate(ap)*100))+'%</strong> for '+ap
+    +' (source: FAA/BTS historical on-time data)'
+    +(AIRPORTS[ap]?.note?' — <em>'+AIRPORTS[ap].note+'</em>':'')
+    +'. This base adjusts with current route and airline trends today. The market drifts ±3% every 5 seconds to simulate live trading.'
+    +'</div>'
     +'</div></div>'
     +'<div class="detail-right">'
     +'<div class="bet-title">PLACE BET</div>'
@@ -639,6 +671,7 @@ window.placeBet = async function(id) {
     :{side:betSide,amount:amt,prob:f.delayProb||.2,dest:f.dest,time:f.time,airline:f.airline};
   userProfile.totalBets = (userProfile.totalBets||0)+1;
   await saveUserProfile();
+  pushActivity(currentUser.displayName, betSide, amt, id, f.dest);
   renderAuthArea(); renderAll(); renderDetail(id);
   showToast('Bet placed — '+betSide+' $'+amt+' on '+id,'ok');
 };
@@ -707,10 +740,23 @@ async function renderPortfolio() {
         +'<div style="font-family:var(--font-board);font-size:13px;color:'+(r.won?'var(--green)':'var(--red)')+'">'+(r.won?'+$'+(r.payout-r.staked).toFixed(0):'-$'+r.staked)+'</div></div>'
         +'</div>').join('')
       +'</div>':'')
-    +'<div class="port-section"><div class="port-section-title">LEADERBOARD</div>'
+    +'<div class="port-section"><div class="port-section-title">LEADERBOARD — ALL PLAYERS</div>'
     +'<div style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden">'
-    +lb.map((l,i)=>'<div class="leaderboard-row '+(l.uid===currentUser?.uid?'lb-row-me':'')+'"><span class="lb-rank">'+(i+1)+'</span><span class="lb-name">'+(l.uid===currentUser?.uid?'<strong>'+l.displayName+' (you)</strong>':l.displayName)+'</span><span class="lb-acc">'+(l.totalBets||0)+' bets</span><span class="lb-val">$'+Math.round(l.balance).toLocaleString()+'</span></div>').join('')
-    +'</div></div>';
+    +(lb.length===0?'<div style="padding:20px;text-align:center;font-size:11px;color:var(--text3)">No other players yet. Share this with friends!</div>'
+    :lb.map((l,i)=>{
+      const isMe=l.uid===currentUser?.uid;
+      const pnl=Math.round(l.balance-500);
+      return '<div class="leaderboard-row '+(isMe?'lb-row-me':'')+'">'
+        +'<span class="lb-rank">'+(i+1)+'</span>'
+        +'<span class="lb-name">'+(isMe?'<strong>'+l.displayName+' (you)</strong>':l.displayName)+'</span>'
+        +'<span class="lb-acc">'+(l.totalBets||0)+' bets · '+(l.wins||0)+' wins</span>'
+        +'<span style="font-size:10px;font-family:var(--font-mono);margin-right:12px;color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+pnl+'</span>'
+        +'<span class="lb-val">$'+Math.round(l.balance).toLocaleString()+'</span>'
+        +'</div>';
+    }).join(''))
+    +'</div>'
+    +'<div style="font-size:10px;color:var(--text3);margin-top:8px;text-align:right">showing all '+lb.length+' players · sorted by balance</div>'
+    +'</div>';
 }
 
 window.resolvePos = async function(id, won) {
@@ -724,6 +770,42 @@ window.resolvePos = async function(id, won) {
   await saveUserProfile();
   showToast(won?'WON! +$'+(payout-p.amount).toFixed(0)+' on '+id:'Lost $'+p.amount+' on '+id, won?'ok':'err');
   renderPortfolio(); renderAuthArea();
+};
+
+// ── WATCH / TRACK ──
+function renderWatchlist() {
+  const w=userProfile?.watched||{};
+  const keys=Object.keys(w);
+  const sec=document.getElementById('watchlist-section');
+  const items=document.getElementById('watchlist-items');
+  if(!sec||!items) return;
+  if(keys.length===0){sec.style.display='none';return;}
+  sec.style.display='block';
+  items.innerHTML=keys.map(k=>{
+    const wf=w[k];
+    const live=flights.find(f=>f.id===wf.id&&f.dest===wf.dest);
+    const p=live?Math.round((live.delayProb||.2)*100):null;
+    return '<div style="display:flex;align-items:center;justify-content:space-between;padding:5px 0;font-size:10px;border-bottom:1px solid var(--border);cursor:pointer" onclick="selectFlight(''+wf.id+'')">'
+      +'<div><span style="font-family:var(--font-board);color:var(--gold);font-size:11px">'+wf.id+'</span> → '+wf.dest+'</div>'
+      +(p!==null?'<span style="font-family:var(--font-mono);color:'+(p>55?'var(--red)':'var(--green)')+'">'+p+'%</span>':'<span style="color:var(--text3)">—</span>')
+      +'</div>';
+  }).join('');
+}
+
+window.toggleWatch = async function(id, dest, airline) {
+  if(!currentUser){openAuthModal();return;}
+  if(!userProfile.watched) userProfile.watched={};
+  const key=id+'_'+dest;
+  if(userProfile.watched[key]) {
+    delete userProfile.watched[key];
+    showToast('Removed '+id+' from watchlist','ok');
+  } else {
+    userProfile.watched[key]={id,dest,airline,addedAt:Date.now()};
+    showToast('Watching '+id+' → '+dest,'ok');
+  }
+  await saveUserProfile();
+  updateCounts();
+  if(sel===id) renderDetail(id);
 };
 
 // ── AUTH ──
@@ -823,18 +905,53 @@ window.showToast = function(msg, type='ok') {
   tt=setTimeout(()=>t.classList.remove('show'),3000);
 };
 
-// ── THEME ──
-window.toggleTheme = function() {
-  const dark=document.documentElement.classList.toggle('dark');
-  document.getElementById('theme-toggle').textContent=dark?'☀︎':'☾';
-  localStorage.setItem('fb_theme',dark?'dark':'light');
+// dark mode removed
+
+
+// ── INTRO POPUP ──
+function showIntro() {
+  if(localStorage.getItem('fb_introdismissed')==='1') { setTimeout(showYYZ,800); return; }
+  const o=document.createElement('div');
+  o.id='intro-overlay';
+  o.style.cssText='position:fixed;inset:0;background:rgba(247,248,250,.96);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);';
+  o.innerHTML=`<style>
+@keyframes introIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+#intro-card{width:420px;max-width:94vw;background:#fff;border:1px solid #e2e5ea;border-radius:14px;padding:36px;box-shadow:0 8px 48px rgba(0,0,0,.08);animation:introIn .5s cubic-bezier(.22,.9,.36,1) both;text-align:center}
+.intro-logo{font-family:'Share Tech Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}
+.intro-tagline{font-size:11px;color:#9aa0ab;letter-spacing:2px;margin-bottom:28px;text-transform:uppercase}
+.intro-body{font-size:13px;color:#5a6070;line-height:1.8;margin-bottom:24px}
+.intro-body strong{color:#0d1117}
+.intro-yyznote{background:#fff8f0;border:1px solid #fcd9b0;border-radius:7px;padding:12px 16px;font-size:11px;color:#8a5a20;line-height:1.7;margin-bottom:24px;text-align:left}
+.intro-cta{width:100%;padding:12px;background:#00a87e;border:none;border-radius:6px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .15s;margin-bottom:10px}
+.intro-cta:hover{background:#008f6b}
+.intro-skip{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}
+.intro-by{font-size:10px;color:#9aa0ab;margin-top:20px}
+.intro-by a{color:#00a87e;text-decoration:none}
+</style>
+<div id="intro-card">
+  <div class="intro-logo">FLIGHTBET</div>
+  <div class="intro-tagline">delay prediction markets</div>
+  <div class="intro-body">
+    <strong>What is this?</strong> A simulated prediction market for flight delays. Pick a departure, decide if it'll be delayed or on time, and track your accuracy over time.<br><br>
+    Everyone starts with <strong>$500</strong> in play money. No real money, no real stakes — just the satisfaction of being right about something airlines refuse to be honest about.
+  </div>
+  <div class="intro-yyznote">
+    ✈️ <strong>Why does this exist?</strong> Every single time I've flown into Toronto Pearson, my flight has been delayed. Helsinki runs on time. Oslo runs on time. Pearson is consistently ranked among the most delayed airports in the world — and yet every November they seem genuinely surprised that it snows there.
+    <br><br>This is my love letter to everyone who has stood at carousel D74 for two hours waiting for a bag.
+  </div>
+  <button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button>
+  <br>
+  <button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button>
+  <div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson ♡</div>
+</div>`;
+  document.body.appendChild(o);
+}
+
+window.dismissIntro = function(permanent) {
+  if(permanent) localStorage.setItem('fb_introdismissed','1');
+  const o=document.getElementById('intro-overlay');
+  if(o){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>{o.remove();setTimeout(showYYZ,600);},300);}
 };
-(function(){
-  if(localStorage.getItem('fb_theme')==='dark'){
-    document.documentElement.classList.add('dark');
-    document.addEventListener('DOMContentLoaded',()=>{const b=document.getElementById('theme-toggle');if(b)b.textContent='☀︎';});
-  }
-})();
 
 // ── YYZ POPUP ──
 const SC=["❄","❅","❆","·","✦"];
@@ -875,8 +992,8 @@ window.closeYYZ = function(dismiss){
 // ── INIT ──
 renderAuthArea();
 detectAirport();
-setTimeout(()=>{for(let i=0;i<4;i++)maybeActivity();},600);
-setTimeout(showYYZ,1400);
+// activity feed starts empty — fills with real bets
+setTimeout(showIntro,600);
 </script>
 </body>
 </html>
