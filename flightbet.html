@@ -205,7 +205,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 </head>
 <body>
 <nav>
-  <div class="nav-logo">FLIGHTBET <span>// DELAY MARKETS</span></div>
+  <div class="nav-logo" onclick="window.showBoard && showBoard()" style="cursor:pointer">FLIGHTBET <span>// DELAY MARKETS</span></div>
   <div class="nav-right">
     <div class="nav-airport" onclick="openAirportPicker()">
       <span class="code" id="nav-code">SFO</span>
@@ -285,32 +285,25 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const STARTING_BALANCE = 500;
 
+// Airports ranked by real-world delay rate (worst first)
 const AIRPORTS = {
-  SFO:{name:'San Francisco International',city:'San Francisco, CA',lat:37.621,lng:-122.379,baseRate:.22,note:'Fog & marine layer cause frequent morning delays'},
-  LAX:{name:'Los Angeles International',city:'Los Angeles, CA',lat:33.943,lng:-118.408,baseRate:.19,note:'High traffic volume, afternoon congestion'},
-  JFK:{name:'John F Kennedy International',city:'New York, NY',lat:40.641,lng:-73.778,baseRate:.28,note:'Weather & ATC congestion — among the most delayed in the US'},
-  ORD:{name:"O'Hare International",city:'Chicago, IL',lat:41.978,lng:-87.904,baseRate:.30,note:'Severe winters and thunderstorm season drive high delay rates'},
-  ATL:{name:'Hartsfield-Jackson Atlanta',city:'Atlanta, GA',lat:33.640,lng:-84.428,baseRate:.21,note:'Busiest airport in the world — thunderstorms in summer'},
-  DEN:{name:'Denver International',city:'Denver, CO',lat:39.856,lng:-104.674,baseRate:.24,note:'Snowstorms and high altitude create deicing pressure'},
-  SEA:{name:'Seattle-Tacoma International',city:'Seattle, WA',lat:47.449,lng:-122.309,baseRate:.20,note:'Rain is constant, rarely severe enough to cause major delays'},
-  MIA:{name:'Miami International',city:'Miami, FL',lat:25.795,lng:-80.287,baseRate:.26,note:'Hurricane season and afternoon thunderstorms July-October'},
-  BOS:{name:'Logan International',city:'Boston, MA',lat:42.365,lng:-71.010,baseRate:.25,note:'Brutal winters, small airport with limited runway capacity'},
-  DFW:{name:'Dallas/Fort Worth International',city:'Dallas, TX',lat:32.897,lng:-97.040,baseRate:.22,note:'Thunderstorms and occasional ice storms in winter'},
-  YYZ:{name:'Toronto Pearson International',city:'Toronto, ON',lat:43.677,lng:-79.630,baseRate:.65,note:'Consistently ranked among the most delayed airports in the world. It snows there every winter. They are always surprised.'},
+  YYZ:{name:'Toronto Pearson International',city:'Toronto, ON',   lat:43.677,lng:-79.630, baseRate:.65, delayRank:1,  note:'#1 most delayed airport in the world. 53% of departures arrive late. It snows every winter. Every year, Pearson is surprised.'},
+  EWR:{name:'Newark Liberty International', city:'Newark, NJ',    lat:40.689,lng:-74.177, baseRate:.45, delayRank:2,  note:'Consistently among the worst US airports for delays — tight airspace and ATC congestion.'},
+  JFK:{name:'John F Kennedy International', city:'New York, NY',  lat:40.641,lng:-73.778, baseRate:.38, delayRank:3,  note:'NYC airspace congestion and weather make JFK one of the most delayed airports in the US.'},
+  ORD:{name:"O'Hare International",         city:'Chicago, IL',   lat:41.978,lng:-87.904, baseRate:.35, delayRank:4,  note:'Polar vortex, thunderstorms, and the second-busiest airport in the US.'},
+  SFO:{name:'San Francisco International',  city:'San Francisco, CA',lat:37.621,lng:-122.379,baseRate:.30,delayRank:5,note:'Marine layer fog causes frequent ground stops, especially mornings.'},
+  BOS:{name:'Logan International',          city:'Boston, MA',    lat:42.365,lng:-71.010, baseRate:.28, delayRank:6,  note:'Brutal winters and limited runway capacity make Boston unpredictable.'},
+  MIA:{name:'Miami International',          city:'Miami, FL',     lat:25.795,lng:-80.287, baseRate:.27, delayRank:7,  note:'Afternoon thunderstorms July–October cause near-daily ground delays.'},
+  DFW:{name:'Dallas/Fort Worth International',city:'Dallas, TX',  lat:32.897,lng:-97.040, baseRate:.25, delayRank:8,  note:'Severe thunderstorm corridor and high traffic volume.'},
+  DEN:{name:'Denver International',         city:'Denver, CO',    lat:39.856,lng:-104.674,baseRate:.24, delayRank:9,  note:'Winter snowstorms and high-altitude deicing create consistent delays.'},
+  LAX:{name:'Los Angeles International',    city:'Los Angeles, CA',lat:33.943,lng:-118.408,baseRate:.21,delayRank:10, note:'Traffic volume is the main culprit — weather rarely causes delays at LAX.'},
+  ATL:{name:'Hartsfield-Jackson Atlanta',   city:'Atlanta, GA',   lat:33.640,lng:-84.428, baseRate:.20, delayRank:11, note:'World's busiest airport — efficient, but summer thunderstorms cause cascading delays.'},
+  SEA:{name:'Seattle-Tacoma International', city:'Seattle, WA',   lat:47.449,lng:-122.309,baseRate:.18, delayRank:12, note:'Rain rarely causes delays. SEA is actually one of the better-performing major US airports.'},
 };
 
 function getAirportBaseRate(iata) { return AIRPORTS[iata]?.baseRate || 0.22; }
 
-const MOCK_FLIGHTS = [
-  {id:'UA847',dest:'ORD',destName:"Chicago O'Hare",time:'06:15',gate:'B22',status:'On Time',airline:'United',aircraft:'B737',delayProb:.18,vol:14200},
-  {id:'DL204',dest:'JFK',destName:'New York JFK',time:'06:40',gate:'A08',status:'On Time',airline:'Delta',aircraft:'A321',delayProb:.31,vol:9800},
-  {id:'AA531',dest:'MIA',destName:'Miami',time:'07:05',gate:'C14',status:'Delayed',airline:'American',aircraft:'B757',delayProb:.78,vol:17400},
-  {id:'AS102',dest:'SEA',destName:'Seattle',time:'07:20',gate:'B07',status:'On Time',airline:'Alaska',aircraft:'B739',delayProb:.12,vol:6200},
-  {id:'WN119',dest:'LAS',destName:'Las Vegas',time:'08:10',gate:'D31',status:'Boarding',airline:'Southwest',aircraft:'B737',delayProb:.21,vol:8300},
-  {id:'UA1492',dest:'ORD',destName:"Chicago O'Hare",time:'08:30',gate:'B18',status:'On Time',airline:'United',aircraft:'B739',delayProb:.38,vol:12100},
-  {id:'F9221',dest:'DEN',destName:'Denver',time:'09:40',gate:'D15',status:'Delayed',airline:'Frontier',aircraft:'A320',delayProb:.88,vol:5100},
-  {id:'UA341',dest:'JFK',destName:'New York JFK',time:'12:35',gate:'B11',status:'On Time',airline:'United',aircraft:'B777',delayProb:.52,vol:13200},
-];
+
 
 let ap='SFO', flights=[], sel=null, filter='all', sort='time', betSide='YES';
 let currentUser=null, userProfile=null, view='board';
@@ -380,14 +373,35 @@ async function fetchFlights(iata) {
     const r = await fetch('/api/flights?airport=' + iata);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    // Filter to only upcoming/active flights — exclude already-departed unless we have a position on them
+    const posIds = Object.keys(userProfile?.positions || {});
+    d.flights = (d.flights || []).filter(f => {
+      if (posIds.includes(f.id)) return true; // always show flights we've bet on
+      const st = (f.status || '').toLowerCase();
+      if (st === 'cancelled') return false;
+      if (st === 'departed') return false;
+      // Also filter by time: only flights departing in next 6 hours
+      if (f.time) {
+        const [h, m] = f.time.split(':').map(Number);
+        const nowDate = new Date();
+        const depDate = new Date(nowDate);
+        depDate.setHours(h, m, 0, 0);
+        if (depDate < nowDate) depDate.setDate(depDate.getDate() + 1); // next day
+        const diffMins = (depDate - nowDate) / 60000;
+        if (diffMins > 360) return false; // more than 6 hours away
+      }
+      return true;
+    });
+    // Sort by departure time
+    d.flights.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     bCache[iata] = {data:d, exp:now+BTTL};
     showBadge(d.mock||d.fallback, d.fetchedAt);
     return d;
   } catch(e) {
-    const d = {flights:MOCK_FLIGHTS, iata, fetchedAt:new Date().toISOString(), mock:true};
-    bCache[iata] = {data:d, exp:now+BTTL};
+    console.error('Flight fetch failed:', e);
     showBadge(true, null);
-    return d;
+    // Show error state — no mock data
+    return {flights:[], iata, fetchedAt:new Date().toISOString(), error:true};
   } finally { showLoading(false); }
 }
 
@@ -395,7 +409,7 @@ function showLoading(v) { const e=document.getElementById('board-title'); if(e) 
 function showBadge(isMock, fetchedAt) {
   let b = document.getElementById('data-badge');
   if (!b) { b=document.createElement('span'); b.id='data-badge'; b.style.cssText='font-size:9px;letter-spacing:1px;padding:2px 7px;border-radius:3px;font-family:var(--font-mono);margin-left:10px;vertical-align:middle;font-weight:500;'; document.getElementById('board-title')?.after(b); }
-  if (isMock) { b.textContent='MOCK DATA'; b.style.background='rgba(224,120,32,.1)'; b.style.color='var(--orange)'; b.style.border='1px solid rgba(224,120,32,.2)'; }
+  if (isMock) { b.textContent='API ERROR'; b.style.background='rgba(224,70,42,.1)'; b.style.color='var(--red)'; b.style.border='1px solid rgba(224,70,42,.2)'; }
   else { const t=fetchedAt?new Date(fetchedAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):''; b.textContent='LIVE · '+t; b.style.background='rgba(0,168,126,.08)'; b.style.color='var(--green)'; b.style.border='1px solid rgba(0,168,126,.2)'; }
 }
 
@@ -416,17 +430,17 @@ function setAirport(code) {
   document.getElementById('board-meta').textContent=code+' — Departures — ';
   sel=null;
   const dp=document.getElementById('detail-panel'); dp.classList.remove('open'); dp.innerHTML='';
-  document.getElementById('flight-list').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px"><span class="spinner"></span>LOADING FLIGHTS...</div>';
+  document.getElementById('flight-list').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px"><span class="spinner"></span>FETCHING LIVE FLIGHTS...</div>';
   fetchFlights(code).then(d=>{
     flights=d.flights||[];
     flights.forEach(f=>{if(f.delayProb==null)f.delayProb=getAirportBaseRate(code);if(f.vol==null)f.vol=5000;});
     showBadge(d.mock||d.fallback,d.fetchedAt);
-    renderAll(); updateCounts(); updateStats(); renderWatchlist();
+    autoResolvePositions(); renderAll(); updateCounts(); updateStats(); renderWatchlist();
   });
 }
 
 setInterval(()=>{ const n=new Date(),el=document.getElementById('board-time'); if(el) el.textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':'); },1000);
-setInterval(()=>{ flights.forEach(f=>{ if(f.status==='Departed'||f.status==='Cancelled') return; f.delayProb=Math.max(.04,Math.min(.96,(f.delayProb||.2)+(Math.random()-.5)*.03)); }); renderAll(); updateTicker(); updateStats(); },5000);
+setInterval(()=>{ flights.forEach(f=>{ if(f.status==='Departed'||f.status==='Cancelled') return; f.delayProb=Math.max(.04,Math.min(.96,(f.delayProb||.2)+(Math.random()-.5)*.03)); }); autoResolvePositions(); renderAll(); updateTicker(); updateStats(); },5000);
 setInterval(()=>fetchFlights(ap).then(d=>{ flights=d.flights||[]; flights.forEach(f=>{if(f.delayProb==null)f.delayProb=getAirportBaseRate(ap);if(f.vol==null)f.vol=5000;}); renderAll(); updateCounts(); updateStats(); }),3*60*1000);
 setInterval(window.refreshSidebarLB, 60*1000);
 
@@ -488,10 +502,67 @@ function updateStats() {
 
 
 
+
+// Auto-resolve positions when flights depart
+// RULES: A flight is DELAYED if it departed 15+ minutes late. Cancelled = delayed.
+// The API provides delayMinutes on departed flights. We use that when available.
+async function autoResolvePositions() {
+  if (!currentUser || !userProfile) return;
+  const positions = userProfile.positions || {};
+  const ids = Object.keys(positions);
+  if (!ids.length) return;
+  let anyResolved = false;
+  for (const id of ids) {
+    const f = flights.find(x => x.id === id);
+    if (!f) continue;
+    const status = (f.status || '').toLowerCase();
+    // Only resolve on departed or cancelled
+    if (status !== 'departed' && status !== 'cancelled') continue;
+    const p = positions[id];
+    // Determine if flight was actually delayed (>15 min) or cancelled
+    let wasDelayed;
+    if (status === 'cancelled') {
+      wasDelayed = true;
+    } else if (f.delayMinutes != null) {
+      wasDelayed = f.delayMinutes >= 15;
+    } else {
+      // Fall back to delayProb threshold if no actual delay data
+      wasDelayed = (f.delayProb || 0) >= 0.55;
+    }
+    const won = (p.side === 'YES' && wasDelayed) || (p.side === 'NO' && !wasDelayed);
+    const prob = p.side === 'YES' ? (p.prob || 0.2) : (1 - (p.prob || 0.2));
+    const payout = won ? p.amount / prob : 0;
+    if (won) userProfile.balance = Math.round((userProfile.balance + payout) * 100) / 100;
+    if (!userProfile.resolved) userProfile.resolved = [];
+    const delayInfo = f.delayMinutes != null ? ' ('+f.delayMinutes+'min delay)' : '';
+    userProfile.resolved.push({
+      id, dest: p.dest, destName: f.destName || p.dest, side: p.side,
+      staked: p.amount, won, payout,
+      wasDelayed, delayMinutes: f.delayMinutes || null,
+      date: new Date().toLocaleDateString(), resolvedBy: 'auto'
+    });
+    if (won) userProfile.wins = (userProfile.wins || 0) + 1;
+    delete userProfile.positions[id];
+    anyResolved = true;
+    const msg = won
+      ? '✈ ' + id + ' settled'+delayInfo+' — YOU WON +$' + (payout - p.amount).toFixed(0) + '!'
+      : '✈ ' + id + ' settled'+delayInfo+' — lost $' + p.amount.toFixed(0);
+    window.showToast(msg, won ? 'ok' : 'err');
+    // Re-fetch after 3s to pick up any remaining departed flights with updated data
+    setTimeout(() => { delete bCache[ap]; fetchFlights(ap).then(d => { flights = d.flights || []; renderAll(); }); }, 3000);
+  }
+  if (anyResolved) {
+    await saveUserProfile();
+    renderAuthArea();
+    window.refreshSidebarLB();
+    if (view === 'portfolio') renderPortfolio();
+  }
+}
+
 function renderAll() {
   if(view==='portfolio'){renderPortfolio();return;}
   const visible=getVisible();
-  if(!visible.length){ document.getElementById('flight-list').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px">NO FLIGHTS MATCH</div>'; return; }
+  if(!visible.length){ document.getElementById('flight-list').innerHTML=flights.length === 0 && !document.getElementById('data-badge')?.textContent.includes('ERROR') ? '<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px">NO UPCOMING FLIGHTS IN THE NEXT 6 HOURS</div>' : '<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px">⚠ API UNAVAILABLE — check your /api/flights endpoint</div>'; return; }
   const positions=userProfile?.positions||{};
   document.getElementById('flight-list').innerHTML=visible.map(f=>{
     const p=Math.round((f.delayProb||.2)*100),np=100-p,pos=positions[f.id];
@@ -724,13 +795,14 @@ function showIntro(){
   <div class="intro-stat-box">
     <div class="intro-stat-num">#227</div>
     <div class="intro-stat-text">
-      <strong>Toronto Pearson ranks 227th out of 239 airports worldwide</strong> for on-time performance — placing it in the bottom 6% globally. It has held the title of world's most delayed airport multiple times, with over 53% of departures arriving late in peak periods. Every winter it snows in Toronto. Every year, Pearson is surprised.
+      <strong>Toronto Pearson is the most delayed major airport in the world.</strong> Ranked 227th out of 239 airports globally for on-time performance, with over 53% of departures arriving late at peak. It has held the official title of world's worst airport for delays — multiple times. Every winter it snows in Toronto. Every year, Pearson is surprised.
     </div>
   </div>
   <div class="intro-how-title">How it works</div>
-  <div class="intro-step"><span class="intro-step-num">01</span><span>Pick a departure from any major airport and decide: will it be <strong>delayed</strong> or <strong>on time</strong>?</span></div>
-  <div class="intro-step"><span class="intro-step-num">02</span><span>Bet your virtual dollars. Odds are set by live flight data and each airport's historical delay rate.</span></div>
-  <div class="intro-step"><span class="intro-step-num">03</span><span>Build your balance, climb the leaderboard, and become the person who is finally, statistically, right about Pearson.</span></div>
+  <div class="intro-step"><span class="intro-step-num">01</span><span>Pick a <strong>real upcoming flight</strong> from any major airport. Live data only — no mock flights.</span></div>
+  <div class="intro-step"><span class="intro-step-num">02</span><span>Bet YES (delayed 15+ min) or NO (on time). Odds are set by live flight status and each airport's real delay rate.</span></div>
+  <div class="intro-step"><span class="intro-step-num">03</span><span>After the flight departs, the market <strong>auto-resolves</strong>. 15+ minute delay = YES wins. On time = NO wins. You get a notification either way.</span></div>
+  <div class="intro-step"><span class="intro-step-num">04</span><span>Build your balance, climb the leaderboard, and become the person who is finally right about Pearson.</span></div>
   <button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button>
   <button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button>
   <div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson (YYZ) ✈︎</div>
@@ -767,8 +839,7 @@ function showYYZ(){
 }
 window.closeYYZ=function(dismiss){if(dismiss)localStorage.setItem('fb_yyzdismissed','1');const o=document.getElementById('yyp-overlay');if(o){o.style.opacity='0';o.style.transition='opacity .2s';setTimeout(()=>o.remove(),220);}};
 
-renderAuthArea();
-detectAirport();
+
 setTimeout(showIntro,600);
 </script>
 </body>
