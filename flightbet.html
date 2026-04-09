@@ -191,6 +191,21 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.sidebar-lb-row{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);gap:6px;font-size:10px}
+.sidebar-lb-row:last-child{border-bottom:none}
+.sidebar-lb-rank{font-family:var(--font-mono);color:var(--text3);width:16px;font-size:9px}
+.sidebar-lb-name{flex:1;color:var(--text);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sidebar-lb-name.me{color:var(--gold);font-weight:600}
+.sidebar-lb-bal{font-family:var(--font-mono);color:var(--green);font-size:10px;font-weight:500}
+.sidebar-profile{padding:12px 14px;border-bottom:1px solid var(--border);background:rgba(0,168,126,.03)}
+.sidebar-profile-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
+.sidebar-profile-stats{display:flex;gap:10px;margin-top:6px}
+.sidebar-profile-stat{display:flex;flex-direction:column;gap:1px}
+.sidebar-profile-stat .sv{font-family:var(--font-mono);font-size:13px;font-weight:500;color:var(--gold)}
+.sidebar-profile-stat .sl{font-size:8px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.airport-search-input{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-board);font-size:12px;padding:7px 10px;outline:none;margin-bottom:12px;letter-spacing:1px;transition:border-color .15s}
+.airport-search-input:focus{border-color:var(--gold)}
+.airport-search-input::placeholder{color:var(--text3)}
 </style>
 </head>
 <body>
@@ -221,7 +236,13 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
       <div class="sidebar-label">Market Stats</div>
       <div id="market-stats"></div>
     </div>
-    <div class="sidebar-section" id="watchlist-section" style="border-bottom:none;flex-shrink:0;display:none"><div class="sidebar-label">Watching</div><div id="watchlist-items"></div></div>
+    <div id="sidebar-profile" style="display:none"></div>
+    <div class="sidebar-section" style="border-bottom:1px solid var(--border);flex-shrink:0">
+      <div class="sidebar-label">Leaderboard <span id="lb-live-badge" style="font-size:8px;color:var(--text3);letter-spacing:0;font-weight:400;text-transform:none">top players</span></div>
+      <div id="sidebar-lb-list"><div style="font-size:10px;color:var(--text3);padding:4px 0">loading...</div></div>
+      <div id="sidebar-lb-viewall" style="display:none;margin-top:8px"><button onclick="showPortfolio()" style="font-size:10px;color:var(--gold);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-ui);font-weight:600">view full leaderboard →</button></div>
+    </div>
+    <div class="sidebar-section" id="watchlist-section" style="border-bottom:1px solid var(--border);flex-shrink:0;display:none"><div class="sidebar-label">Watching</div><div id="watchlist-items"></div></div>
     <div class="sidebar-section" style="border-bottom:none;flex-shrink:0"><div class="sidebar-label">Recent Bets</div></div>
     <div class="activity-feed" id="activity-feed"></div>
   </div>
@@ -326,10 +347,10 @@ onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     await loadUserProfile(user.uid);
-    renderAuthArea(); renderAll(); renderWatchlist();
+    renderAuthArea(); renderAll(); renderWatchlist(); renderSidebarProfile(); renderSidebarLeaderboard();
   } else {
     currentUser = null; userProfile = null;
-    renderAuthArea(); renderAll();
+    renderAuthArea(); renderAll(); renderSidebarProfile(); renderSidebarLeaderboard();
   }
 });
 
@@ -382,7 +403,7 @@ function setAirport(code) {
     flights=d.flights||[];
     flights.forEach(f=>{if(f.delayProb==null)f.delayProb=getAirportBaseRate(code);if(f.vol==null)f.vol=5000;});
     showBadge(d.mock||d.fallback,d.fetchedAt);
-    renderAll(); updateCounts(); updateStats(); renderWatchlist();
+    renderAll(); updateCounts(); updateStats(); renderWatchlist(); renderSidebarLeaderboard();
   });
 }
 
@@ -516,7 +537,7 @@ window.placeBet=async function(id){
   userProfile.totalBets=(userProfile.totalBets||0)+1;
   await saveUserProfile();
   pushActivity(currentUser.displayName,betSide,amt,id,f.dest);
-  renderAuthArea();renderAll();renderDetail(id);
+  renderAuthArea();renderAll();renderDetail(id);renderSidebarProfile();renderSidebarLeaderboard();
   showToast('Bet placed — '+betSide+' $'+amt+' on '+id,'ok');
 };
 
@@ -554,6 +575,49 @@ window.resolvePos=async function(id,won){
   showToast(won?'WON! +$'+(payout-p.amount).toFixed(0)+' on '+id:'Lost $'+p.amount+' on '+id,won?'ok':'err');
   renderPortfolio();renderAuthArea();
 };
+
+async function renderSidebarLeaderboard() {
+  const el = document.getElementById('sidebar-lb-list');
+  const va = document.getElementById('sidebar-lb-viewall');
+  if (!el) return;
+  let lb = [];
+  try { lb = await loadLeaderboard(); } catch(e) {}
+  if (!lb.length) { el.innerHTML = '<div style="font-size:10px;color:var(--text3);padding:4px 0">no players yet</div>'; return; }
+  const top = lb.slice(0, 5);
+  el.innerHTML = top.map((l, i) => {
+    const isMe = l.uid === currentUser?.uid;
+    const pnl = Math.round(l.balance - 500);
+    return '<div class="sidebar-lb-row">'
+      + '<span class="sidebar-lb-rank">' + (i+1) + '</span>'
+      + '<span class="sidebar-lb-name' + (isMe ? ' me' : '') + '">' + l.displayName + (isMe ? ' ✦' : '') + '</span>'
+      + '<span style="font-size:9px;color:' + (pnl>=0?'var(--green)':'var(--red)') + ';font-family:var(--font-mono);margin-right:4px">' + (pnl>=0?'+':'') + '$' + pnl + '</span>'
+      + '<span class="sidebar-lb-bal">$' + Math.round(l.balance) + '</span>'
+      + '</div>';
+  }).join('');
+  if (lb.length > 5 && va) va.style.display = 'block';
+}
+
+function renderSidebarProfile() {
+  const el = document.getElementById('sidebar-profile');
+  if (!el) return;
+  if (!currentUser || !userProfile) { el.style.display = 'none'; return; }
+  el.style.display = 'block';
+  const res = userProfile.resolved || [];
+  const won = res.filter(r => r.won).length;
+  const pnl = Math.round(userProfile.balance - 500);
+  el.innerHTML = '<div class="sidebar-profile">'
+    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+    + '<div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">' + currentUser.displayName.substring(0,2).toUpperCase() + '</div>'
+    + '<div><div class="sidebar-profile-name">' + currentUser.displayName + '</div>'
+    + '<div style="font-size:9px;color:var(--text3)">' + currentUser.email + '</div></div></div>'
+    + '<div class="sidebar-profile-stats">'
+    + '<div class="sidebar-profile-stat"><div class="sv">$' + Math.round(userProfile.balance) + '</div><div class="sl">balance</div></div>'
+    + '<div class="sidebar-profile-stat"><div class="sv" style="color:' + (pnl>=0?'var(--green)':'var(--red)') + '">' + (pnl>=0?'+':'') + '$' + pnl + '</div><div class="sl">p&l</div></div>'
+    + '<div class="sidebar-profile-stat"><div class="sv">' + won + '/' + res.length + '</div><div class="sl">wins</div></div>'
+    + '</div>'
+    + '<button onclick="showPortfolio()" style="margin-top:8px;width:100%;padding:5px;background:transparent;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:var(--font-ui);color:var(--text2);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">view portfolio →</button>'
+    + '</div>';
+}
 
 function renderWatchlist() {
   const w=userProfile?.watched||{},keys=Object.keys(w);
@@ -644,8 +708,29 @@ window.doLogout=async function(){await signOut(auth);if(view==='portfolio')showB
 window.openAirportPicker=function(){
   const o=document.createElement('div');o.className='modal-overlay';o.id='ap-overlay';
   o.onclick=e=>{if(e.target===o)closeAP();};
-  o.innerHTML='<div class="airport-modal"><div class="modal-title" style="font-size:16px">Select Airport</div><div style="font-size:11px;color:var(--text2);margin-top:3px">View departure markets for any major airport.</div><div class="airport-grid">'+Object.entries(AIRPORTS).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div></div>').join('')+'</div></div>';
+  o.innerHTML='<div class="airport-modal" style="width:480px;max-width:95vw">'
+    +'<div class="modal-title" style="font-size:16px">Select Airport</div>'
+    +'<div style="font-size:11px;color:var(--text2);margin-top:3px;margin-bottom:14px">Choose from popular airports or enter any IATA code.</div>'
+    +'<input class="airport-search-input" id="ap-search" placeholder="TYPE ANY IATA CODE (e.g. LHR, CDG, NRT)..." oninput="filterAirportGrid(this.value)" onkeydown="if(event.key==='Enter')tryCustomAP(this.value)">'
+    +'<div style="font-size:9px;color:var(--text3);margin:-8px 0 12px;letter-spacing:.5px">press enter to go to any airport</div>'
+    +'<div class="sidebar-label" style="margin-bottom:8px">Popular airports</div>'
+    +'<div class="airport-grid" id="ap-grid">'+Object.entries(AIRPORTS).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div></div>').join('')+'</div>'
+    +'</div>';
   document.body.appendChild(o);
+  setTimeout(()=>document.getElementById('ap-search')?.focus(),50);
+};
+window.filterAirportGrid=function(val){
+  const grid=document.getElementById('ap-grid');if(!grid)return;
+  const v=val.toUpperCase().trim();
+  grid.querySelectorAll('.airport-opt').forEach(el=>{
+    const code=el.querySelector('.ap-code')?.textContent||'';
+    const city=el.querySelector('.ap-city')?.textContent||'';
+    el.style.display=(!v||code.includes(v)||city.toUpperCase().includes(v))?'':'none';
+  });
+};
+window.tryCustomAP=function(val){
+  const code=val.toUpperCase().trim().replace(/[^A-Z]/g,'');
+  if(code.length>=3){closeAP();setAirport(code.substring(0,4));}
 };
 window.closeAP=()=>{const o=document.getElementById('ap-overlay');if(o)o.remove();};
 window.pickAP=code=>{closeAP();setAirport(code);};
@@ -658,7 +743,7 @@ function showIntro(){
   const o=document.createElement('div');
   o.id='intro-overlay';
   o.style.cssText='position:fixed;inset:0;background:rgba(247,248,250,.96);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);';
-  o.innerHTML=`<style>@keyframes introIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}#intro-card{width:420px;max-width:94vw;background:#fff;border:1px solid #e2e5ea;border-radius:14px;padding:36px;box-shadow:0 8px 48px rgba(0,0,0,.08);animation:introIn .5s cubic-bezier(.22,.9,.36,1) both;text-align:center}.intro-logo{font-family:'Share Tech Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}.intro-tagline{font-size:11px;color:#9aa0ab;letter-spacing:2px;margin-bottom:28px;text-transform:uppercase}.intro-body{font-size:13px;color:#5a6070;line-height:1.8;margin-bottom:24px}.intro-body strong{color:#0d1117}.intro-yyznote{background:#fff8f0;border:1px solid #fcd9b0;border-radius:7px;padding:12px 16px;font-size:11px;color:#8a5a20;line-height:1.7;margin-bottom:24px;text-align:left}.intro-cta{width:100%;padding:12px;background:#00a87e;border:none;border-radius:6px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .15s;margin-bottom:10px}.intro-cta:hover{background:#008f6b}.intro-skip{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}.intro-by{font-size:10px;color:#9aa0ab;margin-top:20px}.intro-by a{color:#00a87e;text-decoration:none}</style><div id="intro-card"><div class="intro-logo">FLIGHTBET</div><div class="intro-tagline">delay prediction markets</div><div class="intro-body"><strong>What is this?</strong> A simulated prediction market for flight delays. Pick a departure, decide if it'll be delayed or on time, and track your accuracy over time.<br><br>Everyone starts with <strong>$500</strong> in play money. No real money, no real stakes — just the satisfaction of being right about something airlines refuse to be honest about.</div><div class="intro-yyznote">✈️ <strong>Why does this exist?</strong> Every single time I've flown into Toronto Pearson, my flight has been delayed. Helsinki runs on time. Oslo runs on time. Pearson is consistently ranked among the most delayed airports in the world — and yet every November they seem genuinely surprised that it snows there.<br><br>This is my love letter to everyone who has stood at carousel D74 for two hours waiting for a bag.</div><button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button><br><button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button><div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson ♡</div></div>`;
+  o.innerHTML=`<style>@keyframes introIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}#intro-card{width:420px;max-width:94vw;background:#fff;border:1px solid #e2e5ea;border-radius:14px;padding:36px;box-shadow:0 8px 48px rgba(0,0,0,.08);animation:introIn .5s cubic-bezier(.22,.9,.36,1) both;text-align:center}.intro-logo{font-family:'Share Tech Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}.intro-tagline{font-size:11px;color:#9aa0ab;letter-spacing:2px;margin-bottom:28px;text-transform:uppercase}.intro-body{font-size:13px;color:#5a6070;line-height:1.8;margin-bottom:24px}.intro-body strong{color:#0d1117}.intro-yyznote{background:#fff8f0;border:1px solid #fcd9b0;border-radius:7px;padding:12px 16px;font-size:11px;color:#8a5a20;line-height:1.7;margin-bottom:24px;text-align:left}.intro-cta{width:100%;padding:12px;background:#00a87e;border:none;border-radius:6px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;letter-spacing:1px;cursor:pointer;transition:background .15s;margin-bottom:10px}.intro-cta:hover{background:#008f6b}.intro-skip{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}.intro-by{font-size:10px;color:#9aa0ab;margin-top:20px}.intro-by a{color:#00a87e;text-decoration:none}</style><div id="intro-card"><div class="intro-logo">FLIGHTBET</div><div class="intro-tagline">delay prediction markets</div><div class="intro-body"><strong>What is this?</strong> A simulated prediction market for flight delays. Pick a departure, decide if it'll be delayed or on time, and track your accuracy over time.<br><br>Everyone starts with <strong>$500</strong> in play money.</div><div class="intro-yyznote">✈️ <strong>Inspiration</strong><br><br>This is inspired by my dear home airport, Toronto Pearson — ranked <strong>#227 out of 239 airports worldwide</strong> by AirHelp in 2024, placing it in the bottom 6% globally. At its peak in 2022, the Wall Street Journal named it the world's worst airport for delays, with over 53% of flights arriving late. Helsinki runs on time. Oslo runs on time. Every November, Pearson seems genuinely surprised that it snows there.</div><button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button><br><button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button><div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson ♡</div></div>`;
   document.body.appendChild(o);
 }
 window.dismissIntro=function(permanent){
