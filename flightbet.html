@@ -191,14 +191,32 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
 .spinner{display:inline-block;width:14px;height:14px;border:2px solid var(--border);border-top-color:var(--gold);border-radius:50%;animation:spin .6s linear infinite;vertical-align:middle;margin-right:6px}
 @keyframes spin{to{transform:rotate(360deg)}}
+.sb-profile{padding:12px 14px;border-bottom:1px solid var(--border);background:rgba(0,168,126,.03)}
+.sb-profile-row{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.sb-avatar{width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.sb-name{font-size:12px;font-weight:600;color:var(--text)}
+.sb-email{font-size:9px;color:var(--text3)}
+.sb-stats{display:flex;gap:12px;margin-bottom:8px}
+.sb-stat-val{font-family:var(--font-mono);font-size:14px;font-weight:500;color:var(--gold)}
+.sb-stat-lbl{font-size:8px;color:var(--text3);letter-spacing:1px;text-transform:uppercase}
+.sb-port-btn{width:100%;padding:5px;background:transparent;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:var(--font-ui);color:var(--text2);cursor:pointer;transition:all .15s}
+.sb-port-btn:hover{border-color:var(--gold);color:var(--gold)}
+.sb-lb-row{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);gap:6px}
+.sb-lb-row:last-child{border-bottom:none}
+.sb-lb-rank{font-family:var(--font-mono);color:var(--text3);width:16px;font-size:9px;flex-shrink:0}
+.sb-lb-name{flex:1;font-size:10px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sb-lb-name.me{color:var(--gold);font-weight:600}
+.sb-lb-pnl{font-family:var(--font-mono);font-size:9px;margin-right:4px}
+.sb-lb-bal{font-family:var(--font-mono);color:var(--green);font-size:10px;font-weight:500}
+.ap-search{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--font-board);font-size:11px;padding:7px 10px;outline:none;margin-bottom:8px;letter-spacing:1px;transition:border-color .15s;box-sizing:border-box}
+.ap-search:focus{border-color:var(--gold)}
+.ap-search::placeholder{color:var(--text3)}
 .sidebar-lb-row{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);gap:6px;font-size:10px}
 .sidebar-lb-row:last-child{border-bottom:none}
 .sidebar-lb-rank{font-family:var(--font-mono);color:var(--text3);width:16px;font-size:9px}
 .sidebar-lb-name{flex:1;color:var(--text);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sidebar-lb-name.me{color:var(--gold);font-weight:600}
 .sidebar-lb-bal{font-family:var(--font-mono);color:var(--green);font-size:10px;font-weight:500}
-.sidebar-portfolio-btn{margin-top:8px;width:100%;padding:5px;background:transparent;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:var(--font-ui);color:var(--text2);cursor:pointer;transition:all .15s}
-.sidebar-portfolio-btn:hover{border-color:var(--gold);color:var(--gold)}
 .sidebar-profile{padding:12px 14px;border-bottom:1px solid var(--border);background:rgba(0,168,126,.03)}
 .sidebar-profile-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
 .sidebar-profile-stats{display:flex;gap:10px;margin-top:6px}
@@ -243,6 +261,12 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
       <div class="sidebar-label">Leaderboard <span id="lb-live-badge" style="font-size:8px;color:var(--text3);letter-spacing:0;font-weight:400;text-transform:none">top players</span></div>
       <div id="sidebar-lb-list"><div style="font-size:10px;color:var(--text3);padding:4px 0">loading...</div></div>
       <div id="sidebar-lb-viewall" style="display:none;margin-top:8px"><button onclick="showPortfolio()" style="font-size:10px;color:var(--gold);background:none;border:none;cursor:pointer;padding:0;font-family:var(--font-ui);font-weight:600">view full leaderboard →</button></div>
+    </div>
+    <div id="sb-profile-area"></div>
+    <div class="sidebar-section">
+      <div class="sidebar-label">Leaderboard <span id="sb-lb-badge" style="font-size:8px;color:var(--text3);font-weight:400;letter-spacing:0;text-transform:none">top players</span></div>
+      <div id="sb-lb-list" style="min-height:20px"><div style="font-size:10px;color:var(--text3);padding:4px 0">loading...</div></div>
+      <div id="sb-lb-more" style="display:none;margin-top:6px"></div>
     </div>
     <div class="sidebar-section" id="watchlist-section" style="border-bottom:1px solid var(--border);flex-shrink:0;display:none"><div class="sidebar-label">Watching</div><div id="watchlist-items"></div></div>
     <div class="sidebar-section" style="border-bottom:none;flex-shrink:0"><div class="sidebar-label">Recent Bets</div></div>
@@ -578,6 +602,46 @@ window.resolvePos=async function(id,won){
   renderPortfolio();renderAuthArea();
 };
 
+function renderSidebarProfile() {
+  const el = document.getElementById('sb-profile-area');
+  if (!el) return;
+  el.innerHTML = '';
+  if (!currentUser || !userProfile) return;
+  const res = userProfile.resolved || [];
+  const won = res.filter(r => r.won).length;
+  const pnl = Math.round(userProfile.balance - 500);
+  const div = document.createElement('div');
+  div.className = 'sb-profile';
+  const row = document.createElement('div');
+  row.className = 'sb-profile-row';
+  const av = document.createElement('div');
+  av.className = 'sb-avatar';
+  av.textContent = currentUser.displayName.substring(0,2).toUpperCase();
+  const info = document.createElement('div');
+  info.innerHTML = '<div class="sb-name">' + currentUser.displayName + '</div><div class="sb-email">' + currentUser.email + '</div>';
+  row.appendChild(av); row.appendChild(info);
+  div.appendChild(row);
+  const stats = document.createElement('div');
+  stats.className = 'sb-stats';
+  const statData = [
+    ['$' + Math.round(userProfile.balance), 'balance', 'var(--gold)'],
+    [(pnl >= 0 ? '+' : '') + '$' + pnl, 'p&l', pnl >= 0 ? 'var(--green)' : 'var(--red)'],
+    [won + '/' + res.length, 'wins', 'var(--gold)'],
+  ];
+  statData.forEach(([v, l, c]) => {
+    const s = document.createElement('div');
+    s.innerHTML = '<div class="sb-stat-val" style="color:' + c + '">' + v + '</div><div class="sb-stat-lbl">' + l + '</div>';
+    stats.appendChild(s);
+  });
+  div.appendChild(stats);
+  const btn = document.createElement('button');
+  btn.className = 'sb-port-btn';
+  btn.textContent = 'view portfolio →';
+  btn.onclick = () => showPortfolio();
+  div.appendChild(btn);
+  el.appendChild(div);
+}
+
 async function renderSidebarLeaderboard() {
   const el = document.getElementById('sidebar-lb-list');
   const va = document.getElementById('sidebar-lb-viewall');
@@ -597,35 +661,6 @@ async function renderSidebarLeaderboard() {
       + '</div>';
   }).join('');
   if (lb.length > 5 && va) va.style.display = 'block';
-}
-
-function renderSidebarProfile() {
-  const el = document.getElementById('sidebar-profile');
-  if (!el) return;
-  if (!currentUser || !userProfile) { el.style.display = 'none'; return; }
-  el.style.display = 'block';
-  const res = userProfile.resolved || [];
-  const won = res.filter(r => r.won).length;
-  const pnl = Math.round(userProfile.balance - 500);
-  const initials = currentUser.displayName.substring(0,2).toUpperCase();
-  el.innerHTML = '';
-  const wrapper = document.createElement('div');
-  wrapper.className = 'sidebar-profile';
-  wrapper.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-    + '<div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">' + initials + '</div>'
-    + '<div><div class="sidebar-profile-name">' + currentUser.displayName + '</div>'
-    + '<div style="font-size:9px;color:var(--text3)">' + currentUser.email + '</div></div></div>'
-    + '<div class="sidebar-profile-stats">'
-    + '<div class="sidebar-profile-stat"><div class="sv">$' + Math.round(userProfile.balance) + '</div><div class="sl">balance</div></div>'
-    + '<div class="sidebar-profile-stat"><div class="sv" style="color:' + (pnl>=0?'var(--green)':'var(--red)') + '">' + (pnl>=0?'+':'') + '$' + pnl + '</div><div class="sl">p&l</div></div>'
-    + '<div class="sidebar-profile-stat"><div class="sv">' + won + '/' + res.length + '</div><div class="sl">wins</div></div>'
-    + '</div>';
-  const btn = document.createElement('button');
-  btn.textContent = 'view portfolio →';
-  btn.className = 'sidebar-portfolio-btn';
-  btn.onclick = () => showPortfolio();
-  wrapper.appendChild(btn);
-  el.appendChild(wrapper);
 }
 
 function renderWatchlist() {
