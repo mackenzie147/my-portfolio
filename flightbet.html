@@ -810,23 +810,38 @@ window.toggleWatch = async function(id, dest, airline) {
 
 // ── AUTH ──
 function renderAuthArea() {
-  const a=document.getElementById('auth-area');
-  if(!a) return;
-  if(currentUser && userProfile) {
-    a.innerHTML='<div class="auth-btns">'
-      +'<div class="user-pill" onclick="showPortfolio()">'
-      +'<div class="avatar">'+currentUser.displayName.substring(0,2).toUpperCase()+'</div>'
-      +'<span style="white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis">'+currentUser.displayName+'</span>'
-      +'<span class="bal">$'+Math.round(userProfile.balance)+'</span>'
-      +'</div>'
-      +'<button class="nav-btn outline" style="white-space:nowrap;flex-shrink:0" onclick="doLogout()">Log out</button>'
-      +'</div>';
+  const a = document.getElementById("auth-area");
+  if (!a) return;
+  a.innerHTML = "";
+  const wrap = document.createElement("div");
+  wrap.className = "auth-btns";
+  if (currentUser && userProfile) {
+    const pill = document.createElement("div");
+    pill.className = "user-pill";
+    pill.onclick = () => showPortfolio();
+    pill.innerHTML = '<div class="avatar">' + currentUser.displayName.substring(0,2).toUpperCase() + '</div>'
+      + '<span style="white-space:nowrap;max-width:120px;overflow:hidden;text-overflow:ellipsis">' + currentUser.displayName + '</span>'
+      + '<span class="bal">$' + Math.round(userProfile.balance) + '</span>';
+    const logoutBtn = document.createElement("button");
+    logoutBtn.className = "nav-btn outline";
+    logoutBtn.style.whiteSpace = "nowrap";
+    logoutBtn.textContent = "Log out";
+    logoutBtn.onclick = () => doLogout();
+    wrap.appendChild(pill);
+    wrap.appendChild(logoutBtn);
   } else {
-    a.innerHTML='<div class="auth-btns">'
-      +'<button class="nav-btn outline" onclick="openAuthModal('login')">Log in</button>'
-      +'<button class="nav-btn primary" onclick="openAuthModal('signup')">Sign up free</button>'
-      +'</div>';
+    const loginBtn = document.createElement("button");
+    loginBtn.className = "nav-btn outline";
+    loginBtn.textContent = "Log in";
+    loginBtn.onclick = () => openAuthModal("login");
+    const signupBtn = document.createElement("button");
+    signupBtn.className = "nav-btn primary";
+    signupBtn.textContent = "Sign up free";
+    signupBtn.onclick = () => openAuthModal("signup");
+    wrap.appendChild(loginBtn);
+    wrap.appendChild(signupBtn);
   }
+  a.appendChild(wrap);
 }
 
 window.openAuthModal = function(mode='signup') {
