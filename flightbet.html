@@ -373,26 +373,16 @@ async function fetchFlights(iata) {
     const r = await fetch('/api/flights?airport=' + iata);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
-    // Filter to only upcoming/active flights — exclude already-departed unless we have a position on them
+    // Show all flights — scheduled, on time, delayed, boarding
+    // Only hide departed/cancelled UNLESS we have a position on them (need to resolve)
     const posIds = Object.keys(userProfile?.positions || {});
     d.flights = (d.flights || []).filter(f => {
-      if (posIds.includes(f.id)) return true; // always show flights we've bet on
+      if (posIds.includes(f.id)) return true;
       const st = (f.status || '').toLowerCase();
-      if (st === 'cancelled') return false;
-      if (st === 'departed') return false;
-      // Also filter by time: only flights departing in next 6 hours
-      if (f.time) {
-        const [h, m] = f.time.split(':').map(Number);
-        const nowDate = new Date();
-        const depDate = new Date(nowDate);
-        depDate.setHours(h, m, 0, 0);
-        if (depDate < nowDate) depDate.setDate(depDate.getDate() + 1); // next day
-        const diffMins = (depDate - nowDate) / 60000;
-        if (diffMins > 360) return false; // more than 6 hours away
-      }
-      return true;
+      // Keep active flights; hide ones that have fully departed (no position)
+      return st !== 'departed';
     });
-    // Sort by departure time
+    // Sort by scheduled departure time
     d.flights.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
     bCache[iata] = {data:d, exp:now+BTTL};
     showBadge(d.mock||d.fallback, d.fetchedAt);
@@ -465,8 +455,17 @@ window.setSort=setSort;
 window.openAirportPicker=function(){
   const o=document.createElement('div');o.className='modal-overlay';o.id='ap-overlay';
   o.onclick=e=>{if(e.target===o)closeAP();};
-  o.innerHTML='<div class="airport-modal"><div class="modal-title" style="font-size:16px">Select Airport</div><div style="font-size:11px;color:var(--text2);margin-top:3px">View departure markets for any major airport.</div><div class="airport-grid">'+Object.entries(AIRPORTS).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div></div>').join('')+'</div></div>';
+  o.innerHTML='<div class="airport-modal" style="max-height:85vh;overflow-y:auto;width:480px">'
+    +'<div class="modal-title" style="font-size:16px">Select Airport</div>'
+    +'<div style="font-size:11px;color:var(--text2);margin-top:3px;margin-bottom:14px">Pick a preset or type any IATA code.</div>'
+    +'<div style="display:flex;gap:8px;margin-bottom:16px">'
+    +'<input id="ap-search" class="search-box" style="flex:1;width:auto;font-size:13px;letter-spacing:2px" placeholder="ANY IATA CODE — YYZ, LHR, CDG..." maxlength="4" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key===\'Enter\'){const v=this.value.trim();if(v.length>=3)pickAP(v)}">'
+    +'<button class="nav-btn primary" onclick="const v=document.getElementById(\'ap-search\').value.trim().toUpperCase();if(v.length>=3)pickAP(v)">GO →</button>'
+    +'</div>'
+    +'<div style="font-size:9px;letter-spacing:1.5px;color:var(--text3);margin-bottom:8px;font-weight:600">PRESETS — RANKED BY DELAY RATE</div>'
+    +'<div class="airport-grid">'+Object.entries(AIRPORTS).filter(([k])=>k!==Object.keys(AIRPORTS).find(x=>!['YYZ','EWR','JFK','ORD','SFO','BOS','MIA','DFW','DEN','LAX','ATL','SEA'].includes(x))).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div><div style="font-size:8px;color:var(--yes);margin-top:2px;font-family:var(--font-mono)">'+Math.round(a.baseRate*100)+'% delays</div></div>').join('')+'</div></div>';
   document.body.appendChild(o);
+  setTimeout(()=>document.getElementById('ap-search')?.focus(),80);
 };
 
 function getVisible() {
@@ -562,7 +561,7 @@ async function autoResolvePositions() {
 function renderAll() {
   if(view==='portfolio'){renderPortfolio();return;}
   const visible=getVisible();
-  if(!visible.length){ document.getElementById('flight-list').innerHTML=flights.length === 0 && !document.getElementById('data-badge')?.textContent.includes('ERROR') ? '<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px">NO UPCOMING FLIGHTS IN THE NEXT 6 HOURS</div>' : '<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px">⚠ API UNAVAILABLE — check your /api/flights endpoint</div>'; return; }
+  if(!visible.length){ document.getElementById('flight-list').innerHTML='<div style="padding:60px 40px;text-align:center;color:var(--text3);font-size:11px;line-height:2"><div style="font-size:28px;margin-bottom:12px">✈</div><div style="letter-spacing:1px">NO FLIGHTS LOADED</div><div style="font-size:10px;margin-top:6px;color:var(--text3)">Check that your /api/flights endpoint is returning data for ' + ap + '</div></div>'; return; }
   const positions=userProfile?.positions||{};
   document.getElementById('flight-list').innerHTML=visible.map(f=>{
     const p=Math.round((f.delayProb||.2)*100),np=100-p,pos=positions[f.id];
@@ -760,7 +759,16 @@ window.submitAuth=async function(mode){
 window.doLogout=async function(){await signOut(auth);if(view==='portfolio')showBoard();showToast('Logged out','ok');};
 
 window.closeAP=()=>{const o=document.getElementById('ap-overlay');if(o)o.remove();};
-window.pickAP=code=>{closeAP();setAirport(code);};
+window.pickAP=function(code){
+  code = code.toUpperCase().trim();
+  if (!code || code.length < 3) return;
+  closeAP();
+  // If not in our presets, add a temporary entry so nav shows correctly
+  if (!AIRPORTS[code]) {
+    AIRPORTS[code] = {name: code + ' International', city: code, lat:0, lng:0, baseRate:.25, note:'Live data from API'};
+  }
+  setAirport(code);
+};
 
 let tt;
 window.showToast=function(msg,type='ok'){const t=document.getElementById('toast');t.innerHTML=msg;t.style.borderColor=type==='ok'?'var(--green)':type==='err'?'var(--red)':'var(--border2)';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);};
@@ -795,11 +803,11 @@ function showIntro(){
   <div class="intro-stat-box">
     <div class="intro-stat-num">#227</div>
     <div class="intro-stat-text">
-      <strong>Toronto Pearson is the most delayed major airport in the world.</strong> Ranked 227th out of 239 airports globally for on-time performance, with over 53% of departures arriving late at peak. It has held the official title of world's worst airport for delays — multiple times. Every winter it snows in Toronto. Every year, Pearson is surprised.
+      <strong>Toronto Pearson has been ranked the #1 most delayed airport in the world</strong> — and still ranks in the bottom 6% globally. Over 53% of departures arrived late at peak. It has held the official title of world's worst airport for delays multiple times. Every winter it snows in Toronto. Every year, Pearson is surprised.
     </div>
   </div>
   <div class="intro-how-title">How it works</div>
-  <div class="intro-step"><span class="intro-step-num">01</span><span>Pick a <strong>real upcoming flight</strong> from any major airport. Live data only — no mock flights.</span></div>
+  <div class="intro-step"><span class="intro-step-num">01</span><span>Pick a <strong>real upcoming flight</strong> from any major airport.</span></div>
   <div class="intro-step"><span class="intro-step-num">02</span><span>Bet YES (delayed 15+ min) or NO (on time). Odds are set by live flight status and each airport's real delay rate.</span></div>
   <div class="intro-step"><span class="intro-step-num">03</span><span>After the flight departs, the market <strong>auto-resolves</strong>. 15+ minute delay = YES wins. On time = NO wins. You get a notification either way.</span></div>
   <div class="intro-step"><span class="intro-step-num">04</span><span>Build your balance, climb the leaderboard, and become the person who is finally right about Pearson.</span></div>
