@@ -197,6 +197,8 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
 .sidebar-lb-name{flex:1;color:var(--text);font-size:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .sidebar-lb-name.me{color:var(--gold);font-weight:600}
 .sidebar-lb-bal{font-family:var(--font-mono);color:var(--green);font-size:10px;font-weight:500}
+.sidebar-portfolio-btn{margin-top:8px;width:100%;padding:5px;background:transparent;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:var(--font-ui);color:var(--text2);cursor:pointer;transition:all .15s}
+.sidebar-portfolio-btn:hover{border-color:var(--gold);color:var(--gold)}
 .sidebar-profile{padding:12px 14px;border-bottom:1px solid var(--border);background:rgba(0,168,126,.03)}
 .sidebar-profile-name{font-size:12px;font-weight:600;color:var(--text);margin-bottom:2px}
 .sidebar-profile-stats{display:flex;gap:10px;margin-top:6px}
@@ -605,18 +607,25 @@ function renderSidebarProfile() {
   const res = userProfile.resolved || [];
   const won = res.filter(r => r.won).length;
   const pnl = Math.round(userProfile.balance - 500);
-  el.innerHTML = '<div class="sidebar-profile">'
-    + '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
-    + '<div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">' + currentUser.displayName.substring(0,2).toUpperCase() + '</div>'
+  const initials = currentUser.displayName.substring(0,2).toUpperCase();
+  el.innerHTML = '';
+  const wrapper = document.createElement('div');
+  wrapper.className = 'sidebar-profile';
+  wrapper.innerHTML = '<div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">'
+    + '<div style="width:28px;height:28px;border-radius:50%;background:var(--gold);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0">' + initials + '</div>'
     + '<div><div class="sidebar-profile-name">' + currentUser.displayName + '</div>'
     + '<div style="font-size:9px;color:var(--text3)">' + currentUser.email + '</div></div></div>'
     + '<div class="sidebar-profile-stats">'
     + '<div class="sidebar-profile-stat"><div class="sv">$' + Math.round(userProfile.balance) + '</div><div class="sl">balance</div></div>'
     + '<div class="sidebar-profile-stat"><div class="sv" style="color:' + (pnl>=0?'var(--green)':'var(--red)') + '">' + (pnl>=0?'+':'') + '$' + pnl + '</div><div class="sl">p&l</div></div>'
     + '<div class="sidebar-profile-stat"><div class="sv">' + won + '/' + res.length + '</div><div class="sl">wins</div></div>'
-    + '</div>'
-    + '<button onclick="showPortfolio()" style="margin-top:8px;width:100%;padding:5px;background:transparent;border:1px solid var(--border);border-radius:4px;font-size:10px;font-family:var(--font-ui);color:var(--text2);cursor:pointer;transition:all .15s" onmouseover="this.style.borderColor='var(--gold)';this.style.color='var(--gold)'" onmouseout="this.style.borderColor='var(--border)';this.style.color='var(--text2)'">view portfolio →</button>'
     + '</div>';
+  const btn = document.createElement('button');
+  btn.textContent = 'view portfolio →';
+  btn.className = 'sidebar-portfolio-btn';
+  btn.onclick = () => showPortfolio();
+  wrapper.appendChild(btn);
+  el.appendChild(wrapper);
 }
 
 function renderWatchlist() {
