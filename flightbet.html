@@ -423,7 +423,14 @@ function pushActivity(displayName, side, amt, flightId, dest) {
 
 function setFilter(f) { filter=f; document.querySelectorAll('.filter-chip').forEach(c=>c.classList.toggle('active',c.dataset.filter===f)); renderAll(); }
 function setSort(s) { sort=s; document.querySelectorAll('.sort-btn').forEach(b=>b.classList.toggle('active',b.dataset.sort===s)); renderAll(); }
-window.setFilter=setFilter; window.setSort=setSort;
+window.setFilter=setFilter;
+window.setSort=setSort;
+window.openAirportPicker=function(){
+  const o=document.createElement('div');o.className='modal-overlay';o.id='ap-overlay';
+  o.onclick=e=>{if(e.target===o)closeAP();};
+  o.innerHTML='<div class="airport-modal"><div class="modal-title" style="font-size:16px">Select Airport</div><div style="font-size:11px;color:var(--text2);margin-top:3px">View departure markets for any major airport.</div><div class="airport-grid">'+Object.entries(AIRPORTS).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div></div>').join('')+'</div></div>';
+  document.body.appendChild(o);
+};
 
 function getVisible() {
   const q=(document.getElementById('search-box')?.value||'').toUpperCase();
@@ -680,12 +687,6 @@ window.submitAuth=async function(mode){
 };
 window.doLogout=async function(){await signOut(auth);if(view==='portfolio')showBoard();showToast('Logged out','ok');};
 
-window.openAirportPicker=function(){
-  const o=document.createElement('div');o.className='modal-overlay';o.id='ap-overlay';
-  o.onclick=e=>{if(e.target===o)closeAP();};
-  o.innerHTML='<div class="airport-modal"><div class="modal-title" style="font-size:16px">Select Airport</div><div style="font-size:11px;color:var(--text2);margin-top:3px">View departure markets for any major airport.</div><div class="airport-grid">'+Object.entries(AIRPORTS).map(([code,a])=>'<div class="airport-opt '+(code===ap?'active':'')+'" onclick="pickAP(\''+code+'\')"><div class="ap-code">'+code+'</div><div class="ap-city">'+a.city.split(',')[0]+'</div></div>').join('')+'</div></div>';
-  document.body.appendChild(o);
-};
 window.closeAP=()=>{const o=document.getElementById('ap-overlay');if(o)o.remove();};
 window.pickAP=code=>{closeAP();setAirport(code);};
 
