@@ -811,15 +811,21 @@ window.toggleWatch = async function(id, dest, airline) {
 // ── AUTH ──
 function renderAuthArea() {
   const a=document.getElementById('auth-area');
+  if(!a) return;
   if(currentUser && userProfile) {
-    a.innerHTML='<div class="user-pill" onclick="showPortfolio()">'
+    a.innerHTML='<div class="auth-btns">'
+      +'<div class="user-pill" onclick="showPortfolio()">'
       +'<div class="avatar">'+currentUser.displayName.substring(0,2).toUpperCase()+'</div>'
-      +'<span>'+currentUser.displayName+'</span>'
+      +'<span style="white-space:nowrap;max-width:100px;overflow:hidden;text-overflow:ellipsis">'+currentUser.displayName+'</span>'
       +'<span class="bal">$'+Math.round(userProfile.balance)+'</span>'
-      +'</div><button class="nav-btn outline" onclick="doLogout()">LOGOUT</button>';
+      +'</div>'
+      +'<button class="nav-btn outline" style="white-space:nowrap;flex-shrink:0" onclick="doLogout()">Log out</button>'
+      +'</div>';
   } else {
-    a.innerHTML='<button class="nav-btn outline" onclick="openAuthModal(\'login\')">LOG IN</button>'
-      +'<button class="nav-btn primary" onclick="openAuthModal(\'signup\')">SIGN UP FREE</button>';
+    a.innerHTML='<div class="auth-btns">'
+      +'<button class="nav-btn outline" onclick="openAuthModal('login')">Log in</button>'
+      +'<button class="nav-btn primary" onclick="openAuthModal('signup')">Sign up free</button>'
+      +'</div>';
   }
 }
 
