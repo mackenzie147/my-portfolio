@@ -237,7 +237,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
         <span style="font-size:9px;color:var(--gold);cursor:pointer;letter-spacing:.5px;font-weight:600" onclick="showPortfolio()">see all →</span>
       </div>
       <div id="sidebar-leaderboard"><div style="font-size:10px;color:var(--text3);padding:6px 0">Loading...</div></div>
-      <div class="sidebar-lb-refresh" onclick="refreshSidebarLB()">↻ refresh</div>
+      <div class="sidebar-lb-refresh" onclick="window.refreshSidebarLB()">↻ refresh</div>
     </div>
     <div class="sidebar-section" id="watchlist-section" style="border-bottom:none;flex-shrink:0;display:none"><div class="sidebar-label">Watching</div><div id="watchlist-items"></div></div>
     <div class="sidebar-section" style="border-bottom:none;flex-shrink:0"><div class="sidebar-label">Recent Bets</div></div>
@@ -338,14 +338,37 @@ async function loadLeaderboard() {
   return snap.docs.map(d => d.data());
 }
 
+window.refreshSidebarLB = async function() {
+  const el = document.getElementById('sidebar-leaderboard');
+  if (!el) return;
+  try {
+    const lb = await loadLeaderboard();
+    if (!lb.length) {
+      el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:6px 0">No players yet — be first!</div>';
+      return;
+    }
+    el.innerHTML = lb.slice(0, 8).map((l, i) => {
+      const isMe = currentUser && l.uid === currentUser.uid;
+      const pnl = Math.round(l.balance - STARTING_BALANCE);
+      return '<div class="sidebar-lb-row'+(isMe?' sidebar-lb-me':'')+'">'
+        +'<span class="sidebar-lb-rank">'+(i+1)+'</span>'
+        +'<span class="sidebar-lb-name">'+l.displayName+(isMe?' ★':'')+'</span>'
+        +'<span class="sidebar-lb-val" style="color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+Math.abs(pnl)+'</span>'
+        +'</div>';
+    }).join('');
+  } catch(e) {
+    el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:6px 0">—</div>';
+  }
+};
+
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     currentUser = user;
     await loadUserProfile(user.uid);
-    renderAuthArea(); renderAll(); renderWatchlist(); refreshSidebarLB();
+    renderAuthArea(); renderAll(); renderWatchlist(); window.refreshSidebarLB();
   } else {
     currentUser = null; userProfile = null;
-    renderAuthArea(); renderAll(); refreshSidebarLB();
+    renderAuthArea(); renderAll(); window.refreshSidebarLB();
   }
 });
 
@@ -405,7 +428,7 @@ function setAirport(code) {
 setInterval(()=>{ const n=new Date(),el=document.getElementById('board-time'); if(el) el.textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':'); },1000);
 setInterval(()=>{ flights.forEach(f=>{ if(f.status==='Departed'||f.status==='Cancelled') return; f.delayProb=Math.max(.04,Math.min(.96,(f.delayProb||.2)+(Math.random()-.5)*.03)); }); renderAll(); updateTicker(); updateStats(); },5000);
 setInterval(()=>fetchFlights(ap).then(d=>{ flights=d.flights||[]; flights.forEach(f=>{if(f.delayProb==null)f.delayProb=getAirportBaseRate(ap);if(f.vol==null)f.vol=5000;}); renderAll(); updateCounts(); updateStats(); }),3*60*1000);
-setInterval(refreshSidebarLB, 60*1000);
+setInterval(window.refreshSidebarLB, 60*1000);
 
 function updateTicker() {
   if(!flights.length) return;
@@ -463,29 +486,7 @@ function updateStats() {
   document.getElementById('market-stats').innerHTML='<div class="stat-row"><span class="lbl">Avg Delay Prob</span><span class="val">'+Math.round(avg*100)+'%</span></div><div class="stat-row"><span class="lbl">24h Volume</span><span class="val">$'+(vol/1000).toFixed(0)+'K</span></div><div class="stat-row"><span class="lbl">High Risk</span><span class="val">'+flights.filter(f=>(f.delayProb||0)>.6).length+'</span></div><div class="stat-row"><span class="lbl">Active Markets</span><span class="val">'+a.length+'</span></div>';
 }
 
-// ---- Sidebar Leaderboard ----
-window.refreshSidebarLB = async function() {
-  const el = document.getElementById('sidebar-leaderboard');
-  if (!el) return;
-  try {
-    const lb = await loadLeaderboard();
-    if (!lb.length) {
-      el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:6px 0">No players yet — be first!</div>';
-      return;
-    }
-    el.innerHTML = lb.slice(0, 8).map((l, i) => {
-      const isMe = currentUser && l.uid === currentUser.uid;
-      const pnl = Math.round(l.balance - STARTING_BALANCE);
-      return '<div class="sidebar-lb-row'+(isMe?' sidebar-lb-me':'')+'">'
-        +'<span class="sidebar-lb-rank">'+(i+1)+'</span>'
-        +'<span class="sidebar-lb-name">'+l.displayName+(isMe?' ★':'')+'</span>'
-        +'<span class="sidebar-lb-val" style="color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+Math.abs(pnl)+'</span>'
-        +'</div>';
-    }).join('');
-  } catch(e) {
-    el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:6px 0">—</div>';
-  }
-};
+
 
 function renderAll() {
   if(view==='portfolio'){renderPortfolio();return;}
@@ -563,7 +564,7 @@ window.placeBet=async function(id){
   pushActivity(currentUser.displayName,betSide,amt,id,f.dest);
   renderAuthArea();renderAll();renderDetail(id);
   showToast('Bet placed — '+betSide+' $'+amt+' on '+id,'ok');
-  refreshSidebarLB();
+  window.refreshSidebarLB();
 };
 
 window.showPortfolio=async function(){if(!currentUser){openAuthModal();return;}view='portfolio';document.getElementById('board-content').style.display='none';renderPortfolio();};
@@ -598,7 +599,7 @@ window.resolvePos=async function(id,won){
   delete userProfile.positions[id];
   await saveUserProfile();
   showToast(won?'WON! +$'+(payout-p.amount).toFixed(0)+' on '+id:'Lost $'+p.amount+' on '+id,won?'ok':'err');
-  renderPortfolio();renderAuthArea();refreshSidebarLB();
+  renderPortfolio();renderAuthArea();window.refreshSidebarLB();
 };
 
 function renderWatchlist() {
