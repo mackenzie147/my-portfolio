@@ -397,17 +397,35 @@ async function resolveStalePositions() {
       const p = positions[id];
       const f = airportFlights.find(x => x.id === id);
 
-      // If flight not found in API at all, it's likely departed — resolve based on stored prob
-      // If found, check its status
-      const status = f ? (f.status || '').toLowerCase() : 'departed';
+      const status = f ? (f.status || '').toLowerCase() : 'gone';
       const shouldResolve = !f || status === 'departed' || status === 'active' ||
                             status === 'landed' || status === 'arrived' || status === 'cancelled';
 
       if (!shouldResolve) continue;
 
-      // Determine outcome
       let wasDelayed;
-      if (!f || status === 'cancelled') {
+      if (!f || status === 'gone') {
+        try {
+          const depDate = p.scheduledAt ? p.scheduledAt.slice(0,10) : new Date().toISOString().slice(0,10);
+          const hr = await fetch('/api/flights?flight=' + id + '&date=' + depDate);
+          if (hr.ok) {
+            const hd = await hr.json();
+            const hf = hd.flight;
+            if (hf && hf.delayMinutes != null) {
+              wasDelayed = hf.delayMinutes >= 15;
+            } else if (hf && hf.status) {
+              const hs = hf.status.toLowerCase();
+              wasDelayed = hs === 'cancelled' || (hf.delayProb || 0) >= 0.55;
+            } else {
+              wasDelayed = (p.prob || 0.3) >= 0.55;
+            }
+          } else {
+            wasDelayed = (p.prob || 0.3) >= 0.55;
+          }
+        } catch(e) {
+          wasDelayed = (p.prob || 0.3) >= 0.55;
+        }
+      } else if (status === 'cancelled') {
         wasDelayed = true;
       } else if (f.delayMinutes != null) {
         wasDelayed = f.delayMinutes >= 15;
