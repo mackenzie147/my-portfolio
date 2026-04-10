@@ -361,6 +361,94 @@ async function saveUserProfile() {
   await updateDoc(ref, { balance:userProfile.balance, positions:userProfile.positions, resolved:userProfile.resolved, totalBets:userProfile.totalBets, wins:userProfile.wins, watched:userProfile.watched||{} });
 }
 
+// On login, check all open positions against the API and resolve any that have departed
+async function resolveStalePositions() {
+  if (!currentUser || !userProfile) return;
+  const positions = userProfile.positions || {};
+  const ids = Object.keys(positions);
+  if (!ids.length) return;
+
+  // Group positions by airport so we make one API call per airport
+  const byAirport = {};
+  for (const id of ids) {
+    const p = positions[id];
+    const airport = p.depAirport || ap; // fall back to current airport
+    if (!byAirport[airport]) byAirport[airport] = [];
+    byAirport[airport].push(id);
+  }
+
+  let anyResolved = false;
+
+  for (const [airport, flightIds] of Object.entries(byAirport)) {
+    let airportFlights = [];
+    try {
+      trackApiCall();
+      const r = await fetch('/api/flights?airport=' + airport);
+      if (r.ok) {
+        const d = await r.json();
+        airportFlights = d.flights || [];
+      }
+    } catch(e) {
+      console.warn('Could not fetch flights for', airport, 'during stale resolution');
+      continue;
+    }
+
+    for (const id of flightIds) {
+      const p = positions[id];
+      const f = airportFlights.find(x => x.id === id);
+
+      // If flight not found in API at all, it's likely departed — resolve based on stored prob
+      // If found, check its status
+      const status = f ? (f.status || '').toLowerCase() : 'departed';
+      const shouldResolve = !f || status === 'departed' || status === 'active' ||
+                            status === 'landed' || status === 'arrived' || status === 'cancelled';
+
+      if (!shouldResolve) continue;
+
+      // Determine outcome
+      let wasDelayed;
+      if (!f || status === 'cancelled') {
+        wasDelayed = true;
+      } else if (f.delayMinutes != null) {
+        wasDelayed = f.delayMinutes >= 15;
+      } else {
+        wasDelayed = (f.delayProb || p.prob || 0.3) >= 0.55;
+      }
+
+      const won = (p.side === 'YES' && wasDelayed) || (p.side === 'NO' && !wasDelayed);
+      const prob = p.side === 'YES' ? (p.prob || 0.3) : (1 - (p.prob || 0.3));
+      const payout = won ? p.amount / prob : 0;
+
+      if (won) userProfile.balance = Math.round((userProfile.balance + payout) * 100) / 100;
+      if (!userProfile.resolved) userProfile.resolved = [];
+      userProfile.resolved.push({
+        id, dest: p.dest, destName: p.destName || p.dest, side: p.side,
+        staked: p.amount, won, payout,
+        wasDelayed, delayMinutes: f?.delayMinutes || null,
+        date: new Date().toLocaleDateString(),
+        resolvedBy: 'login-check',
+      });
+      if (won) userProfile.wins = (userProfile.wins || 0) + 1;
+      delete userProfile.positions[id];
+      anyResolved = true;
+
+      const delayInfo = f?.delayMinutes != null ? ' (' + f.delayMinutes + 'min delay)' : '';
+      const msg = won
+        ? '✈ ' + id + ' settled' + delayInfo + ' — YOU WON +$' + (payout - p.amount).toFixed(0) + '!'
+        : '✈ ' + id + ' settled' + delayInfo + ' — lost $' + p.amount.toFixed(0);
+      // Queue toasts with slight delay so they don't all fire at once
+      setTimeout(() => window.showToast(msg, won ? 'ok' : 'err'), anyResolved ? 800 : 200);
+    }
+  }
+
+  if (anyResolved) {
+    await saveUserProfile();
+    renderAuthArea();
+    window.refreshSidebarLB();
+    if (view === 'portfolio') renderPortfolio();
+  }
+}
+
 async function loadLeaderboard() {
   const q = query(collection(db,'users'), orderBy('balance','desc'), limit(50));
   const snap = await getDocs(q);
@@ -395,6 +483,8 @@ onAuthStateChanged(auth, async (user) => {
     currentUser = user;
     await loadUserProfile(user.uid);
     renderAuthArea(); renderAll(); renderWatchlist(); window.refreshSidebarLB();
+    // Resolve any bets that settled while logged out
+    resolveStalePositions();
   } else {
     currentUser = null; userProfile = null;
     renderAuthArea(); renderAll(); window.refreshSidebarLB();
@@ -702,7 +792,7 @@ window.placeBet=async function(id){
   const f=flights.find(x=>x.id===id);if(!f)return;
   userProfile.balance=Math.round((userProfile.balance-amt)*100)/100;
   const prev=userProfile.positions[id];
-  userProfile.positions[id]=prev&&prev.side===betSide?{side:betSide,amount:prev.amount+amt,prob:f.delayProb||.2,dest:f.dest,time:f.time,airline:f.airline}:{side:betSide,amount:amt,prob:f.delayProb||.2,dest:f.dest,time:f.time,airline:f.airline};
+  userProfile.positions[id]=prev&&prev.side===betSide?{side:betSide,amount:prev.amount+amt,prob:f.delayProb||.2,dest:f.dest,destName:f.destName,time:f.time,airline:f.airline,depAirport:ap}:{side:betSide,amount:amt,prob:f.delayProb||.2,dest:f.dest,destName:f.destName,time:f.time,airline:f.airline,depAirport:ap};
   userProfile.totalBets=(userProfile.totalBets||0)+1;
   await saveUserProfile();
   pushActivity(currentUser.displayName,betSide,amt,id,f.dest);
@@ -721,13 +811,42 @@ window.betAllAirline=async function(airline, side, amount){
   let placed = 0;
   for(const f of targets){
     userProfile.balance = Math.round((userProfile.balance - amount)*100)/100;
-    userProfile.positions[f.id] = {side, amount, prob: f.delayProb||0.3, dest:f.dest, time:f.time, airline:f.airline};
+    userProfile.positions[f.id] = {side, amount, prob: f.delayProb||0.3, dest:f.dest, destName:f.destName, time:f.time, airline:f.airline, depAirport:ap};
     userProfile.totalBets = (userProfile.totalBets||0)+1;
     placed++;
   }
   await saveUserProfile();
   showToast('Placed '+placed+' bets ('+side+') on all '+airline+' flights — $'+total+' total','ok');
   renderAuthArea(); renderAll(); window.refreshSidebarLB();
+};
+window.showRefill=function(){
+  const bal=Math.round(userProfile?.balance||0);
+  const o=document.createElement('div');
+  o.className='modal-overlay';o.id='refill-overlay';
+  o.onclick=e=>{if(e.target===o)o.remove();};
+  o.innerHTML='<div class="modal" style="max-width:380px">'
+    +'<div class="modal-title" style="font-size:20px;margin-bottom:8px">reload $500?</div>'
+    +'<div style="font-size:13px;color:var(--text2);line-height:1.8;margin-bottom:20px">this is where it would be really funny if it was not illegal to be on this.<br><br>but it is. so here is your fake money back.</div>'
+    +'<div style="background:var(--bg3);border:1px solid var(--border);border-radius:8px;padding:14px;margin-bottom:18px;font-size:11px;line-height:1.8">'
+    +'<div style="color:var(--text2);font-weight:600;margin-bottom:4px">current balance</div>'
+    +'<div style="font-family:var(--font-board);font-size:22px;color:var(--red)">$'+bal+'</div>'
+    +'<div style="margin-top:8px;color:var(--text2);font-weight:600">after reload</div>'
+    +'<div style="font-family:var(--font-board);font-size:22px;color:var(--green)">$'+(bal+500)+'</div>'
+    +'</div>'
+    +'<button class="modal-btn" onclick="doRefill()">yeah give me the money</button>'
+    +'<div style="text-align:center;margin-top:8px"><button onclick="document.getElementById(\'refill-overlay\').remove()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--font-ui)">no thanks</button></div>'
+    +'</div>';
+  document.body.appendChild(o);
+};
+window.doRefill=async function(){
+  if(!currentUser||!userProfile)return;
+  userProfile.balance=Math.round((userProfile.balance+500)*100)/100;
+  await saveUserProfile();
+  document.getElementById('refill-overlay')?.remove();
+  showToast('$500 added. this is where it would be really funny if it was not illegal.','ok');
+  renderAuthArea();
+  if(view==='portfolio')renderPortfolio();
+  window.refreshSidebarLB();
 };
 window.showBoard=function(){view='board';const bc=document.getElementById('board-content');if(bc)bc.style.display='flex';const pv=document.getElementById('portfolio-view');if(pv)pv.remove();renderAll();};
 
