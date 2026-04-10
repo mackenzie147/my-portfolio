@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FlightBet — Delay Markets</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600&family=Azeret+Mono:wght@400;500&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -15,8 +15,8 @@
   --green:#00a87e;--red:#e0462a;--blue:#1a6ef5;--orange:#e07820;
   --text:#0d1117;--text2:#5a6070;--text3:#9aa0ab;
   --yes:#e07820;--no:#00a87e;
-  --font-board:'Azeret Mono',monospace;
-  --font-ui:'Space Grotesk',sans-serif;
+  --font-board:'Share Tech Mono',monospace;
+  --font-ui:'Inter',sans-serif;
   --font-mono:'DM Mono',monospace;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--font-ui);overflow-x:hidden}
@@ -864,11 +864,6 @@ window.doRefill=async function(){
   if(view==='portfolio')renderPortfolio();
   window.refreshSidebarLB();
 };
-window.sharePortfolio=function(){
-  const name=encodeURIComponent(currentUser.displayName||'');
-  const url=window.location.origin+window.location.pathname+'?user='+name;
-  navigator.clipboard.writeText(url).then(()=>showToast('Portfolio link copied!','ok')).catch(()=>{prompt('Your portfolio link:',url);});
-};
 window.showBoard=function(){view='board';const bc=document.getElementById('board-content');if(bc)bc.style.display='flex';const pv=document.getElementById('portfolio-view');if(pv)pv.remove();renderAll();};
 
 async function renderPortfolio() {
@@ -878,17 +873,12 @@ async function renderPortfolio() {
   const pos=Object.entries(userProfile.positions||{}),staked=pos.reduce((s,[,p])=>s+p.amount,0),res=userProfile.resolved||[],won=res.filter(r=>r.won).reduce((s,r)=>s+r.payout,0),lost=res.filter(r=>!r.won).reduce((s,r)=>s+r.staked,0),wr=res.length?Math.round(res.filter(r=>r.won).length/res.length*100):0;
   let lb=[];
   try{lb=await loadLeaderboard();}catch(e){}
-  pv.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><div><div style="font-size:17px;font-weight:600">Your Portfolio</div><div style="font-size:10px;color:var(--text3);margin-top:2px">'+currentUser.displayName+' · '+currentUser.email+'</div></div><div style="display:flex;gap:8px"><button class="nav-btn outline" style="font-size:10px;border-color:var(--gold);color:var(--gold)" onclick="sharePortfolio()">↗ SHARE</button><button class="nav-btn outline" onclick="showBoard()">← BACK</button></div></div>'
+  pv.innerHTML='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px"><div><div style="font-size:17px;font-weight:600">Your Portfolio</div><div style="font-size:10px;color:var(--text3);margin-top:2px">'+currentUser.displayName+' · '+currentUser.email+'</div></div><button class="nav-btn outline" onclick="showBoard()">← BACK TO BOARD</button></div>'
     +'<div class="port-grid"><div class="port-card"><div class="pc-label">BALANCE</div><div class="pc-val">$'+Math.round(userProfile.balance)+'</div><div class="pc-sub">of $'+STARTING_BALANCE+' starting</div></div><div class="port-card"><div class="pc-label">STAKED</div><div class="pc-val">$'+Math.round(staked)+'</div><div class="pc-sub">'+pos.length+' active bets</div></div><div class="port-card '+(won-lost>=0?'green':'red')+'"><div class="pc-label">NET P&L</div><div class="pc-val">'+(won-lost>=0?'+':'')+'$'+Math.round(won-lost)+'</div><div class="pc-sub">'+res.length+' resolved</div></div><div class="port-card"><div class="pc-label">WIN RATE</div><div class="pc-val">'+wr+'%</div><div class="pc-sub">'+res.filter(r=>r.won).length+'W / '+res.filter(r=>!r.won).length+'L</div></div></div>'
     +'<div class="port-section"><div class="port-section-title">ACTIVE POSITIONS ('+pos.length+')</div>'
     +(pos.length?pos.map(([id,p])=>{const f=flights.find(x=>x.id===id),cur=f?Math.round((f.delayProb||.2)*100):Math.round((p.prob||.2)*100),mv=p.side==='YES'?(p.amount/(p.prob||.2))*((f?.delayProb||p.prob||.2)):(p.amount/(1-(p.prob||.2)))*((1-(f?.delayProb||p.prob||.2))),pnl=mv-p.amount;return '<div class="position-card"><div class="pos-left"><div class="pos-fid">'+id+'</div><div><div class="pos-dest">'+p.dest+' · '+(p.airline||'')+'</div><div style="font-size:9px;color:var(--text3);margin-top:2px">'+(p.time||'')+' · Current: '+cur+'%</div></div></div><div class="pos-right"><div class="pos-val-col"><div class="pos-val-label">SIDE</div><span class="pos-badge '+(p.side==='YES'?'pos-yes-badge':'pos-no-badge')+'">'+p.side+'</span></div><div class="pos-val-col"><div class="pos-val-label">STAKED</div><div class="pos-val-num">$'+p.amount.toFixed(0)+'</div></div><div class="pos-val-col"><div class="pos-val-label">MKT VALUE</div><div class="pos-val-num" style="color:'+(pnl>=0?'var(--green)':'var(--red)')+'">$'+mv.toFixed(0)+'</div></div><div class="pos-val-col"><div class="pos-val-label">P&L</div><div class="pos-val-num" style="color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+pnl.toFixed(0)+'</div></div><button class="q-btn q-no" style="font-size:9px;padding:3px 8px" onclick="resolvePos(\''+id+'\','+(Math.random()>.5)+')">RESOLVE</button></div></div>';}).join(''):'<div style="color:var(--text3);font-size:11px;padding:16px 0">No active positions. Go place some bets!</div>')
     +'</div>'
     +(res.length?'<div class="port-section"><div class="port-section-title">RESOLVED MARKETS ('+res.length+')</div>'+res.slice().reverse().slice(0,15).map(r=>'<div class="resolved-card"><div class="pos-left"><div class="pos-fid" style="font-size:13px">'+r.id+'</div><div><div class="pos-dest">'+(r.destName||r.dest||'')+'</div><div style="font-size:9px;color:var(--text3)">'+r.side+' · Staked $'+r.staked+(r.date?' · '+r.date:'')+'</div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="'+(r.won?'res-win':'res-loss')+'">'+(r.won?'WON':'LOST')+'</span><div style="font-family:var(--font-board);font-size:13px;color:'+(r.won?'var(--green)':'var(--red)')+'">'+(r.won?'+$'+(r.payout-r.staked).toFixed(0):'-$'+r.staked)+'</div></div></div>').join('')+'</div>':'')
-    +'<div class="port-section"><div class="port-section-title" style="color:var(--yes)">✈ OPEN AIR CANADA POSITIONS</div>'
-    +(Object.entries(userProfile.positions||{}).filter(([,p])=>p.airline&&p.airline.includes('Air Canada')).length===0
-      ?'<div style="color:var(--text3);font-size:11px;padding:12px 0">No open Air Canada bets right now.</div>'
-      :Object.entries(userProfile.positions||{}).filter(([,p])=>p.airline&&p.airline.includes('Air Canada')).map(([id,p])=>{const f=flights.find(x=>x.id===id);const cur=f?Math.round((f.delayProb||.2)*100):Math.round((p.prob||.2)*100);return \'<div class="position-card" style="border-left:3px solid var(--yes)"><div class="pos-left"><div class="pos-fid">\'+id+\'</div><div><div class="pos-dest">\'+p.dest+\' · Air Canada</div><div style="font-size:9px;color:var(--text3);margin-top:2px">departs \'+( p.time||"—")+\'</div><div style="margin-top:5px;height:3px;width:120px;background:var(--bg4);border-radius:2px;overflow:hidden"><div style="height:100%;width:\'+cur+\'%;background:\'+( cur>55?"var(--red)":"var(--green)")+\';border-radius:2px"></div></div></div></div><div class="pos-right"><div class="pos-val-col"><div class="pos-val-label">SIDE</div><span class="pos-badge \'+( p.side==="YES"?"pos-yes-badge":"pos-no-badge")+\'">\'+p.side+\'</span></div><div class="pos-val-col"><div class="pos-val-label">STAKED</div><div class="pos-val-num">$\'+p.amount.toFixed(0)+\'</div></div><div class="pos-val-col"><div class="pos-val-label">DELAY NOW</div><div class="pos-val-num" style="color:\'+( cur>55?"var(--red)":"var(--green)")+\'">\'+cur+\'%</div></div></div></div>\';}).join(""))
-    +'</div>'
     +'<div class="port-section"><div class="port-section-title">LEADERBOARD — ALL PLAYERS</div><div style="background:var(--bg2);border:1px solid var(--border);border-radius:7px;overflow:hidden">'
     +(lb.length===0?'<div style="padding:20px;text-align:center;font-size:11px;color:var(--text3)">No other players yet. Share this with friends!</div>'
     :lb.map((l,i)=>{const isMe=l.uid===currentUser?.uid,pnl=Math.round(l.balance-500);return '<div class="leaderboard-row '+(isMe?'lb-row-me':'')+'"><span class="lb-rank">'+(i+1)+'</span><span class="lb-name">'+(isMe?'<strong>'+l.displayName+' (you)</strong>':l.displayName)+'</span><span class="lb-acc">'+(l.totalBets||0)+' bets · '+(l.wins||0)+' wins</span><span style="font-size:10px;font-family:var(--font-mono);margin-right:12px;color:'+(pnl>=0?'var(--green)':'var(--red)')+'">'+(pnl>=0?'+':'')+'$'+pnl+'</span><span class="lb-val">$'+Math.round(l.balance).toLocaleString()+'</span></div>';}).join(''))
@@ -1017,7 +1007,7 @@ function showIntro(){
   o.innerHTML=`<style>
 @keyframes introIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
 #intro-card{width:440px;max-width:94vw;background:#fff;border:1px solid #e2e5ea;border-radius:14px;padding:36px;box-shadow:0 8px 48px rgba(0,0,0,.08);animation:introIn .5s cubic-bezier(.22,.9,.36,1) both}
-.intro-logo{font-family:'Azeret Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}
+.intro-logo{font-family:'Share Tech Mono',monospace;font-size:22px;color:#00a87e;letter-spacing:4px;margin-bottom:6px}
 .intro-tagline{font-size:11px;color:#9aa0ab;letter-spacing:2px;margin-bottom:22px;text-transform:uppercase}
 .intro-stat-box{background:#fdf7f6;border:1px solid rgba(224,70,42,.15);border-radius:8px;padding:14px 16px;margin-bottom:18px;display:flex;align-items:flex-start;gap:14px}
 .intro-stat-num{font-family:'Share Tech Mono',monospace;font-size:30px;color:#e0462a;line-height:1;flex-shrink:0;padding-top:2px}
@@ -1083,47 +1073,6 @@ function showYYZ(){
 }
 window.closeYYZ=function(dismiss){if(dismiss)localStorage.setItem('fb_yyzdismissed','1');const o=document.getElementById('yyp-overlay');if(o){o.style.opacity='0';o.style.transition='opacity .2s';setTimeout(()=>o.remove(),220);}};
 
-
-
-// Handle ?user= shared portfolio
-const _up = new URLSearchParams(window.location.search);
-const _su = _up.get('user');
-if (_su) {
-  setTimeout(async () => {
-    try {
-      const { getDocs, collection, query, where } = await import('https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js');
-      const q = query(collection(db,'users'), where('displayName','==',decodeURIComponent(_su)));
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const sp = snap.docs[0].data();
-        const pv = document.createElement('div');
-        pv.style.cssText='position:fixed;inset:0;background:var(--bg);z-index:400;overflow-y:auto;padding:24px';
-        const res = sp.resolved||[];
-        const pnl = Math.round(sp.balance - 500);
-        const wr = res.length ? Math.round(res.filter(r=>r.won).length/res.length*100) : 0;
-        pv.innerHTML='<div style="max-width:800px;margin:0 auto">'
-          +'<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:24px">'
-          +'<div><div style="font-family:var(--font-board);font-size:10px;color:var(--text3);letter-spacing:2px;margin-bottom:4px">FLIGHTBET · SHARED PORTFOLIO</div>'
-          +'<div style="font-size:22px;font-weight:600">'+sp.displayName+'</div></div>'
-          +'<a href="'+window.location.pathname+'" style="background:var(--gold);color:#fff;padding:8px 16px;border-radius:5px;text-decoration:none;font-size:11px;font-weight:600;letter-spacing:1px">PLAY →</a>'
-          +'</div>'
-          +'<div class="port-grid" style="margin-bottom:20px">'
-          +'<div class="port-card"><div class="pc-label">BALANCE</div><div class="pc-val">$'+Math.round(sp.balance)+'</div><div class="pc-sub">started with $500</div></div>'
-          +'<div class="port-card '+(pnl>=0?'green':'red')+'"><div class="pc-label">NET P&L</div><div class="pc-val">'+(pnl>=0?'+':'')+'$'+Math.abs(pnl)+'</div><div class="pc-sub">'+res.length+' resolved</div></div>'
-          +'<div class="port-card"><div class="pc-label">WIN RATE</div><div class="pc-val">'+wr+'%</div><div class="pc-sub">'+res.filter(r=>r.won).length+'W / '+res.filter(r=>!r.won).length+'L</div></div>'
-          +'<div class="port-card"><div class="pc-label">TOTAL BETS</div><div class="pc-val">'+(sp.totalBets||0)+'</div><div class="pc-sub">'+(sp.wins||0)+' wins</div></div>'
-          +'</div>'
-          +(res.length?'<div class="port-section"><div class="port-section-title">RECENT RESULTS</div>'
-            +res.slice().reverse().slice(0,20).map(r=>'<div class="resolved-card"><div class="pos-left"><div class="pos-fid" style="font-size:13px">'+r.id+'</div><div><div class="pos-dest">'+(r.destName||r.dest||'')+'</div><div style="font-size:9px;color:var(--text3)">'+r.side+' · $'+r.staked+(r.date?' · '+r.date:'')+(r.delayMinutes!=null?' · '+r.delayMinutes+'min':'')+'</div></div></div><div style="display:flex;align-items:center;gap:14px"><span class="'+(r.won?'res-win':'res-loss')+'">'+(r.won?'WON':'LOST')+'</span><div style="font-family:var(--font-board);font-size:13px;color:'+(r.won?'var(--green)':'var(--red)')+'">'+(r.won?'+$'+(r.payout-r.staked).toFixed(0):'-$'+r.staked)+'</div></div></div>').join('')
-            +'</div>':'<div style="padding:40px;text-align:center;color:var(--text3)">No resolved bets yet.</div>')
-          +'</div>';
-        document.body.appendChild(pv);
-      } else {
-        setTimeout(()=>window.showToast&&showToast('User not found','err'),1500);
-      }
-    } catch(e) { console.error(e); }
-  }, 1400);
-}
 
 // Load SFO immediately, then detect actual airport in background
 setAirport('SFO');
