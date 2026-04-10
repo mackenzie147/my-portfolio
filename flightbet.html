@@ -222,11 +222,11 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
     <div class="sidebar-section">
       <div class="sidebar-label" style="display:flex;align-items:center;justify-content:space-between">
         <span>Quick Bet</span>
-        <span style="font-size:8px;color:var(--text3);letter-spacing:.5px">bet $10 on all</span>
+        <span style="font-size:8px;color:var(--text3);letter-spacing:.5px">$10 per flight</span>
       </div>
       <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:4px">
-        <button class="filter-chip" style="background:rgba(224,70,42,.06);border:1px solid rgba(224,70,42,.15);color:var(--red);font-size:10px;font-weight:600;text-align:left;cursor:pointer" onclick="betAllAirline('Air Canada','YES',10)">✈ YES all Air Canada <span style="color:var(--text3);font-weight:400">(delayed)</span></button>
-        <button class="filter-chip" style="background:rgba(0,168,126,.06);border:1px solid rgba(0,168,126,.15);color:var(--green);font-size:10px;font-weight:600;text-align:left;cursor:pointer" onclick="betAllAirline('Air Canada','NO',10)">✈ NO all Air Canada <span style="color:var(--text3);font-weight:400">(on time)</span></button>
+        <button class="filter-chip" style="background:rgba(224,70,42,.06);border:1px solid rgba(224,70,42,.15);color:var(--red);font-size:10px;font-weight:600;text-align:left;cursor:pointer" onclick="betAllAirline('Air Canada','YES',10)">✈ BET DELAYED — all Air Canada</button>
+        <button class="filter-chip" style="background:rgba(0,168,126,.06);border:1px solid rgba(0,168,126,.15);color:var(--green);font-size:10px;font-weight:600;text-align:left;cursor:pointer" onclick="betAllAirline('Air Canada','NO',10)">✈ BET ON TIME — all Air Canada</button>
       </div>
       <div id="api-usage-mini" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);padding:4px 0;border-top:1px solid var(--border);margin-top:4px"></div>
     </div>
@@ -416,16 +416,20 @@ async function fetchFlights(iata) {
       const st = (f.status || '').toLowerCase();
       // Filter out flights that have already departed/landed
       if (st === 'departed' || st === 'landed' || st === 'arrived') return false;
-      // Filter out flights whose scheduled time has already passed by more than 30 mins
+      // Filter out flights whose scheduled time has already passed
       if (f.time) {
         const [h, m] = f.time.split(':').map(Number);
-        const now = new Date();
-        const dep = new Date(now);
+        const nowD = new Date();
+        const dep = new Date(nowD);
         dep.setHours(h, m, 0, 0);
-        if (dep < now) dep.setDate(dep.getDate() + 1);
-        const diffMins = (dep - now) / 60000;
-        // If it's more than 30 mins in the past and not "active", drop it
-        if (diffMins < -30 && st !== 'active' && st !== 'en-route' && st !== 'airborne') return false;
+        // If departure time looks like it's in the past (more than 5 min ago), check if active
+        if (dep < nowD) {
+          const diffMins = (nowD - dep) / 60000;
+          // Allow active/en-route flights (in air) to stay for resolution
+          if (st === 'active' || st === 'en-route' || st === 'airborne') return true;
+          // Drop anything more than 5 minutes past its scheduled departure
+          if (diffMins > 5) return false;
+        }
       }
       return true;
     });
@@ -935,6 +939,16 @@ function showYYZ(){
 window.closeYYZ=function(dismiss){if(dismiss)localStorage.setItem('fb_yyzdismissed','1');const o=document.getElementById('yyp-overlay');if(o){o.style.opacity='0';o.style.transition='opacity .2s';setTimeout(()=>o.remove(),220);}};
 
 
+// Load SFO immediately, then detect actual airport in background
+setAirport('SFO');
+// Try to detect nearest airport — if different from SFO, switch
+if (navigator.geolocation) {
+  navigator.geolocation.getCurrentPosition(pos => {
+    const {latitude:lat,longitude:lng}=pos.coords; let best='SFO',bd=Infinity;
+    Object.entries(AIRPORTS).forEach(([code,a])=>{ if(a.lat&&a.lng){const d=Math.hypot(lat-a.lat,lng-a.lng);if(d<bd){bd=d;best=code;}} });
+    if (best !== ap) setAirport(best);
+  }, ()=>{});
+}
 setTimeout(showIntro,600);
 </script>
 </body>
