@@ -216,8 +216,20 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 24px
   </div>
 </nav>
 <div class="ticker"><div class="ticker-inner" id="ticker"></div></div>
+<div id="api-limit-warn" style="display:none;background:rgba(224,120,32,.12);border-bottom:1px solid rgba(224,120,32,.3);padding:5px 24px;font-size:10px;color:var(--orange);letter-spacing:1px;font-family:var(--font-mono);align-items:center;gap:8px;flex-shrink:0"></div>
 <div class="main" id="main-area">
   <div class="sidebar">
+    <div class="sidebar-section">
+      <div class="sidebar-label" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Quick Bet</span>
+        <span style="font-size:8px;color:var(--text3);letter-spacing:.5px">bet $10 on all</span>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:4px;margin-bottom:4px">
+        <button class="filter-chip" style="background:rgba(224,70,42,.06);border:1px solid rgba(224,70,42,.15);color:var(--red);font-size:10px;font-weight:600;text-align:left;cursor:pointer" onclick="betAllAirline('Air Canada','YES',10)">✈ YES all Air Canada <span style="color:var(--text3);font-weight:400">(delayed)</span></button>
+        <button class="filter-chip" style="background:rgba(0,168,126,.06);border:1px solid rgba(0,168,126,.15);color:var(--green);font-size:10px;font-weight:600;text-align:left;cursor:pointer" onclick="betAllAirline('Air Canada','NO',10)">✈ NO all Air Canada <span style="color:var(--text3);font-weight:400">(on time)</span></button>
+      </div>
+      <div id="api-usage-mini" style="font-size:9px;color:var(--text3);font-family:var(--font-mono);padding:4px 0;border-top:1px solid var(--border);margin-top:4px"></div>
+    </div>
     <div class="sidebar-section">
       <div class="sidebar-label">Filter</div>
       <div class="filter-chip active" data-filter="all" onclick="setFilter('all')">All Flights <span class="count" id="fc-all">0</span></div>
@@ -308,6 +320,30 @@ function getAirportBaseRate(iata) { return AIRPORTS[iata]?.baseRate || 0.22; }
 let ap='SFO', flights=[], sel=null, filter='all', sort='time', betSide='YES';
 let currentUser=null, userProfile=null, view='board';
 const bCache={}, BTTL=3*60*1000;
+// API call tracking (6000 call limit)
+const API_LIMIT = 6000;
+function trackApiCall() {
+  const key = 'fb_api_calls';
+  const monthKey = 'fb_api_month';
+  const thisMonth = new Date().toISOString().slice(0,7);
+  if (localStorage.getItem(monthKey) !== thisMonth) {
+    localStorage.setItem(monthKey, thisMonth);
+    localStorage.setItem(key, '0');
+  }
+  const count = parseInt(localStorage.getItem(key)||'0') + 1;
+  localStorage.setItem(key, count);
+  if (count >= API_LIMIT * 0.9) {
+    const el = document.getElementById('api-limit-warn');
+    if (el) { el.style.display='flex'; el.textContent = '⚠ ' + count + '/' + API_LIMIT + ' API calls used this month'; }
+  }
+  return count;
+}
+function getApiCallCount() {
+  const monthKey = 'fb_api_month';
+  const thisMonth = new Date().toISOString().slice(0,7);
+  if (localStorage.getItem(monthKey) !== thisMonth) return 0;
+  return parseInt(localStorage.getItem('fb_api_calls')||'0');
+}
 
 async function loadUserProfile(uid) {
   const ref = doc(db, 'users', uid);
@@ -370,20 +406,37 @@ async function fetchFlights(iata) {
   if (bCache[iata] && bCache[iata].exp > now) return bCache[iata].data;
   showLoading(true);
   try {
-    const r = await fetch('/api/flights?airport=' + iata);
+    trackApiCall(); const r = await fetch('/api/flights?airport=' + iata);
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
-    // Show all flights — scheduled, on time, delayed, boarding
-    // Only hide departed/cancelled UNLESS we have a position on them (need to resolve)
     const posIds = Object.keys(userProfile?.positions || {});
     d.flights = (d.flights || []).filter(f => {
+      // Always keep flights we have bets on (need to resolve)
       if (posIds.includes(f.id)) return true;
       const st = (f.status || '').toLowerCase();
-      // Keep active flights; hide ones that have fully departed (no position)
-      return st !== 'departed';
+      // Filter out flights that have already departed/landed
+      if (st === 'departed' || st === 'landed' || st === 'arrived') return false;
+      // Filter out flights whose scheduled time has already passed by more than 30 mins
+      if (f.time) {
+        const [h, m] = f.time.split(':').map(Number);
+        const now = new Date();
+        const dep = new Date(now);
+        dep.setHours(h, m, 0, 0);
+        if (dep < now) dep.setDate(dep.getDate() + 1);
+        const diffMins = (dep - now) / 60000;
+        // If it's more than 30 mins in the past and not "active", drop it
+        if (diffMins < -30 && st !== 'active' && st !== 'en-route' && st !== 'airborne') return false;
+      }
+      return true;
     });
-    // Sort by scheduled departure time
-    d.flights.sort((a, b) => (a.time || '').localeCompare(b.time || ''));
+    // Sort: bets first, then by departure time
+    d.flights.sort((a, b) => {
+      const aPos = posIds.includes(a.id) ? 0 : 1;
+      const bPos = posIds.includes(b.id) ? 0 : 1;
+      if (aPos !== bPos) return aPos - bPos;
+      return (a.time || '').localeCompare(b.time || '');
+    });
+    console.log('[FlightBet] showing', d.flights.length, 'upcoming flights for', iata);
     bCache[iata] = {data:d, exp:now+BTTL};
     showBadge(d.mock||d.fallback, d.fetchedAt);
     return d;
@@ -423,7 +476,21 @@ function setAirport(code) {
   document.getElementById('flight-list').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3);font-size:11px"><span class="spinner"></span>FETCHING LIVE FLIGHTS...</div>';
   fetchFlights(code).then(d=>{
     flights=d.flights||[];
-    flights.forEach(f=>{if(f.delayProb==null)f.delayProb=getAirportBaseRate(code);if(f.vol==null)f.vol=5000;});
+    const AIRLINE_RATES = {
+      'Air Canada': 0.58, 'WestJet': 0.42, 'Spirit': 0.45, 'Frontier': 0.43,
+      'United': 0.32, 'American': 0.31, 'Delta': 0.22, 'Southwest': 0.28,
+      'JetBlue': 0.35, 'Alaska': 0.20, 'Hawaiian': 0.18, 'Cathay Pacific': 0.15,
+      'Singapore': 0.12, 'Emirates': 0.14, 'Lufthansa': 0.28, 'British Airways': 0.30,
+    };
+    flights.forEach(f=>{
+      if(f.delayProb==null){
+        const airlineRate = AIRLINE_RATES[f.airline] || null;
+        const airportRate = getAirportBaseRate(code);
+        // Blend airport base rate with airline rate if known
+        f.delayProb = airlineRate ? (airportRate * 0.5 + airlineRate * 0.5) : airportRate;
+      }
+      if(f.vol==null)f.vol=5000;
+    });
     showBadge(d.mock||d.fallback,d.fetchedAt);
     autoResolvePositions(); renderAll(); updateCounts(); updateStats(); renderWatchlist();
   });
@@ -559,9 +626,12 @@ async function autoResolvePositions() {
 }
 
 function renderAll() {
+  // Update API usage display
+  const usageMini = document.getElementById('api-usage-mini');
+  if(usageMini){ const n=getApiCallCount(); usageMini.textContent=n+'/'+API_LIMIT+' API calls this month'+(n>=API_LIMIT*0.9?' ⚠':''); usageMini.style.color=n>=API_LIMIT*0.9?'var(--orange)':'var(--text3)'; }
   if(view==='portfolio'){renderPortfolio();return;}
   const visible=getVisible();
-  if(!visible.length){ document.getElementById('flight-list').innerHTML='<div style="padding:60px 40px;text-align:center;color:var(--text3);font-size:11px;line-height:2"><div style="font-size:28px;margin-bottom:12px">✈</div><div style="letter-spacing:1px">NO FLIGHTS LOADED</div><div style="font-size:10px;margin-top:6px;color:var(--text3)">Check that your /api/flights endpoint is returning data for ' + ap + '</div></div>'; return; }
+  if(!visible.length){ document.getElementById('flight-list').innerHTML='<div style="padding:60px 40px;text-align:center;color:var(--text3);font-size:11px;line-height:2"><div style="font-size:28px;margin-bottom:12px">✈</div><div style="letter-spacing:1px">NO FLIGHTS RETURNED</div><div style="font-size:10px;margin-top:8px;color:var(--text3);max-width:320px;margin-left:auto;margin-right:auto;line-height:1.8">Your <code style="font-family:var(--font-mono);background:var(--bg4);padding:1px 4px;border-radius:3px">/api/flights?airport=' + ap + '</code> returned 0 flights.<br>Check that it returns <strong style="color:var(--text2)">upcoming/scheduled</strong> departures, not just historical data.</div></div>'; return; }
   const positions=userProfile?.positions||{};
   document.getElementById('flight-list').innerHTML=visible.map(f=>{
     const p=Math.round((f.delayProb||.2)*100),np=100-p,pos=positions[f.id];
@@ -638,6 +708,23 @@ window.placeBet=async function(id){
 };
 
 window.showPortfolio=async function(){if(!currentUser){openAuthModal();return;}view='portfolio';document.getElementById('board-content').style.display='none';renderPortfolio();};
+window.betAllAirline=async function(airline, side, amount){
+  if(!currentUser){openAuthModal();return;}
+  const targets = flights.filter(f => f.airline && f.airline.includes(airline) && f.status !== 'Departed' && f.status !== 'Cancelled');
+  if(!targets.length){showToast('No '+airline+' flights found','err');return;}
+  const total = targets.length * amount;
+  if(total > userProfile.balance){showToast('Not enough balance for all '+targets.length+' bets ($'+total+' needed)','err');return;}
+  let placed = 0;
+  for(const f of targets){
+    userProfile.balance = Math.round((userProfile.balance - amount)*100)/100;
+    userProfile.positions[f.id] = {side, amount, prob: f.delayProb||0.3, dest:f.dest, time:f.time, airline:f.airline};
+    userProfile.totalBets = (userProfile.totalBets||0)+1;
+    placed++;
+  }
+  await saveUserProfile();
+  showToast('Placed '+placed+' bets ('+side+') on all '+airline+' flights — $'+total+' total','ok');
+  renderAuthArea(); renderAll(); window.refreshSidebarLB();
+};
 window.showBoard=function(){view='board';const bc=document.getElementById('board-content');if(bc)bc.style.display='flex';const pv=document.getElementById('portfolio-view');if(pv)pv.remove();renderAll();};
 
 async function renderPortfolio() {
@@ -774,7 +861,7 @@ let tt;
 window.showToast=function(msg,type='ok'){const t=document.getElementById('toast');t.innerHTML=msg;t.style.borderColor=type==='ok'?'var(--green)':type==='err'?'var(--red)':'var(--border2)';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3000);};
 
 function showIntro(){
-  if(localStorage.getItem('fb_introdismissed')==='1'){setTimeout(showYYZ,800);return;}
+  if(localStorage.getItem('fb_introdismissed')==='1'){return;}
   const o=document.createElement('div');
   o.id='intro-overlay';
   o.style.cssText='position:fixed;inset:0;background:rgba(247,248,250,.96);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);';
@@ -799,21 +886,21 @@ function showIntro(){
 </style>
 <div id="intro-card">
   <div class="intro-logo">FLIGHTBET</div>
-  <div class="intro-tagline">delay prediction markets</div>
+  <div class="intro-tagline">delay prediction markets · real flights · real stakes</div>
   <div class="intro-stat-box">
-    <div class="intro-stat-num">#227</div>
+    <div class="intro-stat-num">#1</div>
     <div class="intro-stat-text">
-      <strong>Toronto Pearson has been ranked the #1 most delayed airport in the world</strong> — and still ranks in the bottom 6% globally. Over 53% of departures arrived late at peak. It has held the official title of world's worst airport for delays multiple times. Every winter it snows in Toronto. Every year, Pearson is surprised.
+      <strong>Toronto Pearson has been ranked the #1 most delayed airport in the world.</strong> Over 53% of departures arrived late at peak. It has held the title multiple times. Every winter it snows in Toronto. Every year, Pearson is surprised. This app exists because of gate D74.
     </div>
   </div>
   <div class="intro-how-title">How it works</div>
-  <div class="intro-step"><span class="intro-step-num">01</span><span>Pick a <strong>real upcoming flight</strong> from any major airport.</span></div>
-  <div class="intro-step"><span class="intro-step-num">02</span><span>Bet YES (delayed 15+ min) or NO (on time). Odds are set by live flight status and each airport's real delay rate.</span></div>
-  <div class="intro-step"><span class="intro-step-num">03</span><span>After the flight departs, the market <strong>auto-resolves</strong>. 15+ minute delay = YES wins. On time = NO wins. You get a notification either way.</span></div>
-  <div class="intro-step"><span class="intro-step-num">04</span><span>Build your balance, climb the leaderboard, and become the person who is finally right about Pearson.</span></div>
+  <div class="intro-step"><span class="intro-step-num">01</span><span>Pick any <strong>real upcoming departure</strong> from major airports worldwide.</span></div>
+  <div class="intro-step"><span class="intro-step-num">02</span><span>Bet <strong>YES</strong> (delayed 15+ min) or <strong>NO</strong> (on time). Odds are calibrated to the airport's real delay rate + airline history.</span></div>
+  <div class="intro-step"><span class="intro-step-num">03</span><span>Once the flight takes off, the market <strong>auto-resolves</strong> based on actual delay data. Toast notification fires. Balance updates.</span></div>
+  <div class="intro-step"><span class="intro-step-num">04</span><span>Climb the leaderboard. Everyone starts with <strong>$500</strong>. The goal is to become the person who is finally, statistically, right about Pearson.</span></div>
   <button class="intro-cta" onclick="dismissIntro(false)">start predicting →</button>
   <button class="intro-skip" onclick="dismissIntro(true)">don't show this again</button>
-  <div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · inspired by her home airport, toronto pearson (YYZ) ✈︎</div>
+  <div class="intro-by">made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · a canadian who has spent too many hours at gate D74 ✈︎</div>
 </div>`;
   document.body.appendChild(o);
 }
@@ -821,7 +908,7 @@ function showIntro(){
 window.dismissIntro=function(permanent){
   if(permanent)localStorage.setItem('fb_introdismissed','1');
   const o=document.getElementById('intro-overlay');
-  if(o){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>{o.remove();setTimeout(showYYZ,600);},300);}
+  if(o){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>o.remove(),300);}
 };
 
 const SC=['❄','❅','❆','·','✦'];
