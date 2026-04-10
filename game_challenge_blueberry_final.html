@@ -1028,7 +1028,10 @@
       <strong>This is why speed matters.</strong> Blueberry replies to every comment instantly, personalized, designed to convert. Every time, no exceptions.
     </div>
 
-    <button class="retry" onclick="resetChallenge()">Try Again</button>
+    <div style="display: flex; gap: 10px; justify-content: center; margin-top: 12px; flex-wrap: wrap;">
+      <a href="https://blueberrysocial.com" target="_blank" style="background: #0066cc; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 700; text-decoration: none; display: inline-block; letter-spacing: 0.3px;">🫐 Book a Demo</a>
+      <button class="retry" onclick="resetChallenge()" style="background: white; color: #666; border: 1px solid #ddd; margin-top: 0;">Try Again</button>
+    </div>
   </div>
 </div>
 
@@ -1140,11 +1143,11 @@
         <div class="notif-text">"${d.text}"</div>
         <span class="sentiment ${d.platform}">${d.platform}</span>
         ${d.hi ? '<span class="sentiment" style="background: #c8e6c9; color: #1b5e20;">✓ Intent</span>' : ''}
-        <div class="action-row">
-          <button class="action-btn reply" onclick="event.stopPropagation()">💬</button>
-          <button class="action-btn dm" onclick="event.stopPropagation()">📩</button>
-          <button class="action-btn skip" onclick="event.stopPropagation(); skipCard(${d.id})">⏭️</button>
-          <button class="action-btn hide" onclick="event.stopPropagation(); hideCard(${d.id})">👁️</button>
+        <div class="action-row" onclick="event.stopPropagation()">
+          <button class="action-btn reply" onclick="openModal(${d.id})">💬</button>
+          <button class="action-btn dm" onclick="openModal(${d.id})">📩</button>
+          <button class="action-btn skip" onclick="handleQuickAction(${d.id}, 'skip')">⏭️</button>
+          <button class="action-btn hide" onclick="handleQuickAction(${d.id}, 'hide')">👁️</button>
         </div>
       </div>
     `;
@@ -1207,6 +1210,15 @@
     }
 
     document.getElementById('modal').classList.add('show');
+  }
+
+  function handleQuickAction(id, action) {
+    if (!running) return;
+    const d = allData.find(x => x.id === id);
+    if (!d) return;
+    
+    curMod = { id, d };
+    respondAction(action);
   }
 
   function respondAction(action) {
@@ -1361,8 +1373,10 @@
     // Stream a new comment to human feed every 1s
     streamInterval = setInterval(streamNextComment, 1000);
 
-    // AI fires a reply every 1.2s — recycles pool endlessly
-    aiStreamInterval = setInterval(streamAiReply, 1200);
+    // AI fires 3 replies every 400ms — absolutely crushes human throughput
+    aiStreamInterval = setInterval(() => {
+      streamAiReply(); streamAiReply(); streamAiReply();
+    }, 400);
 
     // Missed counter goes up every 15s automatically
     missedInterval = setInterval(() => {
@@ -1379,7 +1393,8 @@
     }, 3000);
 
     // Kick off immediately so the screens aren't blank at start
-    for (let i = 0; i < 4; i++) { streamNextComment(); streamAiReply(); }
+    for (let i = 0; i < 4; i++) streamNextComment();
+    for (let i = 0; i < 12; i++) streamAiReply();
   }
 
   function startTimer() {
