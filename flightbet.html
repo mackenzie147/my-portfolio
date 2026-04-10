@@ -507,11 +507,9 @@ async function fetchFlights(iata) {
       // Filter out flights that have already departed/landed
       if (st === 'departed' || st === 'landed' || st === 'arrived') return false;
       // Filter out flights whose scheduled time has already passed
-      if (f.time) {
-        const [h, m] = f.time.split(':').map(Number);
+      if (f.scheduledAt || f.time) {
         const nowD = new Date();
-        const dep = new Date(nowD);
-        dep.setHours(h, m, 0, 0);
+        const dep = f.scheduledAt ? new Date(f.scheduledAt) : (() => { const [h,m]=f.time.split(':').map(Number),d=new Date();d.setHours(h,m,0,0);return d; })();
         // If departure time looks like it's in the past (more than 5 min ago), check if active
         if (dep < nowD) {
           const diffMins = (nowD - dep) / 60000;
