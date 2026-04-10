@@ -1,0 +1,1472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blueberry Challenge</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      background: #f5f5f5;
+      color: #333;
+      padding: 12px;
+      min-height: 100vh;
+    }
+
+    .setup-screen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: #fff;
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .setup-screen.hidden {
+      display: none;
+    }
+
+    .logo-section {
+      display: none;
+    }
+
+    .setup-title {
+      font-size: 20px;
+      font-weight: 700;
+      color: #333;
+      text-align: center;
+    }
+
+    .setup-subtitle {
+      font-size: 13px;
+      color: #666;
+      text-align: center;
+    }
+
+    .setup-form {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      width: 100%;
+      max-width: 280px;
+    }
+
+    .setup-input {
+      padding: 12px;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: 600;
+      text-align: center;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+    }
+
+    .setup-input:focus {
+      outline: none;
+      border-color: #0066cc;
+    }
+
+    .setup-input.vs {
+      color: #999;
+      font-weight: 400;
+    }
+
+    .setup-btn {
+      padding: 12px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .setup-btn:hover {
+      background: #0052a3;
+    }
+
+    .setup-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    .main-wrapper {
+      display: grid;
+      grid-template-columns: 1fr auto 1fr;
+      gap: 16px;
+      max-width: 1400px;
+      margin: 0 auto;
+      align-items: start;
+    }
+
+    .center-divider {
+      font-size: 28px;
+      display: flex;
+      align-items: center;
+      height: 100%;
+      min-height: 600px;
+      opacity: 0.5;
+    }
+
+    .phone-section {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .timer-box {
+      background: white;
+      padding: 12px;
+      border-radius: 12px;
+      text-align: center;
+      border: 1px solid #e0e0e0;
+    }
+
+    .player-name {
+      font-size: 11px;
+      color: #999;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 6px;
+    }
+
+    .timer-big {
+      font-size: 32px;
+      font-weight: 700;
+      font-family: 'Courier New', monospace;
+      color: #0066cc;
+      margin-bottom: 8px;
+    }
+
+    .timer-big.critical {
+      color: #d32f2f;
+      animation: pulse 0.5s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+      to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+    }
+
+    @keyframes slideOut {
+      from {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+      }
+      to {
+        opacity: 0;
+        transform: translate(-50%, -60%);
+      }
+    }
+
+    .timer-label {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .stats-4col {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr 1fr;
+      gap: 6px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+
+    .stat-mini {
+      background: #f9f9f9;
+      padding: 6px;
+      border-radius: 6px;
+      text-align: center;
+      font-size: 10px;
+      border: 1px solid #eee;
+    }
+
+    .stat-mini-label {
+      color: #999;
+      margin-bottom: 3px;
+      font-size: 8px;
+      text-transform: uppercase;
+    }
+
+    .stat-mini-value {
+      font-size: 16px;
+      font-weight: 700;
+      color: #0066cc;
+    }
+
+    .stat-mini.ai .stat-mini-value {
+      color: #00897b;
+    }
+
+    .start-btn {
+      width: 100%;
+      padding: 8px;
+      background: #0066cc;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      margin-top: 6px;
+      transition: all 0.2s;
+    }
+
+    .start-btn:hover:not(:disabled) {
+      background: #0052a3;
+    }
+
+    .start-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+    }
+
+    /* iPhone Design */
+    .phone-frame {
+      background: #000;
+      border-radius: 40px;
+      border: 8px solid #000;
+      padding: 8px;
+      height: 500px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15), inset 0 0 0 1px rgba(255, 255, 255, 0.1);
+      position: relative;
+    }
+
+    .phone-frame::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 26px;
+      background: #000;
+      border-radius: 0 0 20px 20px;
+      z-index: 10;
+    }
+
+    .phone-notch {
+      height: 8px;
+    }
+
+    .phone-screen {
+      background: white;
+      border-radius: 30px;
+      flex: 1;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .screen-header {
+      background: #f9f9f9;
+      padding: 10px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 12px;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .screen-subheader {
+      font-size: 9px;
+      color: #999;
+      font-weight: 400;
+      margin-top: 2px;
+    }
+
+    .screen-scroll {
+      flex: 1;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .screen-scroll::-webkit-scrollbar {
+      width: 4px;
+    }
+
+    .screen-scroll::-webkit-scrollbar-track {
+      background: #f9f9f9;
+    }
+
+    .screen-scroll::-webkit-scrollbar-thumb {
+      background: #ddd;
+      border-radius: 2px;
+    }
+
+    .notif-card {
+      border-bottom: 1px solid #eee;
+      padding: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      position: relative;
+    }
+
+    .notif-card:hover {
+      background: #f9f9f9;
+    }
+
+    .notif-card.new {
+      background: #e3f2fd;
+    }
+
+    .notif-card.missed {
+      background: #ffebee;
+      border-left: 3px solid #d32f2f;
+    }
+
+    .notif-user {
+      font-weight: 600;
+      font-size: 11px;
+      margin-bottom: 3px;
+      color: #333;
+    }
+
+    .notif-value {
+      display: inline-block;
+      background: #fff9c4;
+      color: #f57f17;
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .notif-value.high {
+      background: #ffe082;
+      color: #f57f17;
+    }
+
+    .notif-type {
+      display: inline-block;
+      font-size: 8px;
+      padding: 2px 6px;
+      border-radius: 3px;
+      margin-left: 4px;
+      font-weight: 500;
+    }
+
+    .notif-type.dm {
+      background: #fce4ec;
+      color: #c2185b;
+    }
+
+    .notif-type.comment {
+      background: #e1f5fe;
+      color: #01579b;
+    }
+
+    .notif-text {
+      font-size: 10px;
+      color: #666;
+      line-height: 1.4;
+      margin-bottom: 4px;
+    }
+
+    .sentiment {
+      font-size: 8px;
+      padding: 2px 5px;
+      border-radius: 3px;
+      display: inline-block;
+      font-weight: 500;
+      margin-right: 4px;
+    }
+
+    .sentiment.twitter {
+      background: #e1f5fe;
+      color: #01579b;
+    }
+
+    .sentiment.instagram {
+      background: #fce4ec;
+      color: #c2185b;
+    }
+
+    .sentiment.tiktok {
+      background: #f3e5f5;
+      color: #4a148c;
+    }
+
+    .action-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 3px;
+      margin-top: 4px;
+    }
+
+    .action-btn {
+      padding: 4px 2px;
+      font-size: 9px;
+      border: 1px solid #ddd;
+      background: white;
+      color: #333;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .action-btn:hover {
+      opacity: 0.8;
+    }
+
+    .action-btn.reply {
+      background: #0066cc;
+      color: white;
+      border-color: #0066cc;
+    }
+
+    .action-btn.dm {
+      background: #00897b;
+      color: white;
+      border-color: #00897b;
+    }
+
+    .action-btn.skip {
+      background: #ff9800;
+      color: white;
+      border-color: #ff9800;
+    }
+
+    .action-btn.hide {
+      background: #90a4ae;
+      color: white;
+      border-color: #90a4ae;
+    }
+
+    .center-divider {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ccc;
+      font-size: 28px;
+      flex-shrink: 0;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 2000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal.show {
+      display: flex;
+    }
+
+    .modal-inner {
+      background: white;
+      border-radius: 12px;
+      width: 100%;
+      max-width: 400px;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+      background: #f9f9f9;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+    }
+
+    .modal-header-user {
+      font-weight: 600;
+      color: #333;
+    }
+
+    .modal-header-platform {
+      font-size: 10px;
+      color: #999;
+    }
+
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+      color: #666;
+    }
+
+    .modal-body {
+      padding: 12px;
+    }
+
+    .modal-text {
+      font-size: 12px;
+      color: #555;
+      line-height: 1.5;
+      padding: 10px;
+      background: #f5f5f5;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .modal-value-warning {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      padding: 8px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+      font-size: 11px;
+      color: #856404;
+      font-weight: 600;
+    }
+
+    .modal-buttons {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 6px;
+    }
+
+    .modal-action-btn {
+      padding: 8px;
+      font-size: 11px;
+      border: 1px solid;
+      background: white;
+      color: white;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .modal-action-btn:hover {
+      opacity: 0.8;
+    }
+
+    .modal-action-btn.reply {
+      background: #0066cc;
+      border-color: #0066cc;
+    }
+
+    .modal-action-btn.dm {
+      background: #00897b;
+      border-color: #00897b;
+    }
+
+    .modal-action-btn.skip {
+      background: #ff9800;
+      border-color: #ff9800;
+    }
+
+    .modal-action-btn.hide {
+      background: #90a4ae;
+      border-color: #90a4ae;
+    }
+
+    .feedback-popup {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 20px;
+      font-weight: 700;
+      animation: slideUp 0.4s ease-out forwards;
+      pointer-events: none;
+      z-index: 1000;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+    }
+
+    @keyframes slideUp {
+      from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(40px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    @keyframes slideDown {
+      0% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(40px);
+      }
+    }
+
+    .feedback-popup.fadeout {
+      animation: slideDown 0.4s ease-out forwards;
+    }
+
+    .feedback-good {
+      background: #e8f5e9;
+      color: #1b5e20;
+      border: 2px solid #4caf50;
+    }
+
+    .feedback-bad {
+      background: #ffebee;
+      color: #b71c1c;
+      border: 2px solid #f44336;
+    }
+
+    .feedback-missed {
+      background: #ffe0b2;
+      color: #e65100;
+      border: 2px solid #ff9800;
+    }
+
+    .results {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 3000;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .results.show {
+      display: flex;
+    }
+
+    .results-card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      max-width: 500px;
+      width: 100%;
+      text-align: center;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    }
+
+    .results-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .results-compare {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .result-box {
+      background: #f9f9f9;
+      padding: 16px;
+      border-radius: 12px;
+      border: 2px solid #eee;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .result-box.winner {
+      background: #e8f5e9;
+      border-color: #4caf50;
+      box-shadow: 0 0 0 1px #4caf50 inset;
+    }
+
+    .result-box.winner::before {
+      content: '🏆';
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      font-size: 32px;
+    }
+
+    .result-name {
+      color: #999;
+      margin-bottom: 8px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+    }
+
+    .result-stat {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .result-stat.human {
+      color: #0066cc;
+    }
+
+    .result-stat.ai {
+      color: #00897b;
+    }
+
+    .result-label {
+      font-size: 10px;
+      color: #666;
+      margin-bottom: 10px;
+    }
+
+    .result-revenue {
+      font-size: 20px;
+      font-weight: 700;
+      color: #2e7d32;
+      margin-top: 8px;
+    }
+
+    .gap-section {
+      background: linear-gradient(135deg, #fff3cd 0%, #ffe082 100%);
+      border: 2px solid #ffc107;
+      padding: 16px;
+      border-radius: 12px;
+      margin: 16px 0;
+    }
+
+    .gap-title {
+      font-size: 12px;
+      color: #856404;
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+
+    .gap-value {
+      font-size: 32px;
+      font-weight: 700;
+      color: #f57f17;
+    }
+
+    .missed-items {
+      background: #ffebee;
+      border: 1px solid #ef5350;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      text-align: left;
+    }
+
+    .missed-title {
+      font-size: 11px;
+      color: #d32f2f;
+      font-weight: 600;
+      margin-bottom: 6px;
+      text-transform: uppercase;
+    }
+
+    .missed-item {
+      font-size: 10px;
+      color: #c62828;
+      padding: 4px 0;
+      border-bottom: 1px solid #ffcdd2;
+    }
+
+    .missed-item:last-child {
+      border-bottom: none;
+    }
+
+    .cta {
+      background: #e3f2fd;
+      padding: 12px;
+      border-radius: 8px;
+      margin: 12px 0;
+      font-size: 11px;
+      border: 1px solid #90caf9;
+    }
+
+    .retry {
+      background: #0066cc;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 12px;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .retry:hover {
+      background: #0052a3;
+    }
+
+    @media (max-width: 768px) {
+      .main-wrapper {
+        grid-template-columns: 1fr;
+        gap: 12px;
+      }
+
+      .phone-section {
+        width: 100%;
+      }
+
+      .center-divider {
+        display: none;
+      }
+
+      body {
+        padding: 8px;
+      }
+
+      .timer-box {
+        padding: 10px;
+      }
+
+      .phone-frame {
+        height: 450px;
+      }
+
+      .results-card {
+        padding: 16px;
+      }
+
+      .results-title {
+        font-size: 20px;
+      }
+
+      .gap-value {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Setup Screen -->
+<div class="setup-screen" id="setupScreen">
+  <div class="logo-section"></div>
+  <div class="setup-title">🫐 Blueberry Challenge</div>
+  <div class="setup-subtitle">You vs Blueberry · 2 minutes · Real comments</div>
+  <div class="setup-form">
+    <input type="text" id="playerInitials" class="setup-input" placeholder="YOUR NAME" maxlength="10">
+    <div class="setup-input vs">VS</div>
+    <input type="text" class="setup-input" value="BLUEBERRY" disabled>
+    <button class="setup-btn" id="setupBtn" onclick="startSetup()">Start Challenge</button>
+  </div>
+</div>
+
+<!-- Main Game -->
+<div class="main-wrapper" id="mainWrapper" style="display: none;">
+
+  <!-- LEFT PHONE - BLUEBERRY -->
+  <div class="phone-section">
+    <div class="timer-box">
+      <div class="player-name">BLUEBERRY</div>
+      <div style="font-size: 24px; margin-bottom: 8px; opacity: 0.6;">⚙️</div>
+      <div class="timer-label">Auto-replies</div>
+      <div class="stats-4col">
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Engaged</div>
+          <div class="stat-mini-value" id="aiEng">0</div>
+        </div>
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Revenue</div>
+          <div class="stat-mini-value">$<span id="aiRev">0</span></div>
+        </div>
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Converted</div>
+          <div class="stat-mini-value" id="aiConv">0</div>
+        </div>
+        <div class="stat-mini ai">
+          <div class="stat-mini-label">Rate</div>
+          <div class="stat-mini-value" id="aiRate">0%</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen-header">
+          Auto-Replies
+          <div class="screen-subheader">Blueberry AI responses</div>
+        </div>
+        <div class="screen-scroll" id="aiFeed"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER -->
+  <div class="center-divider">⚡</div>
+
+  <!-- RIGHT PHONE - YOU -->
+  <div class="phone-section">
+    <div class="timer-box">
+      <div class="player-name" id="playerLabel">YOU</div>
+      <div class="timer-big" id="timer">2:00</div>
+      <div class="timer-label">Performance</div>
+      <div class="stats-4col">
+        <div class="stat-mini">
+          <div class="stat-mini-label">Engaged</div>
+          <div class="stat-mini-value" id="humanEng">0</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-label">Revenue</div>
+          <div class="stat-mini-value">$<span id="humanRev">0</span></div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-label">Missed</div>
+          <div class="stat-mini-value" style="color: #d32f2f;" id="humanMissed">0</div>
+        </div>
+        <div class="stat-mini">
+          <div class="stat-mini-label">Rate</div>
+          <div class="stat-mini-value" id="humanRate">0%</div>
+        </div>
+      </div>
+      <button class="start-btn" id="startBtn" onclick="startChallenge()">Start Challenge</button>
+    </div>
+
+    <div class="phone-frame">
+      <div class="phone-notch"></div>
+      <div class="phone-screen">
+        <div class="screen-header">
+          Notifications
+          <div class="screen-subheader">Click to reply</div>
+        </div>
+        <div class="screen-scroll" id="humanFeed"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal -->
+<div class="modal" id="modal">
+  <div class="modal-inner">
+    <div class="modal-header">
+      <div>
+        <div class="modal-header-user" id="modUser">User</div>
+        <div class="modal-header-platform" id="modPlatform">DM</div>
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="modal-text" id="modText">Comment text</div>
+      <div class="modal-value-warning" id="modValue" style="display: none;"></div>
+      <div class="modal-buttons">
+        <button class="modal-action-btn reply" onclick="respondAction('reply')">💬 Reply</button>
+        <button class="modal-action-btn dm" onclick="respondAction('dm')">📩 DM</button>
+        <button class="modal-action-btn skip" onclick="respondAction('skip')">⏭️ Skip</button>
+        <button class="modal-action-btn hide" onclick="respondAction('hide')">👁️ Hide</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Results -->
+<div class="results" id="results">
+  <div class="results-card">
+    <div class="results-title">Challenge Complete</div>
+
+    <div class="results-compare">
+      <div class="result-box" id="humanBox">
+        <div class="result-name" id="resFinalHumanName">YOU</div>
+        <div class="result-stat human" id="resFinalHuman">0</div>
+        <div class="result-label">High-intent engaged</div>
+        <div class="result-revenue">$<span id="resFinalHumanRev">0</span></div>
+      </div>
+      <div class="result-box" id="aiBox">
+        <div class="result-name">BLUEBERRY</div>
+        <div class="result-stat ai" id="resFinalAi">0</div>
+        <div class="result-label">High-intent engaged</div>
+        <div class="result-revenue">$<span id="resFinalAiRev">0</span></div>
+      </div>
+    </div>
+
+    <div class="missed-items" id="missedItems" style="display: none;"></div>
+
+    <div class="gap-section">
+      <div class="gap-title">Revenue opportunity missed</div>
+      <div class="gap-value">$<span id="resGap">0</span></div>
+      <div style="font-size: 10px; color: #856404; margin-top: 6px;">That's how much Blueberry captured while you were busy</div>
+    </div>
+
+    <div class="cta">
+      <strong>This is why speed matters.</strong> Blueberry replies to every comment instantly, personalized, designed to convert. Every time, no exceptions.
+    </div>
+
+    <button class="retry" onclick="resetChallenge()">Try Again</button>
+  </div>
+</div>
+
+<script>
+  let playerInitials = 'YOU';
+  let allData = [];
+  let commentIndex = 0;
+  let running = false;
+  let timeL = 120;
+  let humanEngaged = [];   // ids of comments human engaged with
+  let aiEngaged = [];      // all AI engagement entries (can repeat)
+  let missedCount = 0;     // simple counter, not tied to IDs
+  let aiConvCount = 0;     // simple counter for Blueberry "converted"
+  let humanRevenue = 0;
+  let aiRevenue = 0;
+  let curMod = null;
+  let streamInterval, aiStreamInterval, missedInterval, convertedInterval;
+
+  // Pool of high-value comments to recycle for AI feed (never runs out)
+  const highIntentPool = [
+    { user: 'sarah.marks',    text: 'Do you offer bulk pricing for agencies?',      val: 420 },
+    { user: 'emma.shop',      text: 'What payment plans do you have?',              val: 310 },
+    { user: 'lisa.com',       text: 'Does this integrate with Shopify?',            val: 380 },
+    { user: 'agency_lead',    text: 'We need this ASAP. Available for a call?',     val: 600 },
+    { user: 'nadia.agency',   text: 'Implementation timeline?',                     val: 490 },
+    { user: 'john_dev',       text: 'Interested in partnership',                    val: 350 },
+    { user: 'maya.founder',   text: 'Demo available?',                              val: 275 },
+    { user: 'alex_digital',   text: 'Enterprise plans?',                            val: 540 },
+    { user: 'jordan.co',      text: 'We manage 50+ stores — team pricing?',         val: 650 },
+    { user: 'brianna_leads',  text: 'This is exactly what we need. How much?',      val: 480 },
+    { user: 'ceo_mike',       text: 'Can we customize the reply templates?',        val: 390 },
+    { user: 'vc_partner',     text: 'What about API access and support SLAs?',      val: 720 },
+    { user: 'retail_ops',     text: 'We have 200 SKUs — can Blueberry handle it?',  val: 550 },
+    { user: 'dmca.sarah',     text: 'Ready to start immediately. Next steps?',      val: 460 },
+    { user: 'growth_hq',      text: 'How does the onboarding work?',                val: 320 },
+  ];
+
+  const aiResponses = [
+    "Thanks for reaching out! We'd love to connect. Here's a special offer just for you →",
+    "Perfect timing! We have a solution for exactly this. Let's chat →",
+    "This is great — we can help! Book a quick call with our team →",
+    "You're asking the right questions! Here's what we offer →",
+    "We get this a lot — and we have great solutions. DM us! →",
+    "Exactly what we specialize in. Let's connect →",
+    "This is a perfect fit for what we do. Let's talk →",
+    "We'd love to work with you on this. Quick intro call? →",
+    "Great question! Our team replies within minutes — let's set something up →",
+    "Sounds like a perfect match. Sending you our pricing deck now →",
+  ];
+
+  const platforms = ['twitter', 'instagram', 'tiktok'];
+
+  function generateComments() {
+    const names = ['sarah.marks', 'emma.shop', 'lisa.com', 'agency_lead', 'nadia.agency', 'john_dev', 'casual_fan', 'maya.founder', 'alex_digital', 'jordan.co'];
+    const badNames = ['spam_bot', 'trollface', 'angry_customer', 'hater_2024', 'troll_king'];
+
+    const goodTexts = [
+      'Do you offer bulk pricing for agencies?', 'What payment plans do you have?',
+      'Does this integrate with Shopify?', 'We need this ASAP. Available for a call?',
+      'Implementation timeline?', 'Interested in partnership', 'Demo available?',
+      'Enterprise plans?', 'Team pricing?', 'We manage 50+ stores', 'This is exactly what we need',
+      'How much is implementation?', 'Can we customize?', 'What about support?'
+    ];
+
+    const badTexts = ['BUY CRYPTO NOW!!!', 'This is trash', 'Worst product ever', 'overpriced', 'Scam'];
+
+    let comments = [];
+    let id = 1;
+
+    for (let i = 0; i < 40; i++) {
+      comments.push({
+        id: id++,
+        user: names[Math.floor(Math.random() * names.length)],
+        type: Math.random() > 0.3 ? 'dm' : 'comment',
+        text: goodTexts[Math.floor(Math.random() * goodTexts.length)],
+        hi: true,
+        val: Math.round(150 + Math.random() * 500),
+        platform: platforms[Math.floor(Math.random() * platforms.length)]
+      });
+    }
+
+    for (let i = 0; i < 10; i++) {
+      comments.push({
+        id: id++,
+        user: badNames[Math.floor(Math.random() * badNames.length)],
+        type: Math.random() > 0.5 ? 'dm' : 'comment',
+        text: badTexts[Math.floor(Math.random() * badTexts.length)],
+        hi: false,
+        val: 0,
+        platform: platforms[Math.floor(Math.random() * platforms.length)]
+      });
+    }
+
+    return comments.sort(() => Math.random() - 0.5);
+  }
+
+  function renderComment(d) {
+    let valueHtml = '';
+    if (d.hi) {
+      const valueClass = d.val > 350 ? 'high' : '';
+      valueHtml = `<span class="notif-value ${valueClass}">$${d.val}</span>`;
+    }
+
+    return `
+      <div class="notif-card new" id="n${d.id}" onclick="openModal(${d.id})">
+        <div class="notif-user">${d.user}</div>
+        ${valueHtml}
+        <span class="notif-type ${d.type}">${d.type.toUpperCase()}</span>
+        <div class="notif-text">"${d.text}"</div>
+        <span class="sentiment ${d.platform}">${d.platform}</span>
+        ${d.hi ? '<span class="sentiment" style="background: #c8e6c9; color: #1b5e20;">✓ Intent</span>' : ''}
+        <div class="action-row">
+          <button class="action-btn reply" onclick="event.stopPropagation()">💬</button>
+          <button class="action-btn dm" onclick="event.stopPropagation()">📩</button>
+          <button class="action-btn skip" onclick="event.stopPropagation(); skipCard(${d.id})">⏭️</button>
+          <button class="action-btn hide" onclick="event.stopPropagation(); hideCard(${d.id})">👁️</button>
+        </div>
+      </div>
+    `;
+  }
+
+  // Stream next comment to human feed — cycles through allData endlessly
+  function streamNextComment() {
+    if (!running) return;
+    const d = allData[commentIndex % allData.length];
+    commentIndex++;
+    const feed = document.getElementById('humanFeed');
+    feed.innerHTML += renderComment(d);
+    feed.scrollTop = feed.scrollHeight;
+  }
+
+  // AI stream: pick a random entry from the high-intent pool (recycles freely)
+  // Uses a unique DOM key each time so duplicates show fine
+  let aiStreamCounter = 0;
+  function streamAiReply() {
+    if (!running) return;
+
+    const entry = highIntentPool[Math.floor(Math.random() * highIntentPool.length)];
+    const response = aiResponses[Math.floor(Math.random() * aiResponses.length)];
+    const uid = 'ai_' + (aiStreamCounter++);
+
+    // Track engagement + revenue
+    aiEngaged.push(entry.val);
+    aiRevenue += entry.val;
+
+    updateAiMetrics();
+
+    const aiScr = document.getElementById('aiFeed');
+    aiScr.innerHTML += `
+      <div class="notif-card" id="${uid}" style="background: #e8f5e9; border-left: 4px solid #00897b; padding: 10px;">
+        <div class="notif-user" style="color: #00897b; font-weight: 700;">${entry.user}</div>
+        <span class="notif-type comment" style="background: #00897b; color: white; padding: 3px 8px; border-radius: 3px; font-size: 9px;">DM SENT</span>
+        <div class="notif-text" style="font-size: 12px; color: #1b5e20; margin-top: 8px; line-height: 1.4;">"${response}"</div>
+        <div class="notif-text" style="font-size: 11px; color: #2e7d32; font-weight: 700; margin-top: 6px;">+$${entry.val} revenue</div>
+      </div>
+    `;
+    aiScr.scrollTop = aiScr.scrollHeight;
+  }
+
+  function openModal(id) {
+    if (!running) return;
+    const d = allData.find(x => x.id === id);
+    if (!d) return;
+    curMod = { id, d };
+
+    document.getElementById('modUser').textContent = d.user;
+    document.getElementById('modPlatform').textContent = d.type.toUpperCase();
+    document.getElementById('modText').textContent = `"${d.text}"`;
+
+    const modValue = document.getElementById('modValue');
+    if (d.hi && d.val > 350) {
+      modValue.textContent = `⚠️ HIGH VALUE: This comment is worth $${d.val}`;
+      modValue.style.display = 'block';
+    } else {
+      modValue.style.display = 'none';
+    }
+
+    document.getElementById('modal').classList.add('show');
+  }
+
+  function respondAction(action) {
+    if (!curMod || !running) return;
+    const d = curMod.d;
+    const prebuiltDm = [
+      "Hey! Thanks for your interest. Let's chat about how we can help →",
+      "Perfect! You'd be a great fit. Quick call this week? →",
+      "Love your enthusiasm! Let's connect and explore this →",
+      "This is exactly what we do. Let's talk solutions →"
+    ];
+    const prebuiltReply = [
+      "Thanks for the feedback! We love this.",
+      "100%! Glad you're loving it 🎉",
+      "This is exactly what we're building for!",
+      "We appreciate you! ❤️"
+    ];
+
+    if ((action === 'dm' || action === 'reply') && d.hi) {
+      const msgs = action === 'dm' ? prebuiltDm : prebuiltReply;
+      const msg = msgs[Math.floor(Math.random() * msgs.length)];
+      showFeedback(d.val, 'good', d.hi);
+      if (!humanEngaged.includes(curMod.id)) {
+        humanEngaged.push(curMod.id);
+        humanRevenue += Math.round(d.val);
+        updateHumanMetrics();
+      }
+      showMessageSent(action, msg);
+    } else if ((action === 'skip' || action === 'hide') && d.hi) {
+      showFeedback(d.val, 'missed', d.hi);
+      // Don't double-count same card
+      if (!humanEngaged.includes(curMod.id)) {
+        missedCount++;
+        updateHumanMetrics();
+      }
+    } else if (action === 'hide' && !d.hi) {
+      showFeedback(0, 'good', false);
+    } else if (!d.hi) {
+      showFeedback(50, 'missed', false);
+      humanRevenue = Math.max(0, humanRevenue - 50);
+      updateHumanMetrics();
+    }
+
+    closeModal();
+  }
+
+  function showMessageSent(action, message) {
+    const popup = document.createElement('div');
+    popup.style.cssText = `
+      position: fixed; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      background: white; padding: 24px; border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3); z-index: 10000;
+      max-width: 400px; text-align: center;
+    `;
+    popup.innerHTML = `
+      <div style="font-weight:700;color:#0066cc;margin-bottom:12px;font-size:16px;">${action === 'dm' ? '📩 DM Sent' : '💬 Reply Sent'}</div>
+      <div style="color:#666;font-size:14px;line-height:1.6;margin-bottom:16px;">"${message}"</div>
+      <div style="font-size:12px;color:#999;">✓ Message delivered</div>
+    `;
+    document.body.appendChild(popup);
+    setTimeout(() => {
+      setTimeout(() => popup.remove(), 300);
+    }, 2000);
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    curMod = null;
+  }
+
+  function showFeedback(amount, type, isHighIntent) {
+    const popup = document.createElement('div');
+    popup.className = `feedback-popup feedback-${type}`;
+    const symbol = type === 'good' ? '+' : '✗';
+    popup.innerHTML = `<span>${symbol}$${amount}</span><span>${isHighIntent ? '📍' : '❌'}</span>`;
+    document.body.appendChild(popup);
+    setTimeout(() => {
+      popup.classList.add('fadeout');
+      setTimeout(() => popup.remove(), 400);
+    }, 2000);
+  }
+
+  function skipCard(id) {
+    if (!running) return;
+    const card = document.getElementById(`n${id}`);
+    if (card) { card.classList.add('missed'); card.style.opacity = '0.5'; }
+  }
+
+  function hideCard(id) {
+    if (!running) return;
+    const card = document.getElementById(`n${id}`);
+    if (card) card.style.display = 'none';
+  }
+
+  function updateHumanMetrics() {
+    const h = humanEngaged.filter(id => allData.find(x => x.id === id)?.hi).length;
+    const total = allData.filter(x => x.hi).length;
+    const rate = total > 0 ? Math.round((h / total) * 100) : 0;
+    document.getElementById('humanEng').textContent = h;
+    document.getElementById('humanRev').textContent = humanRevenue;
+    document.getElementById('humanMissed').textContent = missedCount;
+    document.getElementById('humanRate').textContent = rate + '%';
+  }
+
+  function updateAiMetrics() {
+    const engCount = aiEngaged.length;
+    const convCount = aiConvCount;
+    const rate = engCount > 0 ? Math.round((convCount / engCount) * 100) : 0;
+    document.getElementById('aiEng').textContent = engCount;
+    document.getElementById('aiRev').textContent = aiRevenue;
+    document.getElementById('aiConv').textContent = convCount;
+    document.getElementById('aiRate').textContent = rate + '%';
+  }
+
+  function startSetup() {
+    let initials = document.getElementById('playerInitials').value.trim().toUpperCase();
+    if (!initials) initials = 'YOU';
+    playerInitials = initials;
+    document.getElementById('playerLabel').textContent = playerInitials;
+    document.getElementById('resFinalHumanName').textContent = playerInitials;
+    document.getElementById('setupScreen').classList.add('hidden');
+    document.getElementById('mainWrapper').style.display = 'grid';
+  }
+
+  function startChallenge() {
+    allData = generateComments();
+    running = true;
+    humanEngaged = [];
+    aiEngaged = [];
+    aiConvCount = 0;
+    missedCount = 0;
+    humanRevenue = 0;
+    aiRevenue = 0;
+    commentIndex = 0;
+    aiStreamCounter = 0;
+
+    document.getElementById('startBtn').disabled = true;
+    document.getElementById('humanFeed').innerHTML = '';
+    document.getElementById('aiFeed').innerHTML = '';
+    document.getElementById('humanEng').textContent = '0';
+    document.getElementById('humanRev').textContent = '0';
+    document.getElementById('humanMissed').textContent = '0';
+    document.getElementById('humanRate').textContent = '0%';
+    document.getElementById('aiEng').textContent = '0';
+    document.getElementById('aiRev').textContent = '0';
+    document.getElementById('aiConv').textContent = '0';
+    document.getElementById('aiRate').textContent = '0%';
+
+    startTimer();
+
+    // Stream a new comment to human feed every 1s
+    streamInterval = setInterval(streamNextComment, 1000);
+
+    // AI fires a reply every 1.2s — recycles pool endlessly
+    aiStreamInterval = setInterval(streamAiReply, 1200);
+
+    // Missed counter goes up every 15s automatically
+    missedInterval = setInterval(() => {
+      if (!running) return;
+      missedCount++;
+      updateHumanMetrics();
+    }, 15000);
+
+    // Blueberry "Converted" goes up every 3s
+    convertedInterval = setInterval(() => {
+      if (!running) return;
+      aiConvCount++;
+      updateAiMetrics();
+    }, 3000);
+
+    // Kick off immediately so the screens aren't blank at start
+    for (let i = 0; i < 4; i++) { streamNextComment(); streamAiReply(); }
+  }
+
+  function startTimer() {
+    timeL = 120;
+    const tick = setInterval(() => {
+      timeL--;
+      const m = Math.floor(timeL / 60);
+      const s = timeL % 60;
+      const t = document.getElementById('timer');
+      t.textContent = `${m}:${s.toString().padStart(2, '0')}`;
+      t.classList.toggle('critical', timeL < 31);
+      if (timeL === 0) {
+        clearInterval(tick);
+        endChallenge();
+      }
+    }, 1000);
+  }
+
+  function endChallenge() {
+    running = false;
+    clearInterval(streamInterval);
+    clearInterval(aiStreamInterval);
+    clearInterval(missedInterval);
+    clearInterval(convertedInterval);
+
+    const hHi = humanEngaged.filter(id => allData.find(x => x.id === id)?.hi).length;
+
+    document.getElementById('resFinalHuman').textContent = hHi;
+    document.getElementById('resFinalHumanRev').textContent = humanRevenue;
+    document.getElementById('resFinalAi').textContent = aiEngaged.length;
+    document.getElementById('resFinalAiRev').textContent = aiRevenue;
+
+    const gap = Math.max(0, aiRevenue - humanRevenue);
+    document.getElementById('resGap').textContent = gap;
+
+    if (missedCount > 0) {
+      document.getElementById('missedItems').innerHTML = `
+        <div class="missed-title">💔 You missed ${missedCount} high-value moment${missedCount !== 1 ? 's' : ''}</div>
+        <div class="missed-item">Every missed comment is a lead Blueberry would have caught instantly.</div>
+      `;
+      document.getElementById('missedItems').style.display = 'block';
+    }
+
+    document.getElementById('humanBox').classList.remove('winner');
+    document.getElementById('aiBox').classList.remove('winner');
+    if (aiRevenue > humanRevenue) {
+      document.getElementById('aiBox').classList.add('winner');
+    } else if (humanRevenue > aiRevenue) {
+      document.getElementById('humanBox').classList.add('winner');
+    }
+
+    document.getElementById('results').classList.add('show');
+  }
+
+  function resetChallenge() {
+    running = false;
+    clearInterval(streamInterval);
+    clearInterval(aiStreamInterval);
+    clearInterval(missedInterval);
+    clearInterval(convertedInterval);
+    humanEngaged = [];
+    aiEngaged = [];
+    aiConvCount = 0;
+    missedCount = 0;
+    humanRevenue = 0;
+    aiRevenue = 0;
+    commentIndex = 0;
+    aiStreamCounter = 0;
+
+    document.getElementById('results').classList.remove('show');
+    document.getElementById('startBtn').disabled = false;
+    document.getElementById('timer').textContent = '2:00';
+    document.getElementById('timer').classList.remove('critical');
+    document.getElementById('humanEng').textContent = '0';
+    document.getElementById('humanRev').textContent = '0';
+    document.getElementById('humanMissed').textContent = '0';
+    document.getElementById('humanRate').textContent = '0%';
+    document.getElementById('aiEng').textContent = '0';
+    document.getElementById('aiRev').textContent = '0';
+    document.getElementById('aiConv').textContent = '0';
+    document.getElementById('aiRate').textContent = '0%';
+    document.getElementById('humanFeed').innerHTML = '';
+    document.getElementById('aiFeed').innerHTML = '';
+    document.getElementById('missedItems').style.display = 'none';
+    closeModal();
+  }
+</script>
+
+</body>
+</html>
