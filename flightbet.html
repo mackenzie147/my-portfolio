@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <title>FlightBet — Delay Markets</title>
-<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Inter:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Syne+Mono&family=Syne:wght@400;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -13,31 +13,40 @@
   --green:#00a87e;--red:#e0462a;--orange:#e07820;--blue:#1a6ef5;
   --text:#0d1117;--text2:#5a6070;--text3:#9aa0ab;
   --yes:#e07820;--no:#00a87e;
-  --fm:'Share Tech Mono',monospace;--fu:'Inter',sans-serif;--fmo:'DM Mono',monospace;
+  /* FIX 4: New font stack — Syne Mono for display/numbers, IBM Plex Mono for data, Syne for UI */
+  --fm:'Syne Mono',monospace;
+  --fu:'Syne',sans-serif;
+  --fmo:'IBM Plex Mono',monospace;
 }
 html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fu);overflow-x:hidden}
 body{display:flex;flex-direction:column}
-/* NAV */
-nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;flex-shrink:0;gap:10px}
-.nav-logo{font-family:var(--fm);font-size:15px;color:var(--green);letter-spacing:3px;cursor:pointer;white-space:nowrap}
-.nav-right{display:flex;align-items:center;gap:7px;flex-shrink:0}
-.nav-ap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 9px;cursor:pointer;white-space:nowrap}
+
+/* NAV — FIX 3: proper flex layout so auth never stacks weirdly */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:52px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;flex-shrink:0;gap:10px;overflow:hidden}
+.nav-logo{font-family:var(--fm);font-size:15px;color:var(--green);letter-spacing:3px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+/* FIX 3: auth-area always stays right-aligned, never wraps */
+.nav-right{display:flex;align-items:center;gap:7px;flex-shrink:0;min-width:0;overflow:hidden}
+.auth-btns{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.nav-ap{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:5px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0}
 .nav-ap .code{font-family:var(--fm);color:var(--green);font-size:13px}
 .nav-ap .apn{display:none}
-.nav-btn{font-family:var(--fu);font-size:11px;font-weight:600;padding:5px 11px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap}
+.nav-btn{font-family:var(--fu);font-size:11px;font-weight:600;padding:5px 11px;border-radius:5px;cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0}
 .btn-out{background:transparent;border-color:var(--border2);color:var(--text2)}
 .btn-pri{background:var(--green);border-color:var(--green);color:#fff}
-.upill{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:4px 9px;cursor:pointer}
+/* FIX 3: user pill — constrained width, no overflow */
+.upill{display:flex;align-items:center;gap:5px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:4px 9px;cursor:pointer;flex-shrink:0;max-width:180px}
 .upill .av{width:20px;height:20px;border-radius:50%;background:var(--green);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
 .upill .un{max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}
-.upill .bal{color:var(--green);font-family:var(--fmo);font-size:10px;white-space:nowrap}
+.upill .bal{color:var(--green);font-family:var(--fmo);font-size:10px;white-space:nowrap;flex-shrink:0}
 .menu-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:5px;cursor:pointer;flex-shrink:0}
+
 /* TICKER */
 .ticker{background:var(--bg2);border-bottom:1px solid var(--border);height:24px;overflow:hidden;flex-shrink:0}
 .ticker-inner{display:flex;align-items:center;height:100%;animation:sticker 40s linear infinite;white-space:nowrap}
 .ti{display:inline-flex;align-items:center;gap:5px;padding:0 14px;font-size:9px;color:var(--text3);font-family:var(--fmo);border-right:1px solid var(--border)}
 .ti .fid{color:var(--green)}.cup{color:var(--green)}.cdn{color:var(--red)}
 @keyframes sticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
 /* LAYOUT */
 .main{display:flex;flex:1;overflow:hidden;min-height:0}
 .sidebar{width:248px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;display:flex;flex-direction:column}
@@ -55,17 +64,22 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .fi{font-size:10px;color:var(--text2);line-height:1.5;padding:4px 6px;background:var(--bg3);border-radius:4px;border-left:2px solid var(--border2)}
 .fi .flt{color:var(--green);font-family:var(--fm)}
 .sy{color:var(--yes)}.sn{color:var(--no)}
-/* YYZ BUTTON */
+
+/* FIX 5: YYZ BUTTON — clearer, more readable, action-forward */
 .yyzwrap{padding:10px 11px 9px;border-bottom:1px solid var(--border)}
-.yyzbtn{width:100%;padding:9px 11px;background:linear-gradient(135deg,#b83228,#e0462a);border:none;border-radius:6px;color:#fff;font-family:var(--fm);font-size:11px;letter-spacing:1.5px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:opacity .15s}
+.yyzbtn{width:100%;padding:10px 12px;background:linear-gradient(135deg,#b83228,#e0462a);border:none;border-radius:7px;color:#fff;font-family:var(--fm);font-size:12px;letter-spacing:1px;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:opacity .15s;gap:8px}
 .yyzbtn:hover{opacity:.9}
 .yyzbtn:disabled{opacity:.45;cursor:not-allowed}
-.yyz-badge{font-size:9px;background:rgba(255,255,255,.2);padding:1px 8px;border-radius:10px;font-family:var(--fmo)}
+.yyz-label{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left}
+.yyz-title{font-size:12px;letter-spacing:1px;font-weight:600}
+.yyz-sub{font-size:9px;opacity:.75;font-family:var(--fmo);letter-spacing:.5px}
+.yyz-badge{font-size:11px;font-family:var(--fmo);background:rgba(255,255,255,.2);padding:3px 10px;border-radius:5px;white-space:nowrap;flex-shrink:0;font-weight:600}
 .yyz-row{display:flex;align-items:center;gap:7px;margin-top:6px}
 .yyz-lbl{font-size:9px;color:var(--text3)}
 .yyz-amt{width:56px;background:var(--bg3);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--fm);font-size:12px;padding:3px 7px;outline:none}
 .yyz-amt:focus{border-color:var(--red)}
-.yyz-status{font-size:9px;color:var(--text3);margin-top:4px;font-family:var(--fmo);line-height:1.5}
+.yyz-status{font-size:9px;color:var(--text3);margin-top:5px;font-family:var(--fmo);line-height:1.6;padding:5px 7px;background:var(--bg3);border-radius:4px;border:1px solid var(--border)}
+
 /* SIDEBAR LB */
 .lbrow{display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border)}
 .lbrow:last-child{border-bottom:none}
@@ -74,9 +88,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .lbname:hover{color:var(--green)}
 .lbval{font-family:var(--fmo);font-size:10px;flex-shrink:0}
 .lbme .lbname{color:var(--green);font-weight:600}
+
 /* BOARD */
 .btop{display:flex;align-items:center;justify-content:space-between;padding:14px 20px 12px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;gap:10px;flex-wrap:wrap}
-.bname{font-size:15px;font-weight:600}
+.bname{font-size:15px;font-weight:600;font-family:var(--fu)}
 .bmeta{font-size:10px;color:var(--text3);margin-top:2px}
 .bctrl{display:flex;align-items:center;gap:6px}
 .sbox{background:var(--bg3);border:1px solid var(--border);border-radius:5px;color:var(--text);font-family:var(--fm);font-size:11px;padding:6px 10px;width:130px;outline:none}
@@ -94,7 +109,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .cal{font-size:9px;color:var(--text3);margin-top:2px}
 .cdst .code{font-family:var(--fm);font-size:15px;letter-spacing:2px}
 .cdst .city{font-size:9px;color:var(--text3);margin-top:2px}
-.ctm{font-family:var(--fm);font-size:14px}
+.ctm{font-family:var(--fmo);font-size:14px}
 .st-OnTime,.st-ontime{font-size:10px;color:var(--green);font-weight:500}
 .st-Delayed,.st-delayed{font-size:10px;color:var(--red);font-weight:500}
 .st-Boarding,.st-boarding{font-size:10px;color:var(--blue);font-weight:500}
@@ -113,6 +128,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .pb{font-size:9px;padding:2px 5px;border-radius:3px;font-family:var(--fmo);font-weight:500}
 .pby{background:rgba(224,120,32,.1);color:var(--yes);border:1px solid rgba(224,120,32,.25)}
 .pbn{background:rgba(0,168,126,.1);color:var(--no);border:1px solid rgba(0,168,126,.25)}
+
 /* DETAIL */
 .dp{border-top:1px solid var(--border);background:var(--bg3);flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .3s ease}
 .dp.open{max-height:420px}
@@ -146,6 +162,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .plbtn{width:100%;padding:8px;background:var(--green);border:none;border-radius:5px;color:#fff;font-family:var(--fu);font-size:11px;font-weight:600;cursor:pointer}
 .plbtn:hover{background:#008f6b}
 .plbtn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+
 /* PORTFOLIO */
 .pview{flex:1;overflow-y:auto;padding:20px 24px}
 .pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
@@ -160,6 +177,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .rcard{background:var(--bg2);border:1px solid var(--border);border-radius:6px;padding:10px 14px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:10px}
 .rwin{background:rgba(0,168,126,.08);color:var(--green);border:1px solid rgba(0,168,126,.2);font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap}
 .rloss{background:rgba(224,70,42,.08);color:var(--red);border:1px solid rgba(224,70,42,.2);font-size:9px;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap}
+
 /* CHART */
 .ctr{background:var(--bg2);border:1px solid var(--border);border-radius:7px;padding:12px;margin-bottom:14px}
 .ctabs{display:flex;gap:2px;margin-bottom:10px;background:var(--bg3);border-radius:5px;padding:2px}
@@ -169,12 +187,14 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .clegitem{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--text3)}
 .cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
 .cempty{padding:24px;text-align:center;color:var(--text3);font-size:11px}
+
 /* SHARE */
 .sbar{background:rgba(0,168,126,.05);border-bottom:1px solid rgba(0,168,126,.15);padding:7px 14px;display:flex;align-items:center;gap:9px;font-size:11px;flex-wrap:wrap}
 .sbar strong{color:var(--text)}
 .sbar .bl{margin-left:auto;font-size:10px;color:var(--green);cursor:pointer;font-weight:600}
 .scbtn{font-size:10px;font-weight:600;padding:4px 11px;border-radius:4px;cursor:pointer;border:1px solid var(--green);background:transparent;color:var(--green);font-family:var(--fu);white-space:nowrap}
 .scbtn.cp{background:rgba(0,168,126,.08)}
+
 /* LB */
 .lbfullrow{display:flex;align-items:center;padding:7px 11px;border-bottom:1px solid var(--border);gap:7px}
 .lbfr{font-family:var(--fm);color:var(--text3);width:18px;font-size:10px;flex-shrink:0}
@@ -184,6 +204,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .lbfp{font-family:var(--fmo);font-size:11px;white-space:nowrap}
 .lbfb{font-family:var(--fmo);font-size:11px;color:var(--green);white-space:nowrap}
 .lbme{background:rgba(0,168,126,.04);border-left:2px solid var(--green)}
+
 /* MODAL */
 .mo{position:fixed;inset:0;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(2px);padding:14px}
 .mc{background:var(--bg2);border:1px solid var(--border2);border-radius:9px;padding:22px;width:100%;max-width:330px;box-shadow:0 8px 40px rgba(0,0,0,.12)}
@@ -202,6 +223,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 .apopt:hover,.apopt.apo{border-color:var(--green)}
 .apopt .apc{font-family:var(--fm);font-size:15px;color:var(--green)}
 .apopt .apcity{font-size:8px;color:var(--text3);margin-top:1px}
+
 /* TOAST */
 .toast{position:fixed;bottom:14px;right:14px;left:14px;max-width:300px;margin:0 auto;background:var(--bg2);border:1px solid var(--border2);border-radius:6px;padding:8px 13px;font-size:11px;color:var(--text);opacity:0;transform:translateY(6px);transition:all .25s;pointer-events:none;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.1)}
 .toast.show{opacity:1;transform:translateY(0)}
@@ -210,6 +232,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 ::-webkit-scrollbar{width:3px;height:3px}
 ::-webkit-scrollbar-track{background:transparent}
 ::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
 /* MOBILE */
 @media(min-width:600px){.nav-ap .apn{display:inline}.nav-logo::after{content:' // DELAY MARKETS';color:var(--text3);font-size:9px;letter-spacing:1px;margin-left:5px}}
 @media(max-width:768px){
@@ -232,12 +255,15 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
   .lbfa{display:none}
   .apgrid{grid-template-columns:repeat(2,1fr)}
   .menu-btn{display:flex}
+  /* FIX 3 mobile: compress auth */
+  .upill .un{display:none}
+  .nav-ap .apn{display:none!important}
 }
 </style>
 </head>
 <body>
 <nav>
-  <div style="display:flex;align-items:center;gap:7px">
+  <div style="display:flex;align-items:center;gap:7px;min-width:0">
     <div class="menu-btn" onclick="toggleSb()">
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="2.5" width="13" height="1.5" rx="1" fill="currentColor"/><rect x="1" y="6.75" width="13" height="1.5" rx="1" fill="currentColor"/><rect x="1" y="11" width="13" height="1.5" rx="1" fill="currentColor"/></svg>
     </div>
@@ -258,10 +284,13 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
 
 <div class="main" id="main-area">
   <div class="sidebar" id="sidebar">
-    <!-- YYZ SHORT BUTTON -->
+    <!-- FIX 5: YYZ Button — clearer copy, works in-place -->
     <div class="yyzwrap">
       <button class="yyzbtn" id="yyzmainbtn" onclick="yyzShortAll()">
-        <span>🔴 SHORT ALL AC @ YYZ</span>
+        <div class="yyz-label">
+          <span class="yyz-title">🔴 SHORT ALL AIR CANADA @ YYZ</span>
+          <span class="yyz-sub" id="yyz-sub-label">auto-bet YES DELAYED on every flight</span>
+        </div>
         <span class="yyz-badge" id="yyzbadge">—</span>
       </button>
       <div class="yyz-row">
@@ -271,8 +300,10 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 20px
       </div>
       <div class="yyz-status" id="yyzstatus">Bet YES DELAYED on every Air Canada flight at Pearson today</div>
     </div>
+
     <div class="ss">
       <div class="sl">Filter</div>
+      <!-- FIX 2: filters use onclick with proper data attributes -->
       <div class="fc active" data-f="all" onclick="setFilter('all')">All Flights <span class="cnt" id="fc-all">0</span></div>
       <div class="fc" data-f="active" onclick="setFilter('active')">Active Markets <span class="cnt" id="fc-active">0</span></div>
       <div class="fc" data-f="high" onclick="setFilter('high')">High Delay Risk <span class="cnt" id="fc-high">0</span></div>
@@ -361,7 +392,7 @@ function drawBalance(el,profile){
   const ap2=lp+' L'+pts[pts.length-1].x.toFixed(1)+','+(P.t+iH)+' L'+P.l+','+(P.t+iH)+' Z';
   const isUp=h[h.length-1].b>=START,col=isUp?'var(--green)':'var(--red)',gid='bg'+Date.now();
   const baseY=ty(START);
-  const ylbls=Array.from({length:4},(_,i)=>{const v=mn+(rng/3)*i,y=ty(v);return`<text x="${P.l-3}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'DM Mono',monospace">$${Math.round(v)}</text><line x1="${P.l}" y1="${y.toFixed(1)}" x2="${P.l+iW}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.5"/>`;}).join('');
+  const ylbls=Array.from({length:4},(_,i)=>{const v=mn+(rng/3)*i,y=ty(v);return`<text x="${P.l-3}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">$${Math.round(v)}</text><line x1="${P.l}" y1="${y.toFixed(1)}" x2="${P.l+iW}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.5"/>`;}).join('');
   const dots=pts.filter(p=>p.ev&&p.ev!=='start').map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="${p.ev==='win'?'var(--green)':p.ev==='loss'?'var(--red)':'var(--orange)'}" stroke="var(--bg2)" stroke-width="1.5"><title>${p.note||p.ev} — $${Math.round(p.b)}</title></circle>`).join('');
   const fmt=t=>new Date(t).toLocaleDateString([],{month:'short',day:'numeric'});
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" xmlns="http://www.w3.org/2000/svg">
@@ -371,8 +402,8 @@ function drawBalance(el,profile){
     <path d="${ap2}" fill="url(#${gid})"/>
     <path d="${lp}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
     ${dots}
-    <text x="${P.l}" y="${H-4}" fill="var(--text3)" font-size="9" font-family="'DM Mono',monospace">${fmt(minT)}</text>
-    <text x="${P.l+iW}" y="${H-4}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'DM Mono',monospace">${fmt(maxT)}</text>
+    <text x="${P.l}" y="${H-4}" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${fmt(minT)}</text>
+    <text x="${P.l+iW}" y="${H-4}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${fmt(maxT)}</text>
   </svg>
   <div class="cleg">
     <div class="clegitem"><div class="cdot" style="background:var(--green)"></div>Win</div>
@@ -385,7 +416,6 @@ function drawBalance(el,profile){
 function drawDaily(el,profile){
   const res=profile.resolved||[];
   if(!res.length){el.innerHTML='<div class="cempty">No resolved bets yet. Markets settle when flights depart.</div>';return;}
-  // Group by date
   const byD={};
   res.forEach(r=>{const d=r.date||'Unknown';if(!byD[d])byD[d]={w:0,l:0,staked:0,pnl:0,bets:0};byD[d].bets++;byD[d].staked+=r.staked||0;if(r.won){byD[d].w++;byD[d].pnl+=(r.payout-r.staked);}else{byD[d].l++;byD[d].pnl-=(r.staked||0);}});
   const dates=Object.keys(byD).sort((a,b)=>new Date(a)-new Date(b));
@@ -399,9 +429,9 @@ function drawDaily(el,profile){
     const x=P.l+(i/dates.length)*iW+(iW/dates.length-bW)/2,pv=byD[d].pnl,h=toH(pv),y=pv>=0?midY-h:midY,col=pv>=0?'var(--green)':'var(--red)';
     return`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bW}" height="${Math.max(2,h).toFixed(1)}" fill="${col}" rx="2" opacity=".85"><title>${d}: ${byD[d].w}W/${byD[d].l}L · P&L ${pv>=0?'+':''}$${pv.toFixed(0)} · ${byD[d].bets} bets</title></rect>`;
   }).join('');
-  const ylbls=[-1,0,1].map(v=>{const y=v===0?midY:v>0?midY-toH(maxA):midY+toH(maxA);return`<text x="${P.l-3}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'DM Mono',monospace">${v===0?'$0':(v>0?'+':'')+Math.round(v*maxA)}</text>`;}).join('');
+  const ylbls=[-1,0,1].map(v=>{const y=v===0?midY:v>0?midY-toH(maxA):midY+toH(maxA);return`<text x="${P.l-3}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${v===0?'$0':(v>0?'+':'')+Math.round(v*maxA)}</text>`;}).join('');
   const step=Math.max(1,Math.floor(dates.length/5));
-  const xlbls=dates.filter((_,i)=>i===0||i===dates.length-1||i%step===0).map(d=>{const i=dates.indexOf(d),x=P.l+(i/dates.length)*iW+(iW/dates.length)/2,label=d.split('/').slice(-2).join('/');return`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" fill="var(--text3)" font-size="9" font-family="'DM Mono',monospace">${label}</text>`;}).join('');
+  const xlbls=dates.filter((_,i)=>i===0||i===dates.length-1||i%step===0).map(d=>{const i=dates.indexOf(d),x=P.l+(i/dates.length)*iW+(iW/dates.length)/2,label=d.split('/').slice(-2).join('/');return`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${label}</text>`;}).join('');
   el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" xmlns="http://www.w3.org/2000/svg">
     ${ylbls}
     <line x1="${P.l}" y1="${midY}" x2="${P.l+iW}" y2="${midY}" stroke="var(--border2)" stroke-width="1"/>
@@ -518,21 +548,68 @@ onAuthStateChanged(auth,async user=>{
 });
 
 // ── FLIGHTS ───────────────────────────────────────────────────────────────────
+// FIX 1: Removed aggressive time-based filter that was cutting future flights.
+// Only filter out flights clearly in the past (departed 5+ min ago AND not in positions).
 async function fetchF(iata){
   const now=Date.now();if(bCache[iata]&&bCache[iata].exp>now)return bCache[iata].data;
-  try{trackApi();const r=await fetch('/api/flights?airport='+iata);if(!r.ok)throw new Error('HTTP '+r.status);
-  const d=await r.json();const posIds=Object.keys(UP?.positions||{});
-  d.flights=(d.flights||[]).filter(f=>{
-    if(posIds.includes(f.id))return true;
-    const st=(f.status||'').toLowerCase();
-    if(['departed','landed','arrived'].includes(st))return false;
-    if(f.scheduledAt||f.time){const nowD=new Date(),dep=f.scheduledAt?new Date(f.scheduledAt):new Date();if(!f.scheduledAt){const[h,m]=f.time.split(':').map(Number);dep.setHours(h,m,0,0);}if(dep<nowD){const diff=(nowD-dep)/60000;if(['active','en-route','airborne'].includes(st))return true;if(diff>5)return false;}}
-    return true;
-  });
-  d.flights.sort((a,b)=>{const aP=posIds.includes(a.id)?0:1,bP=posIds.includes(b.id)?0:1;return aP!==bP?aP-bP:(a.time||'').localeCompare(b.time||'');});
-  bCache[iata]={data:d,exp:now+BTTL};showBadge(d.mock||d.fallback,d.fetchedAt);return d;
+  try{
+    trackApi();
+    const r=await fetch('/api/flights?airport='+iata);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const posIds=Object.keys(UP?.positions||{});
+
+    // FIX 1: Much more permissive filtering — keep everything except clearly-past flights
+    d.flights=(d.flights||[]).filter(f=>{
+      // Always keep flights we have positions on
+      if(posIds.includes(f.id))return true;
+      const st=(f.status||'').toLowerCase();
+      // Keep anything not explicitly departed/landed/arrived
+      // Only drop these if we have no position on them
+      if(['landed','arrived'].includes(st))return false;
+      // Departed flights: only drop if they departed more than 30 min ago
+      if(st==='departed'){
+        if(f.scheduledAt){
+          const dep=new Date(f.scheduledAt);
+          const diff=(Date.now()-dep.getTime())/60000;
+          return diff<30; // keep recently-departed for context
+        }
+        if(f.time){
+          const nowD=new Date(),dep=new Date();
+          const[h,m]=f.time.split(':').map(Number);
+          dep.setHours(h,m,0,0);
+          const diff=(nowD-dep)/60000;
+          return diff<30;
+        }
+        return false;
+      }
+      // Keep ALL other flights (on-time, delayed, boarding, scheduled, unknown status)
+      return true;
+    });
+
+    d.flights.sort((a,b)=>{
+      const aP=posIds.includes(a.id)?0:1,bP=posIds.includes(b.id)?0:1;
+      if(aP!==bP)return aP-bP;
+      // Sort by scheduled time
+      const aTime=a.scheduledAt?new Date(a.scheduledAt).getTime():(a.time?parseTime(a.time):Infinity);
+      const bTime=b.scheduledAt?new Date(b.scheduledAt).getTime():(b.time?parseTime(b.time):Infinity);
+      return aTime-bTime;
+    });
+
+    bCache[iata]={data:d,exp:now+BTTL};
+    showBadge(d.mock||d.fallback,d.fetchedAt);
+    return d;
   }catch(e){showBadge(true,null);return{flights:[],error:true};}
 }
+
+function parseTime(t){
+  // Parse HH:MM time string into today's timestamp
+  if(!t)return Infinity;
+  const[h,m]=t.split(':').map(Number);
+  const d=new Date();d.setHours(h,m,0,0);
+  return d.getTime();
+}
+
 function showBadge(isMock,fat){
   let b=document.getElementById('dbadge');if(!b){b=document.createElement('span');b.id='dbadge';b.style.cssText='font-size:9px;padding:2px 6px;border-radius:3px;font-family:var(--fmo);margin-left:7px;font-weight:500;';document.getElementById('bname')?.after(b);}
   if(isMock){b.textContent='API ERROR';b.style.background='rgba(224,70,42,.1)';b.style.color='var(--red)';b.style.border='1px solid rgba(224,70,42,.2)';}
@@ -555,25 +632,63 @@ setInterval(()=>fetchF(ap).then(d=>{flights=d.flights||[];flights.forEach(f=>{if
 setInterval(window.refreshLB,60*1000);
 
 // ── YYZ BUTTON ────────────────────────────────────────────────────────────────
+// FIX 5: Show count/cost clearly, no page switch needed
 function updateYYZ(){
   const ac=flights.filter(f=>f.airline?.toLowerCase().includes('air canada')&&f.status!=='Departed'&&f.status!=='Cancelled'&&!UP?.positions?.[f.id]);
   const amt=parseFloat(document.getElementById('yyzamt')?.value)||10;
-  const badge=document.getElementById('yyzbadge'),status=document.getElementById('yyzstatus'),total=document.getElementById('yyztotal');
-  if(badge)badge.textContent=ap==='YYZ'?ac.length+' flights':'switch to YYZ';
-  if(status){
-    if(ap!=='YYZ')status.textContent='Will switch to YYZ then bet all Air Canada flights';
-    else if(!ac.length)status.textContent='No unbetted Air Canada flights right now';
-    else status.textContent='YES DELAYED on '+ac.length+' Air Canada flight'+(ac.length!==1?'s':'')+' · $'+(ac.length*amt)+' total';
+  const badge=document.getElementById('yyzbadge');
+  const status=document.getElementById('yyzstatus');
+  const subLabel=document.getElementById('yyz-sub-label');
+
+  if(badge){
+    if(ap==='YYZ'){
+      badge.textContent=ac.length+' flights';
+    } else {
+      badge.textContent='switch → YYZ';
+    }
   }
-  if(total)total.textContent='';
+
+  if(subLabel){
+    subLabel.textContent='auto-bet YES DELAYED on every flight';
+  }
+
+  if(status){
+    if(ap!=='YYZ'){
+      status.textContent='Currently viewing '+ap+'. Clicking will switch to YYZ and place bets immediately.';
+    } else if(!ac.length){
+      status.textContent='No unbetted Air Canada flights right now at YYZ.';
+    } else {
+      const total=ac.length*amt;
+      status.textContent=ac.length+' flight'+(ac.length!==1?'s':'')+' · $'+amt+'/ea = $'+total+' total · all bet YES DELAYED';
+    }
+  }
+
   const amtEl=document.getElementById('yyzamt');
   if(amtEl&&!amtEl._li){amtEl._li=true;amtEl.addEventListener('input',updateYYZ);}
 }
+
+// FIX 5: Works in-place — switches to YYZ silently, then bets, no nav change
 window.yyzShortAll=async function(){
   if(!CU){openAuth();return;}
-  if(ap!=='YYZ'){setAP('YYZ');showToast('Switching to YYZ...','ok');setTimeout(()=>doYYZ(),3500);return;}
-  doYYZ();
+  if(ap!=='YYZ'){
+    // Switch to YYZ silently, load flights, then bet
+    ap='YYZ';
+    document.getElementById('napc').textContent='YYZ';
+    document.getElementById('napn').textContent=APS['YYZ'].name;
+    document.getElementById('bname').textContent=APS['YYZ'].name;
+    document.getElementById('bmeta').textContent='YYZ — ';
+    sel=null;
+    const dp=document.getElementById('dpanel');dp.classList.remove('open');dp.innerHTML='';
+    showToast('Loading YYZ flights...','ok');
+    delete bCache['YYZ'];
+    const d=await fetchF('YYZ');
+    flights=d.flights||[];
+    flights.forEach(f=>{if(f.delayProb==null)f.delayProb=gr('YYZ');if(f.vol==null)f.vol=5000;});
+    renderAll();updateCounts();updateStats();updateYYZ();
+  }
+  await doYYZ();
 };
+
 async function doYYZ(){
   const amt=Math.max(1,parseFloat(document.getElementById('yyzamt')?.value)||10);
   const targets=flights.filter(f=>f.airline?.toLowerCase().includes('air canada')&&f.status!=='Departed'&&f.status!=='Cancelled'&&!UP.positions[f.id]);
@@ -603,7 +718,16 @@ function pushFeed(name,side,amt,id,dest){
   item.innerHTML=`<span class="${side==='YES'?'sy':'sn'}">${side}</span> $${amt} on <span class="flt">${id}</span> ${dest} — <span style="color:var(--text3)">${name}</span>`;
   fd.insertBefore(item,fd.firstChild);while(fd.children.length>20)fd.removeChild(fd.lastChild);
 }
-function setFilter(f){filter=f;document.querySelectorAll('.fc').forEach(c=>c.classList.toggle('active',c.dataset.f===f));renderAll();}
+
+// FIX 2: Filter logic — robust, matches all status variations
+function setFilter(f){
+  filter=f;
+  // Update active state on all filter items
+  document.querySelectorAll('.fc').forEach(c=>{
+    c.classList.toggle('active',c.dataset.f===f);
+  });
+  renderAll();
+}
 function setSort(s){sort=s;document.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('active',b.dataset.s===s));renderAll();}
 window.setFilter=setFilter;window.setSort=setSort;
 
@@ -615,29 +739,52 @@ window.openAP=function(){
 window.closeAP=()=>{document.getElementById('apo')?.remove();};
 window.pickAP=function(code){code=code.toUpperCase().trim();if(!code||code.length<3)return;closeAP();if(!APS[code])APS[code]={name:code+' Intl',city:code,lat:0,lng:0,rate:.25};setAP(code);};
 
+// FIX 2: Robust filter matching — handles varying status capitalisation
 function getVisible(){
   const q=(document.getElementById('sbox')?.value||'').toUpperCase();
   let list=flights.filter(f=>{
     if(!f.id)return false;
     if(q&&!f.id.includes(q)&&!(f.dest||'').includes(q)&&!(f.destName||'').toUpperCase().includes(q))return false;
-    if(filter==='active')return f.status!=='Departed'&&f.status!=='Cancelled';
-    if(filter==='high')return(f.delayProb||0)>.55;
-    if(filter==='boarding')return f.status==='Boarding';
-    if(filter==='departed')return f.status==='Departed'||f.status==='Cancelled';
+    const st=(f.status||'').toLowerCase().trim();
+    if(filter==='active'){
+      // Active = not departed and not cancelled
+      return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';
+    }
+    if(filter==='high'){
+      return(f.delayProb||0)>.55;
+    }
+    if(filter==='boarding'){
+      return st==='boarding';
+    }
+    if(filter==='departed'){
+      return st==='departed'||st==='cancelled'||st==='landed'||st==='arrived';
+    }
+    // 'all' — show everything
     return true;
   });
-  list.sort((a,b)=>sort==='delay'?(b.delayProb||0)-(a.delayProb||0):sort==='vol'?(b.vol||0)-(a.vol||0):(a.time||'').localeCompare(b.time||''));
+  list.sort((a,b)=>{
+    if(sort==='delay')return(b.delayProb||0)-(a.delayProb||0);
+    if(sort==='vol')return(b.vol||0)-(a.vol||0);
+    // time sort
+    const aTime=a.scheduledAt?new Date(a.scheduledAt).getTime():parseTime(a.time);
+    const bTime=b.scheduledAt?new Date(b.scheduledAt).getTime():parseTime(b.time);
+    return aTime-bTime;
+  });
   return list;
 }
+
+// FIX 2: Count updates also use same status logic
 function updateCounts(){
   document.getElementById('fc-all').textContent=flights.length;
-  document.getElementById('fc-active').textContent=flights.filter(f=>f.status!=='Departed'&&f.status!=='Cancelled').length;
+  document.getElementById('fc-active').textContent=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';}).length;
   document.getElementById('fc-high').textContent=flights.filter(f=>(f.delayProb||0)>.55).length;
-  document.getElementById('fc-boarding').textContent=flights.filter(f=>f.status==='Boarding').length;
-  document.getElementById('fc-departed').textContent=flights.filter(f=>f.status==='Departed'||f.status==='Cancelled').length;
+  document.getElementById('fc-boarding').textContent=flights.filter(f=>(f.status||'').toLowerCase()==='boarding').length;
+  document.getElementById('fc-departed').textContent=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st==='departed'||st==='cancelled'||st==='landed'||st==='arrived';}).length;
 }
 function updateStats(){
-  const a=flights.filter(f=>f.status!=='Departed'),avg=a.reduce((s,f)=>s+(f.delayProb||0),0)/Math.max(1,a.length),vol=flights.reduce((s,f)=>s+(f.vol||0),0);
+  const a=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';});
+  const avg=a.reduce((s,f)=>s+(f.delayProb||0),0)/Math.max(1,a.length);
+  const vol=flights.reduce((s,f)=>s+(f.vol||0),0);
   document.getElementById('mstats').innerHTML=`<div class="srow"><span class="lbl">Avg Delay Prob</span><span class="val">${Math.round(avg*100)}%</span></div><div class="srow"><span class="lbl">24h Volume</span><span class="val">$${(vol/1000).toFixed(0)}K</span></div><div class="srow"><span class="lbl">High Risk</span><span class="val">${flights.filter(f=>(f.delayProb||0)>.6).length}</span></div><div class="srow"><span class="lbl">Active</span><span class="val">${a.length}</span></div>`;
 }
 
@@ -658,14 +805,15 @@ async function autoResolve(){
 function renderAll(){
   if(view==='portfolio'){renderPort();return;}
   const vis=getVisible();
-  if(!vis.length){document.getElementById('flist').innerHTML='<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:10px">✈</div><div>No flights — check your API returns upcoming departures</div></div>';return;}
+  if(!vis.length){document.getElementById('flist').innerHTML='<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:10px">✈</div><div>No flights match this filter</div></div>';return;}
   const pos=UP?.positions||{};
   document.getElementById('flist').innerHTML=vis.map(f=>{
     const p=Math.round((f.delayProb||.2)*100),np=100-p,pp=pos[f.id],rawSt=f.status||'On Time',stk=rawSt.replace(/\s+/g,'');
+    const depTime=f.scheduledAt?new Date(f.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):(f.time||'--:--');
     return`<div class="fr${sel===f.id?' sel':''}${pp&&sel!==f.id?' hp':''}" onclick="selFlight('${f.id}')">
       <div><div class="cfid">${f.id}</div><div class="cal">${(f.airline||'').substring(0,8).toUpperCase()}</div></div>
       <div class="cdst"><div class="code">${f.dest||'—'}</div><div class="city">${(f.destName||'').substring(0,16)}</div></div>
-      <div class="ctm">${f.scheduledAt?new Date(f.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):(f.time||'--:--')}</div>
+      <div class="ctm">${depTime}</div>
       <div class="st-${stk}">${rawSt.toUpperCase()}</div>
       <div class="codd"><div class="onum"><span class="oy">${p}¢</span><span style="font-size:9px;color:var(--text3)">/</span><span class="on">${np}¢</span></div><div class="obar"><div class="ofill" style="width:${p}%"></div></div><div class="ovol">$${((f.vol||0)/1000).toFixed(1)}K</div></div>
       <div class="cact">${pp?`<span class="pb ${pp.side==='YES'?'pby':'pbn'}">${pp.side} $${pp.amount}</span>`:`<button class="qb qy" onclick="event.stopPropagation();qBet('${f.id}','YES')">YES</button><button class="qb qn" onclick="event.stopPropagation();qBet('${f.id}','NO')">NO</button>`}</div>
@@ -678,12 +826,13 @@ window.selFlight=function(id){const panel=document.getElementById('dpanel');if(s
 function renderDetail(id){
   const f=flights.find(x=>x.id===id);if(!f)return;
   const panel=document.getElementById('dpanel'),p=Math.round((f.delayProb||.2)*100),np=100-p,pp=(UP?.positions||{})[id];
+  const depTime=f.scheduledAt?new Date(f.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):(f.time||'--:--');
   panel.innerHTML=`<div class="di"><div>
     <div class="dtitle">MARKET — ${f.id} ${f.airline} → ${f.dest}</div>
     <div class="dstats">
       <div class="dstat"><div class="dl">DELAY PROB</div><div class="dv">${p}%</div><div class="ds">${p}¢/$1 payout</div></div>
       <div class="dstat"><div class="dl">ON-TIME PROB</div><div class="dv">${np}%</div><div class="ds">${np}¢/$1 payout</div></div>
-      <div class="dstat"><div class="dl">DEPARTS</div><div class="dv">${f.scheduledAt?new Date(f.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):(f.time||'--:--')}</div><div class="ds">Gate ${f.gate||'TBD'}</div></div>
+      <div class="dstat"><div class="dl">DEPARTS</div><div class="dv">${depTime}</div><div class="ds">Gate ${f.gate||'TBD'}</div></div>
       <div class="dstat"><div class="dl">STATUS</div><div class="dv" style="font-size:12px">${f.status||'—'}</div><div class="ds">${f.aircraft||'—'}</div></div>
     </div>
     <div class="pvis"><div class="pyf" style="width:${p}%"></div><div class="pnf" style="width:${np}%"></div></div>
@@ -771,11 +920,43 @@ function renderPV(pv,profile,isPublic){
 }
 window.resPos=async function(id,won){const p=(UP.positions||{})[id];if(!p)return;const prob=p.side==='YES'?(p.prob||.2):(1-(p.prob||.2)),payout=won?p.amount/prob:0;if(won)UP.balance=Math.round((UP.balance+payout)*100)/100;if(!UP.resolved)UP.resolved=[];UP.resolved.push({id,dest:p.dest,side:p.side,staked:p.amount,won,payout,date:new Date().toLocaleDateString()});if(won)UP.wins=(UP.wins||0)+1;snap(won?'win':'loss',(won?'Won':'Lost')+' $'+p.amount.toFixed(0)+' on '+id);delete UP.positions[id];await saveUP();showToast(won?'WON! +$'+(payout-p.amount).toFixed(0)+' on '+id:'Lost $'+p.amount+' on '+id,won?'ok':'err');renderPort();renderAuth();refreshLB();};
 
-// ── AUTH ──────────────────────────────────────────────────────────────────────
+// ── AUTH — FIX 3: clean layout, no stacking ───────────────────────────────────
 function renderAuth(){
-  const a=document.getElementById('auth-area');if(!a)return;a.innerHTML='';const wrap=document.createElement('div');wrap.className='auth-btns';
-  if(CU&&UP){const pill=document.createElement('div');pill.className='upill';pill.onclick=()=>showPortfolio();pill.innerHTML=`<div class="av">${CU.displayName.substring(0,2).toUpperCase()}</div><span class="un">${CU.displayName}</span><span class="bal">$${Math.round(UP.balance)}</span>`;const out=document.createElement('button');out.className='nav-btn btn-out';out.textContent='Out';out.style.padding='4px 9px';out.onclick=()=>doLogout();wrap.appendChild(pill);wrap.appendChild(out);}
-  else{const li=document.createElement('button');li.className='nav-btn btn-out';li.textContent='Log in';li.onclick=()=>openAuth('login');const si=document.createElement('button');si.className='nav-btn btn-pri';si.textContent='Sign up';si.onclick=()=>openAuth('signup');wrap.appendChild(li);wrap.appendChild(si);}
+  const a=document.getElementById('auth-area');if(!a)return;
+  a.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.className='auth-btns';
+
+  if(CU&&UP){
+    // User pill + logout button — always in a single flex row
+    const pill=document.createElement('div');
+    pill.className='upill';
+    pill.onclick=()=>showPortfolio();
+    pill.innerHTML=`<div class="av">${(CU.displayName||'?').substring(0,2).toUpperCase()}</div><span class="un">${CU.displayName}</span><span class="bal">$${Math.round(UP.balance)}</span>`;
+
+    const out=document.createElement('button');
+    out.className='nav-btn btn-out';
+    out.textContent='Out';
+    out.style.cssText='padding:4px 9px;flex-shrink:0;';
+    out.onclick=()=>doLogout();
+
+    wrap.appendChild(pill);
+    wrap.appendChild(out);
+  } else {
+    const li=document.createElement('button');
+    li.className='nav-btn btn-out';
+    li.textContent='Log in';
+    li.onclick=()=>openAuth('login');
+
+    const si=document.createElement('button');
+    si.className='nav-btn btn-pri';
+    si.textContent='Sign up';
+    si.onclick=()=>openAuth('signup');
+
+    wrap.appendChild(li);
+    wrap.appendChild(si);
+  }
+
   a.appendChild(wrap);
 }
 window.openAuth=function(mode='signup'){
@@ -817,7 +998,7 @@ window.doRefill=async function(){if(!CU||!UP)return;UP.balance=Math.round((UP.ba
 function showIntro(){
   if(localStorage.getItem('fb_introd')==='1')return;
   const o=document.createElement('div');o.id='introo';o.style.cssText='position:fixed;inset:0;background:rgba(247,248,250,.96);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);padding:14px;';
-  o.innerHTML=`<style>@keyframes ii{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}#ic{width:410px;max-width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:11px;padding:24px;box-shadow:0 8px 48px rgba(0,0,0,.07);animation:ii .4s cubic-bezier(.22,.9,.36,1) both}.il{font-family:'Share Tech Mono',monospace;font-size:19px;color:#00a87e;letter-spacing:2px;margin-bottom:3px}.isb{font-size:9px;color:#9aa0ab;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase}.ibox{background:#fdf7f6;border:1px solid rgba(224,70,42,.15);border-radius:6px;padding:11px 13px;margin-bottom:14px;display:flex;gap:11px}.inum{font-family:'Share Tech Mono',monospace;font-size:26px;color:#e0462a;line-height:1;flex-shrink:0;padding-top:3px}.itxt{font-size:11px;color:#5a6070;line-height:1.7}.itxt strong{color:#0d1117}.itle{font-size:8px;letter-spacing:2px;color:#9aa0ab;font-weight:600;margin-bottom:7px}.istep{display:flex;gap:8px;margin-bottom:6px;font-size:11px;color:#5a6070;line-height:1.6}.istn{font-family:'Share Tech Mono',monospace;font-size:11px;color:#00a87e;width:15px;flex-shrink:0;margin-top:1px}.icta{width:100%;padding:10px;background:#00a87e;border:none;border-radius:5px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:14px;margin-bottom:7px;display:block}.isk{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Inter',sans-serif}.iby{font-size:9px;color:#9aa0ab;margin-top:11px;padding-top:9px;border-top:1px solid #e2e5ea}.iby a{color:#00a87e;text-decoration:none}</style>
+  o.innerHTML=`<style>@keyframes ii{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}#ic{width:410px;max-width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:11px;padding:24px;box-shadow:0 8px 48px rgba(0,0,0,.07);animation:ii .4s cubic-bezier(.22,.9,.36,1) both}.il{font-family:'Syne Mono',monospace;font-size:19px;color:#00a87e;letter-spacing:2px;margin-bottom:3px}.isb{font-size:9px;color:#9aa0ab;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase}.ibox{background:#fdf7f6;border:1px solid rgba(224,70,42,.15);border-radius:6px;padding:11px 13px;margin-bottom:14px;display:flex;gap:11px}.inum{font-family:'Syne Mono',monospace;font-size:26px;color:#e0462a;line-height:1;flex-shrink:0;padding-top:3px}.itxt{font-size:11px;color:#5a6070;line-height:1.7}.itxt strong{color:#0d1117}.itle{font-size:8px;letter-spacing:2px;color:#9aa0ab;font-weight:600;margin-bottom:7px}.istep{display:flex;gap:8px;margin-bottom:6px;font-size:11px;color:#5a6070;line-height:1.6}.istn{font-family:'Syne Mono',monospace;font-size:11px;color:#00a87e;width:15px;flex-shrink:0;margin-top:1px}.icta{width:100%;padding:10px;background:#00a87e;border:none;border-radius:5px;color:#fff;font-family:'Syne',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:14px;margin-bottom:7px;display:block}.isk{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:none;font-family:'Syne',sans-serif}.iby{font-size:9px;color:#9aa0ab;margin-top:11px;padding-top:9px;border-top:1px solid #e2e5ea}.iby a{color:#00a87e;text-decoration:none}</style>
   <div id="ic"><div class="il">FLIGHTBET</div><div class="isb">delay prediction markets · real flights</div>
   <div class="ibox"><div class="inum">#1</div><div class="itxt"><strong>Toronto Pearson is the most delayed airport in the world.</strong> Over 53% of departures run late. Every winter it snows and every year Pearson is somehow surprised.</div></div>
   <div class="itle">HOW IT WORKS</div>
