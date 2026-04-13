@@ -667,11 +667,15 @@ function updateYYZ(){
   if(amtEl&&!amtEl._li){amtEl._li=true;amtEl.addEventListener('input',updateYYZ);}
 }
 
-// FIX 5: Works in-place — switches to YYZ silently, then bets, no nav change
+// FIX 5: Works in-place — switches to YYZ, awaits flights fully, then bets
 window.yyzShortAll=async function(){
   if(!CU){openAuth();return;}
+
+  // Ensure positions object exists
+  if(!UP.positions)UP.positions={};
+
   if(ap!=='YYZ'){
-    // Switch to YYZ silently, load flights, then bet
+    // Switch airport state
     ap='YYZ';
     document.getElementById('napc').textContent='YYZ';
     document.getElementById('napn').textContent=APS['YYZ'].name;
@@ -679,33 +683,60 @@ window.yyzShortAll=async function(){
     document.getElementById('bmeta').textContent='YYZ — ';
     sel=null;
     const dp=document.getElementById('dpanel');dp.classList.remove('open');dp.innerHTML='';
-    showToast('Loading YYZ flights...','ok');
-    delete bCache['YYZ'];
-    const d=await fetchF('YYZ');
-    flights=d.flights||[];
-    flights.forEach(f=>{if(f.delayProb==null)f.delayProb=gr('YYZ');if(f.vol==null)f.vol=5000;});
-    renderAll();updateCounts();updateStats();updateYYZ();
+    document.getElementById('flist').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)"><span class="spin"></span>Loading YYZ flights...</div>';
   }
-  await doYYZ();
-};
 
-async function doYYZ(){
+  // Always do a fresh fetch — clear cache to force live data
+  delete bCache['YYZ'];
+  showToast('Fetching YYZ flights...','ok');
+
+  let d;
+  try{d=await fetchF('YYZ');}catch(e){showToast('Failed to load YYZ flights','err');return;}
+
+  // Set global flights from this fresh fetch
+  flights=d.flights||[];
+  flights.forEach(f=>{
+    if(f.delayProb==null)f.delayProb=gr('YYZ');
+    if(f.vol==null)f.vol=5000;
+  });
+  renderAll();updateCounts();updateStats();
+
+  // Now bet against all Air Canada flights we don't already hold
   const amt=Math.max(1,parseFloat(document.getElementById('yyzamt')?.value)||10);
-  const targets=flights.filter(f=>f.airline?.toLowerCase().includes('air canada')&&f.status!=='Departed'&&f.status!=='Cancelled'&&!UP.positions[f.id]);
-  if(!targets.length){showToast('No unbetted Air Canada flights at YYZ right now','err');return;}
+  const pos=UP.positions||{};
+  const targets=flights.filter(f=>{
+    const airline=(f.airline||'').toLowerCase();
+    const st=(f.status||'').toLowerCase();
+    return airline.includes('air canada')
+      && st!=='departed' && st!=='cancelled' && st!=='landed' && st!=='arrived'
+      && !pos[f.id];
+  });
+
+  if(!targets.length){
+    showToast('No unbetted Air Canada flights found at YYZ right now','err');
+    updateYYZ();
+    return;
+  }
+
   const total=targets.length*amt;
-  if(total>UP.balance){showToast('Need $'+total+' — only $'+Math.round(UP.balance)+' available','err');return;}
+  if(total>UP.balance){
+    showToast('Need $'+total+' — only $'+Math.round(UP.balance)+' available','err');
+    updateYYZ();
+    return;
+  }
+
   for(const f of targets){
     UP.balance=Math.round((UP.balance-amt)*100)/100;
     UP.positions[f.id]={side:'YES',amount:amt,prob:f.delayProb||.58,dest:f.dest,destName:f.destName,time:f.time,airline:f.airline,depAirport:'YYZ'};
     UP.totalBets=(UP.totalBets||0)+1;
-    pushFeed(CU.displayName,'YES',amt,f.id,f.dest);
+    pushFeed(CU.displayName,'YES',amt,f.id,f.dest||'YYZ');
   }
+
   snap('bet','YYZ short: '+targets.length+' AC flights $'+total);
   await saveUP();
-  showToast('✈ Shorted '+targets.length+' AC flights at Pearson — $'+total+' staked. It will snow.','ok');
+  showToast('✈ Shorted '+targets.length+' Air Canada flights at Pearson — $'+total+' staked. It will snow.','ok');
   renderAuth();renderAll();updateYYZ();refreshLB();
-}
+};
 
 // ── TICKER ────────────────────────────────────────────────────────────────────
 function updateTicker(){
