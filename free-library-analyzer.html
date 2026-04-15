@@ -675,10 +675,34 @@ function confToLabel(c) {
   return c==='high'?'high confidence':c==='medium'?'medium confidence':c==='low'?'low confidence':'uncertain';
 }
 
+// ── image resize helper ───────────────────────────────────────────────────────
+// Resizes image client-side before sending to API to avoid Vercel's 4.5MB payload limit.
+// Base64 inflates size ~33%, so large phone photos easily exceed the limit without this.
+async function resizeImageToBase64(base64, mimeType, maxWidth = 1200, quality = 0.82) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const scale = Math.min(1, maxWidth / img.width);
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      // Always output as jpeg for smaller size; claude handles it fine
+      const dataUrl = canvas.toDataURL('image/jpeg', quality);
+      resolve({
+        base64: dataUrl.split(',')[1],
+        mimeType: 'image/jpeg',
+      });
+    };
+    img.onerror = () => reject(new Error('image load failed during resize'));
+    img.src = `data:${mimeType};base64,${base64}`;
+  });
+}
+
 // ── state ─────────────────────────────────────────────────────────────────────
 let libraries = [];
 let currentResult = null, currentFile = null, currentImgBase64 = null, currentImgType = null;
-let selectedId = null, loadingInterval, verifyState = null; // 'confirmed' | 'correcting'
+let selectedId = null, loadingInterval, verifyState = null;
 
 const LOADING_MSGS = [
   'reading the clues','checking the architecture','inspecting the shelves',
@@ -770,6 +794,10 @@ analyzeBtn.addEventListener('click', async () => {
   loadingInterval = setInterval(()=>{ i=(i+1)%LOADING_MSGS.length; loadingMsg.textContent=LOADING_MSGS[i]; }, 2000);
 
   try {
+    // Resize image before sending to stay under Vercel's 4.5MB function payload limit
+    const { base64: resizedBase64, mimeType: resizedMimeType } =
+      await resizeImageToBase64(currentImgBase64, currentImgType, 1200, 0.82);
+
     const resp = await fetch('/api/anthropic', {
       method:'POST',
       headers:{'Content-Type':'application/json'},
@@ -777,7 +805,7 @@ analyzeBtn.addEventListener('click', async () => {
         model:'claude-sonnet-4-20250514',
         max_tokens:2500,
         messages:[{role:'user', content:[
-          {type:'image', source:{type:'base64', media_type:currentImgType, data:currentImgBase64}},
+          {type:'image', source:{type:'base64', media_type:resizedMimeType, data:resizedBase64}},
           {type:'text', text:`You are an expert analyst who looks at photos containing books and infers the specific location and context from visual evidence. You reason like a detective — you commit to the most specific conclusion the evidence supports, you do not hedge when the clues point clearly somewhere.
 
 CRITICAL RULES:
@@ -1195,7 +1223,6 @@ async function loadAndRenderBooks() {
   listEl.innerHTML = '';
 
   try {
-    // reuse already-loaded libraries if available, else fetch
     let data = libraries;
     if (!data || data.length === 0) {
       const q = query(collection(db,'libraries'), orderBy('addedAt','desc'));
@@ -1203,8 +1230,7 @@ async function loadAndRenderBooks() {
       data = snap.docs.map(d=>({id:d.id,...d.data()}));
     }
 
-    // build a map of title -> list of locations where it was spotted
-    const bookMap = new Map(); // title -> [{location, venueType, city}]
+    const bookMap = new Map();
     data.forEach(lib => {
       const location = [lib.neighborhood, lib.city].filter(Boolean).join(', ') || 'unknown location';
       const venue = lib.venueType || '';
@@ -1224,7 +1250,6 @@ async function loadAndRenderBooks() {
       return;
     }
 
-    // sort alphabetically, ignoring "the ", "a ", "an "
     const sorted = [...bookMap.entries()].sort((a, b) => {
       const clean = s => s.toLowerCase().replace(/^(the |a |an )/, '');
       return clean(a[0]).localeCompare(clean(b[0]));
