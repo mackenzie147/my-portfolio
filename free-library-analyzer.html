@@ -594,8 +594,9 @@ const storage = getStorage(app);
 const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mackenzie';
 
 
-// ── city coords ───────────────────────────────────────────────────────────────
+// ── city/country coords ───────────────────────────────────────────────────────
 const CITY_COORDS = {
+  // SF neighborhoods
   'san francisco':[37.775,-122.419],'sf':[37.775,-122.419],
   'noe valley':[37.750,-122.433],'mission district':[37.760,-122.415],
   'mission':[37.760,-122.415],'castro':[37.762,-122.435],
@@ -603,6 +604,7 @@ const CITY_COORDS = {
   'potrero':[37.759,-122.400],'bernal':[37.740,-122.415],
   'glen park':[37.733,-122.434],'sunset':[37.754,-122.485],
   'richmond':[37.779,-122.483],'pacific heights':[37.793,-122.436],
+  // US cities
   'new york':[40.712,-74.006],'brooklyn':[40.678,-73.944],
   'manhattan':[40.758,-73.985],'queens':[40.728,-73.795],
   'los angeles':[34.052,-118.244],'chicago':[41.878,-87.630],
@@ -621,28 +623,92 @@ const CITY_COORDS = {
   'american':[39.5,-98.35],'suburb':[39.5,-98.35],
   'united states':[39.5,-98.35],'usa':[39.5,-98.35],'us':[39.5,-98.35],
   'north america':[45.0,-100.0],
-  'london':[51.507,-0.128],'berlin':[52.520,13.405],
-  'paris':[48.857,2.347],'amsterdam':[52.370,4.895],
-  'barcelona':[41.390,2.154],'rome':[41.902,12.496],
-  'tokyo':[35.690,139.692],'kyoto':[35.011,135.768],
-  'seoul':[37.566,126.978],'beijing':[39.905,116.391],
-  'shanghai':[31.224,121.469],'sydney':[-33.869,151.209],
-  'melbourne':[-37.814,144.963],'toronto':[43.651,-79.347],
+  // European countries (catches vague AI responses like "German-speaking area")
+  'germany':[51.165,10.452],'german-speaking':[51.165,10.452],'german':[51.165,10.452],
+  'austria':[47.516,14.550],'vienna':[48.208,16.373],'salzburg':[47.798,13.046],
+  'switzerland':[46.818,8.228],'zurich':[47.376,8.541],'geneva':[46.204,6.143],
+  'france':[46.227,2.213],'paris':[48.857,2.347],'lyon':[45.764,4.836],
+  'spain':[40.416,-3.703],'barcelona':[41.390,2.154],'madrid':[40.416,-3.703],
+  'italy':[41.902,12.496],'rome':[41.902,12.496],'milan':[45.464,9.190],
+  'portugal':[39.399,-8.224],'lisbon':[38.717,-9.139],
+  'netherlands':[52.132,5.291],'amsterdam':[52.370,4.895],
+  'belgium':[50.503,4.469],'brussels':[50.850,4.352],
+  'poland':[51.919,19.145],'warsaw':[52.230,21.012],'krakow':[50.061,19.937],
+  'czech':[49.818,15.473],'prague':[50.075,14.438],
+  'sweden':[60.128,18.644],'stockholm':[59.333,18.065],
+  'norway':[60.472,8.469],'oslo':[59.913,10.752],
+  'denmark':[56.263,9.502],'copenhagen':[55.676,12.568],
+  'finland':[61.924,25.748],'helsinki':[60.169,24.938],
+  'russia':[61.524,105.319],'moscow':[55.751,37.618],
+  'ukraine':[48.379,31.165],'kyiv':[50.450,30.524],
+  'greece':[39.074,21.824],'athens':[37.983,23.728],
+  'hungary':[47.162,19.503],'budapest':[47.497,19.040],
+  'romania':[45.943,24.967],'bucharest':[44.426,26.103],
+  'croatia':[45.100,15.201],'zagreb':[45.815,15.982],
+  'ireland':[53.142,-7.692],'dublin':[53.350,-6.260],
+  'scotland':[56.490,-4.202],'edinburgh':[55.953,-3.189],
+  'wales':[52.130,-3.784],'cardiff':[51.481,-3.180],
+  'england':[52.355,-1.175],'london':[51.507,-0.128],
+  'united kingdom':[55.378,-3.436],'uk':[55.378,-3.436],
+  'europe':[54.526,15.255],
+  // Asian cities/countries
+  'japan':[36.205,138.252],'tokyo':[35.690,139.692],'kyoto':[35.011,135.768],
+  'osaka':[34.693,135.502],
+  'china':[35.861,104.196],'beijing':[39.905,116.391],'shanghai':[31.224,121.469],
+  'korea':[35.908,127.767],'seoul':[37.566,126.978],
+  'india':[20.594,78.963],'mumbai':[19.076,72.878],'delhi':[28.644,77.216],
+  'singapore':[1.352,103.820],
+  'thailand':[15.870,100.993],'bangkok':[13.756,100.502],
+  'indonesia':[-0.789,113.921],'jakarta':[-6.208,106.846],
+  'vietnam':[14.058,108.277],'hanoi':[21.028,105.834],
+  'asia':[34.047,100.620],
+  // Oceania
+  'australia':[-25.274,133.775],'sydney':[-33.869,151.209],
+  'melbourne':[-37.814,144.963],'brisbane':[-27.470,153.021],
+  'new zealand':[-40.901,174.886],'auckland':[-36.867,174.763],
+  'oceania':[-22.735,140.020],
+  // Americas
+  'canada':[56.130,-106.347],'toronto':[43.651,-79.347],
   'vancouver':[49.283,-123.120],'montreal':[45.508,-73.554],
-  'mexico city':[19.433,-99.133],'buenos aires':[-34.604,-58.382],
-  'cape town':[-33.924,18.424],'nairobi':[-1.292,36.821],
-  'mumbai':[19.076,72.878],'singapore':[1.352,103.820],
-  'bangkok':[13.756,100.502],'jakarta':[-6.208,106.846],
+  'mexico':[23.635,-102.553],'mexico city':[19.433,-99.133],
+  'brazil':[-14.235,-51.925],'sao paulo':[-23.549,-46.633],
+  'argentina':[-38.416,-63.617],'buenos aires':[-34.604,-58.382],
+  'chile':[-35.676,-71.543],'colombia':[4.571,-74.297],
+  'south america':[-8.784,-55.491],
+  // Africa
+  'south africa':[-30.560,22.938],'cape town':[-33.924,18.424],
+  'kenya':[-0.023,37.906],'nairobi':[-1.292,36.821],
+  'nigeria':[9.082,8.675],'ghana':[7.946,-1.023],
+  'africa':[8.788,34.509],
+  // Middle East
+  'israel':[31.047,34.852],'tel aviv':[32.085,34.782],
+  'turkey':[38.964,35.243],'istanbul':[41.015,28.980],
+  'uae':[23.424,53.848],'dubai':[25.205,55.271],
 };
 
+// ── getCoords: strips parentheticals and noise before matching ────────────────
 function getCoords(city, neighborhood) {
-  const s = ((neighborhood||'')+' '+(city||'')).toLowerCase();
-  // try longest match first so "san francisco" beats "san"
-  const keys = Object.keys(CITY_COORDS).sort((a,b) => b.length - a.length);
-  for (const k of keys) { if (s.includes(k)) return [...CITY_COORDS[k]]; }
-  // last resort: center of contiguous US rather than truly random
-  return [39.5 + (Math.random()-0.5)*5, -98.35 + (Math.random()-0.5)*5];
+  // normalize: lowercase, strip parentheticals like "(Germany, Austria, or Switzerland)",
+  // remove punctuation, collapse whitespace
+  const clean = s => (s || '')
+    .toLowerCase()
+    .replace(/\(.*?\)/g, '')   // remove (...) clauses
+    .replace(/[,;]/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+
+  const s = (clean(neighborhood) + ' ' + clean(city)).trim();
+
+  // try longest key first so "san francisco" beats "san", "german-speaking" beats "german"
+  const keys = Object.keys(CITY_COORDS).sort((a, b) => b.length - a.length);
+  for (const k of keys) {
+    if (s.includes(k)) return [...CITY_COORDS[k]];
+  }
+
+  // last resort: center of contiguous US with slight jitter rather than truly random
+  return [39.5 + (Math.random() - 0.5) * 5, -98.35 + (Math.random() - 0.5) * 5];
 }
+
 function jitter(c) { return [c[0]+(Math.random()-0.5)*0.4, c[1]+(Math.random()-0.5)*0.4]; }
 
 function confToWidth(c) {
@@ -654,10 +720,22 @@ function confToLabel(c) {
 
 // ── geocoding via OSM Nominatim (free, no key) ────────────────────────────────
 async function geocode(city, neighborhood) {
-  const query = [neighborhood, city].filter(Boolean).join(', ');
+  // clean the city string before sending to Nominatim — strip vague qualifiers
+  const cleanCity = (city || '')
+    .replace(/\(.*?\)/g, '')          // remove parentheticals
+    .replace(/^(german-speaking area|english-speaking|unknown|uncertain)\s*/i, '')
+    .replace(/,.*$/, '')              // take only first part before comma
+    .trim();
+
+  const queryStr = [neighborhood, cleanCity].filter(Boolean).join(', ');
+
+  if (queryStr.length < 2) {
+    return getCoords(city, neighborhood);
+  }
+
   try {
     const resp = await fetch(
-      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(queryStr)}&format=json&limit=1`,
       { headers: { 'Accept-Language': 'en', 'User-Agent': 'little-library-analyzer/1.0' } }
     );
     const results = await resp.json();
@@ -667,11 +745,11 @@ async function geocode(city, neighborhood) {
   } catch(e) {
     console.warn('geocoding failed, falling back to table', e);
   }
-  // fallback to hardcoded table
+  // fallback to hardcoded table (now with much better country coverage)
   return getCoords(city, neighborhood);
 }
+
 // Resizes image client-side before sending to API to avoid Vercel's 4.5MB payload limit.
-// Base64 inflates size ~33%, so large phone photos easily exceed the limit without this.
 async function resizeImageToBase64(base64, mimeType, maxWidth = 1200, quality = 0.82) {
   return new Promise((resolve, reject) => {
     const img = new Image();
@@ -681,7 +759,6 @@ async function resizeImageToBase64(base64, mimeType, maxWidth = 1200, quality = 
       canvas.width  = Math.round(img.width  * scale);
       canvas.height = Math.round(img.height * scale);
       canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-      // Always output as jpeg for smaller size; claude handles it fine
       const dataUrl = canvas.toDataURL('image/jpeg', quality);
       resolve({
         base64: dataUrl.split(',')[1],
@@ -788,7 +865,6 @@ analyzeBtn.addEventListener('click', async () => {
   loadingInterval = setInterval(()=>{ i=(i+1)%LOADING_MSGS.length; loadingMsg.textContent=LOADING_MSGS[i]; }, 2000);
 
   try {
-    // Resize image before sending to stay under Vercel's 4.5MB function payload limit
     const { base64: resizedBase64, mimeType: resizedMimeType } =
       await resizeImageToBase64(currentImgBase64, currentImgType, 1200, 0.82);
 
@@ -809,6 +885,7 @@ CRITICAL RULES:
 - Tech books (Adobe, Premiere, Photoshop, Illustrator, coding manuals) in a cafe in an English-speaking city with Bay Area chain signage = almost certainly SF Bay Area.
 - Be specific. "San Francisco, Mission District" beats "US city". If you can name the neighborhood, do it.
 - Only use low confidence if the photo genuinely has no distinguishing visual information at all.
+- For the city field: use a REAL PLACE NAME only — a city, a country, or a neighborhood. Do NOT use descriptive phrases like "German-speaking area" or "English-speaking country". If you know it's Germany but not which city, just put "Germany". If you think it's Austria or Switzerland, pick the most likely one.
 
 Analyze this photo carefully. It could be a little free library, a cafe, bookshop, hostel, home, bar, library, office, or any other place with books.
 
@@ -819,7 +896,7 @@ BOOK READING — before filling the JSON, go shelf by shelf left to right top to
 Respond ONLY in this exact JSON, no markdown, no backticks:
 {
   "location": {
-    "city": "specific city name — not 'English-speaking country', not 'US or UK', a real city or neighborhood",
+    "city": "a real place name — city, country, or neighborhood. NOT a descriptive phrase like 'German-speaking area'. If Germany but unsure of city, write 'Germany'.",
     "neighborhood": "specific neighborhood if identifiable, else empty string",
     "confidence": "high or medium or low",
     "reason": "one sentence citing the specific clues that led to this conclusion — name any readable text you spotted"
@@ -1054,7 +1131,7 @@ let leafletMap = null;
 let leafletMarkers = [];
 
 function initLeafletMap() {
-  if (leafletMap) return; // already initialized
+  if (leafletMap) return;
   leafletMap = L.map('leafletMap', {
     center: [20, 10],
     zoom: 2,
@@ -1062,7 +1139,6 @@ function initLeafletMap() {
     maxZoom: 16,
   });
 
-  // OpenStreetMap — no API key required
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
     maxZoom: 19,
@@ -1096,7 +1172,6 @@ async function loadAndRenderMap() {
 function renderLeafletPins() {
   initLeafletMap();
 
-  // clear old markers
   leafletMarkers.forEach(m => m.remove());
   leafletMarkers = [];
 
@@ -1129,13 +1204,11 @@ function renderLeafletPins() {
     leafletMarkers.push(marker);
   });
 
-  // fit map to markers if any exist
   if (leafletMarkers.length > 0) {
     const group = L.featureGroup(leafletMarkers);
     leafletMap.fitBounds(group.getBounds().pad(0.3), { maxZoom: 10 });
   }
 
-  // invalidate size in case tab was hidden on init
   setTimeout(() => leafletMap.invalidateSize(), 50);
 }
 
