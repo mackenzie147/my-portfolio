@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>little library analyzer</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400&display=swap');
 
@@ -146,23 +148,32 @@
   .map-stat .num { font-weight: bold; font-size: 1.1rem; color: #111; }
   .map-stat .lbl { color: #aaa; font-size: 0.72rem; }
 
-  .map-wrap {
-    position: relative; width: 100%;
-    border: 1px solid #ddd; background: #dde8f0;
-    margin-bottom: 1.5rem; overflow: hidden;
+  #leafletMap {
+    width: 100%; height: 380px;
+    border: 1px solid #ddd;
+    margin-bottom: 1.5rem;
+    z-index: 0;
   }
-  #worldMap { display: block; width: 100%; height: auto; }
-  .map-pin-group { cursor: pointer; }
-  .map-tooltip {
-    position: absolute; background: #fff; border: 1px solid #ddd;
-    padding: 0.4rem 0.6rem; font-size: 0.72rem;
-    font-family: 'Courier Prime', monospace;
-    pointer-events: none; display: none; z-index: 10;
-    max-width: 190px; line-height: 1.4;
-    box-shadow: 2px 2px 0 rgba(0,0,0,0.06);
+
+  /* custom leaflet marker popup to match site font */
+  .leaflet-popup-content-wrapper {
+    font-family: 'Courier Prime', 'Courier New', monospace !important;
+    font-size: 0.78rem !important;
+    border-radius: 0 !important;
+    box-shadow: 2px 2px 0 rgba(0,0,0,0.08) !important;
+    border: 1px solid #ddd !important;
+    padding: 0 !important;
   }
-  .map-tooltip.visible { display: block; }
-  .map-credit { position: absolute; bottom: 4px; right: 6px; font-size: 0.6rem; color: #bbb; }
+  .leaflet-popup-content { margin: 0.6rem 0.8rem !important; line-height: 1.5 !important; }
+  .leaflet-popup-tip-container { display: none; }
+  .leaflet-popup-close-button { font-family: monospace !important; top: 4px !important; right: 6px !important; }
+
+  .map-marker-label {
+    font-weight: bold; margin-bottom: 0.1rem;
+  }
+  .map-marker-venue { color: #888; font-size: 0.7rem; font-style: italic; }
+  .map-marker-books { color: #555; font-size: 0.7rem; font-style: italic; margin-top: 0.15rem; }
+  .map-marker-conf { color: #aaa; font-size: 0.65rem; margin-top: 0.1rem; }
 
   /* card list */
   .library-list { display: flex; flex-direction: column; }
@@ -465,53 +476,7 @@
     <div class="map-stat"><div class="num" id="statLastUpdated">—</div><div class="lbl">last updated</div></div>
   </div>
 
-  <div class="map-wrap" id="mapWrap">
-    <svg id="worldMap" viewBox="0 0 1000 500" xmlns="http://www.w3.org/2000/svg">
-      <rect width="1000" height="500" fill="#dde8f0"/>
-      <g id="countries" fill="#c8d4c0" stroke="#b8c4b0" stroke-width="0.5">
-        <path d="M95,80 L180,75 L220,85 L240,110 L230,140 L210,160 L190,180 L170,210 L150,230 L130,245 L110,240 L95,220 L80,200 L70,175 L65,150 L70,120 Z"/>
-        <path d="M200,30 L240,25 L265,35 L270,55 L255,70 L230,75 L210,65 L200,50 Z"/>
-        <path d="M60,75 L95,70 L95,80 L80,95 L60,90 Z"/>
-        <path d="M130,245 L150,230 L170,240 L175,260 L165,280 L150,290 L135,285 L125,270 Z"/>
-        <path d="M165,285 L185,270 L210,275 L225,295 L235,330 L240,370 L230,410 L210,430 L185,440 L165,430 L150,410 L145,380 L148,345 L155,315 L160,290 Z"/>
-        <path d="M430,70 L470,65 L500,70 L510,85 L505,100 L490,110 L475,115 L460,110 L445,105 L435,95 L430,80 Z"/>
-        <path d="M460,40 L490,35 L505,50 L500,70 L470,65 L460,55 Z"/>
-        <path d="M415,70 L430,65 L435,75 L428,85 L418,82 Z"/>
-        <path d="M375,45 L395,42 L400,52 L390,60 L377,57 Z"/>
-        <path d="M435,130 L475,120 L510,125 L535,145 L545,175 L548,210 L540,250 L525,290 L505,320 L480,340 L455,345 L435,335 L420,310 L415,280 L418,245 L422,210 L425,175 L428,150 Z"/>
-        <path d="M510,70 L580,60 L650,55 L720,60 L780,70 L820,85 L840,105 L835,130 L820,150 L800,165 L775,175 L750,180 L720,185 L690,180 L660,175 L630,170 L600,165 L570,155 L545,145 L525,130 L510,110 L505,90 Z"/>
-        <path d="M630,165 L660,160 L675,175 L670,205 L655,225 L635,230 L620,215 L615,195 L618,175 Z"/>
-        <path d="M710,175 L740,165 L760,175 L765,195 L750,210 L730,215 L715,205 L708,190 Z"/>
-        <path d="M800,100 L815,95 L820,108 L808,115 L798,110 Z"/>
-        <path d="M810,115 L825,110 L828,122 L815,127 L808,120 Z"/>
-        <path d="M740,230 L765,225 L775,235 L768,248 L750,250 L738,242 Z"/>
-        <path d="M778,238 L800,233 L808,243 L800,253 L782,252 Z"/>
-        <path d="M760,300 L820,290 L860,295 L880,315 L885,345 L875,375 L850,395 L820,405 L790,400 L765,385 L752,360 L750,330 L753,308 Z"/>
-        <path d="M895,375 L908,368 L912,382 L904,392 L895,388 Z"/>
-        <path d="M900,393 L912,388 L916,400 L907,410 L897,405 Z"/>
-        <path d="M510,55 L580,45 L660,40 L740,42 L800,48 L840,58 L840,75 L820,70 L750,65 L670,60 L590,58 L510,65 Z"/>
-        <path d="M540,130 L575,125 L595,135 L598,155 L585,165 L560,165 L545,155 L538,143 Z"/>
-        <path d="M545,270 L555,262 L560,275 L555,292 L545,295 L540,283 Z"/>
-        <path d="M192,210 L202,207 L205,214 L198,218 L191,216 Z"/>
-        <path d="M95,70 L180,60 L220,65 L230,78 L220,85 L180,75 L95,80 Z"/>
-        <path d="M785,175 L798,170 L802,180 L794,188 L784,185 Z"/>
-      </g>
-      <g stroke="#c0cfd8" stroke-width="0.3" fill="none">
-        <line x1="83" y1="0" x2="83" y2="500"/><line x1="167" y1="0" x2="167" y2="500"/>
-        <line x1="250" y1="0" x2="250" y2="500"/><line x1="333" y1="0" x2="333" y2="500"/>
-        <line x1="417" y1="0" x2="417" y2="500"/><line x1="500" y1="0" x2="500" y2="500"/>
-        <line x1="583" y1="0" x2="583" y2="500"/><line x1="667" y1="0" x2="667" y2="500"/>
-        <line x1="750" y1="0" x2="750" y2="500"/><line x1="833" y1="0" x2="833" y2="500"/>
-        <line x1="917" y1="0" x2="917" y2="500"/>
-        <line x1="0" y1="83" x2="1000" y2="83"/><line x1="0" y1="167" x2="1000" y2="167"/>
-        <line x1="0" y1="250" x2="1000" y2="250" stroke="#b0c0c8" stroke-width="0.8"/>
-        <line x1="0" y1="333" x2="1000" y2="333"/><line x1="0" y1="417" x2="1000" y2="417"/>
-      </g>
-      <g id="pinLayer"></g>
-    </svg>
-    <div class="map-tooltip" id="mapTooltip"></div>
-    <div class="map-credit">equirectangular projection</div>
-  </div>
+  <div id="leafletMap"></div>
 
   <div class="detail-panel" id="detailPanel">
     <div class="detail-inner">
@@ -628,11 +593,6 @@ const storage = getStorage(app);
 // ── admin mode — visit the page with ?admin=mackenzie to see delete buttons ──
 const isAdmin = new URLSearchParams(window.location.search).get('admin') === 'mackenzie';
 
-// ── projection ────────────────────────────────────────────────────────────────
-const MAP_W = 1000, MAP_H = 500;
-function project(lat, lng) {
-  return { x: ((lng+180)/360)*MAP_W, y: ((90-lat)/180)*MAP_H };
-}
 
 // ── city coords ───────────────────────────────────────────────────────────────
 const CITY_COORDS = {
@@ -1055,7 +1015,36 @@ async function saveEntry(useCorrection) {
   }
 }
 
-// ── map ───────────────────────────────────────────────────────────────────────
+// ── map (Leaflet) ─────────────────────────────────────────────────────────────
+let leafletMap = null;
+let leafletMarkers = [];
+
+function initLeafletMap() {
+  if (leafletMap) return; // already initialized
+  leafletMap = L.map('leafletMap', {
+    center: [20, 10],
+    zoom: 2,
+    minZoom: 2,
+    maxZoom: 16,
+  });
+
+  // Stamen Toner Lite — clean, minimal, fits the monochrome aesthetic
+  L.tileLayer('https://tiles.stadiamaps.com/tiles/stamen_toner_lite/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; <a href="https://stadiamaps.com/">Stadia Maps</a> &copy; <a href="https://stamen.com/">Stamen Design</a> &copy; <a href="https://openmaptiles.org/">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+    maxZoom: 20,
+  }).addTo(leafletMap);
+}
+
+function emojiIcon(emoji, selected) {
+  return L.divIcon({
+    html: `<div style="font-size:${selected?'22':'18'}px;line-height:1;text-align:center;filter:drop-shadow(1px 1px 1px rgba(0,0,0,0.25));cursor:pointer;">${emoji}</div>`,
+    className: '',
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+  });
+}
+
 async function loadAndRenderMap() {
   const el = document.getElementById('mapLoading');
   el.style.display = 'block';
@@ -1067,7 +1056,53 @@ async function loadAndRenderMap() {
     el.textContent=`couldn't load: ${err.message}`; return;
   }
   el.style.display='none';
-  updateStats(); renderPins(); renderList();
+  updateStats(); renderLeafletPins(); renderList();
+}
+
+function renderLeafletPins() {
+  initLeafletMap();
+
+  // clear old markers
+  leafletMarkers.forEach(m => m.remove());
+  leafletMarkers = [];
+
+  libraries.forEach(lib => {
+    if (lib.lat == null || lib.lng == null) return;
+    const isSel = lib.id === selectedId;
+    const emoji = lib.venueType==='cafe'?'☕':lib.venueType==='bookshop'?'🏪':lib.venueType==='hostel'?'🏨':lib.venueType==='bar'?'🍺':lib.venueType==='home / apartment'?'🏠':'📚';
+    const label = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
+    const booksPreview = lib.books?.length ? lib.books.slice(0,2).join(', ')+(lib.books.length>2?'…':'') : '';
+    const addedAt = lib.addedAt?.toDate ? lib.addedAt.toDate() : new Date();
+    const dateStr = addedAt.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+
+    const marker = L.marker([lib.lat, lib.lng], { icon: emojiIcon(emoji, isSel) })
+      .addTo(leafletMap)
+      .bindPopup(`
+        <div class="map-marker-label">${label}</div>
+        ${lib.venueType ? `<div class="map-marker-venue">${lib.venueType}</div>` : ''}
+        ${booksPreview ? `<div class="map-marker-books">${booksPreview}</div>` : ''}
+        <div class="map-marker-conf">${lib.confidence||'?'} confidence · ${dateStr}</div>
+      `, { maxWidth: 200 });
+
+    marker.on('click', () => {
+      selectedId = lib.id;
+      renderLeafletPins();
+      renderList();
+      showDetail(lib);
+      document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
+    });
+
+    leafletMarkers.push(marker);
+  });
+
+  // fit map to markers if any exist
+  if (leafletMarkers.length > 0) {
+    const group = L.featureGroup(leafletMarkers);
+    leafletMap.fitBounds(group.getBounds().pad(0.3), { maxZoom: 10 });
+  }
+
+  // invalidate size in case tab was hidden on init
+  setTimeout(() => leafletMap.invalidateSize(), 50);
 }
 
 function updateStats() {
@@ -1079,53 +1114,6 @@ function updateStats() {
     document.getElementById('statLastUpdated').textContent = days===0?'today':days===1?'yesterday':days+'d ago';
   }
 }
-
-function renderPins() {
-  const pinLayer = document.getElementById('pinLayer');
-  if (!pinLayer) return;
-  pinLayer.innerHTML='';
-  libraries.forEach(lib=>{
-    if (lib.lat==null||lib.lng==null) return;
-    const {x,y} = project(lib.lat, lib.lng);
-    const isSel = lib.id===selectedId;
-    const label = [lib.neighborhood, lib.city].filter(Boolean).join(', ');
-
-    const g = document.createElementNS('http://www.w3.org/2000/svg','g');
-    g.setAttribute('class','map-pin-group');
-
-    const circle = document.createElementNS('http://www.w3.org/2000/svg','circle');
-    circle.setAttribute('cx',x); circle.setAttribute('cy',y);
-    circle.setAttribute('r', isSel?10:7);
-    circle.setAttribute('fill', isSel?'rgba(0,0,0,0.15)':'rgba(0,0,0,0.07)');
-    g.appendChild(circle);
-
-    const fo = document.createElementNS('http://www.w3.org/2000/svg','foreignObject');
-    fo.setAttribute('x',x-9); fo.setAttribute('y',y-20);
-    fo.setAttribute('width',18); fo.setAttribute('height',20);
-    const emoji = lib.venueType==='cafe'?'☕':lib.venueType==='bookshop'?'🏪':lib.venueType==='hostel'?'🏨':lib.venueType==='bar'?'🍺':lib.venueType==='home / apartment'?'🏠':'📚';
-    fo.innerHTML=`<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:${isSel?'16':'13'}px;line-height:1;text-align:center;cursor:pointer;">${emoji}</div>`;
-    g.appendChild(fo);
-
-    g.addEventListener('click',()=>selectLibrary(lib.id));
-    g.addEventListener('mouseenter',e=>showTooltip(e,lib,label));
-    g.addEventListener('mouseleave',hideTooltip);
-    pinLayer.appendChild(g);
-  });
-}
-
-function showTooltip(e,lib,label) {
-  const tooltip = document.getElementById('mapTooltip');
-  const wrap = document.getElementById('mapWrap');
-  const rect = wrap.getBoundingClientRect();
-  const venue = lib.venueType ? `<div style="color:#888;font-size:0.68rem">${lib.venueType}</div>` : '';
-  const books = lib.books?.length ? `<div style="font-style:italic;color:#555;">${lib.books.slice(0,2).join(', ')}</div>` : '';
-  tooltip.innerHTML=`<div style="font-weight:bold">${label}</div>${venue}${books}<div style="color:#aaa;font-size:0.68rem">${lib.confidence||'?'} confidence · ${lib.locationConfirmed||''}</div>`;
-  const mx=e.clientX-rect.left, my=e.clientY-rect.top;
-  tooltip.style.left=Math.min(mx+10,wrap.offsetWidth-200)+'px';
-  tooltip.style.top=Math.max(my-70,4)+'px';
-  tooltip.classList.add('visible');
-}
-function hideTooltip() { document.getElementById('mapTooltip').classList.remove('visible'); }
 
 function renderList() {
   const list=document.getElementById('libraryList');
@@ -1176,7 +1164,7 @@ async function deleteLibrary(id) {
       selectedId=null;
       document.getElementById('detailPanel').classList.remove('visible');
     }
-    updateStats(); renderPins(); renderList();
+    updateStats(); renderLeafletPins(); renderList();
   } catch(err) {
     alert('delete failed: ' + err.message);
   }
@@ -1186,7 +1174,7 @@ function selectLibrary(id) {
   selectedId=id;
   const lib=libraries.find(l=>l.id===id);
   if (!lib) return;
-  renderPins(); renderList();
+  renderLeafletPins(); renderList();
   showDetail(lib);
   document.getElementById('detailPanel').scrollIntoView({behavior:'smooth',block:'nearest'});
 }
@@ -1274,7 +1262,7 @@ async function loadAndRenderBooks() {
 
 window.closeDetail=()=>{
   document.getElementById('detailPanel').classList.remove('visible');
-  selectedId=null; renderPins(); renderList();
+  selectedId=null; renderLeafletPins(); renderList();
 };
 </script>
 </body>
