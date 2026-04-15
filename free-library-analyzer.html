@@ -604,9 +604,23 @@ const CITY_COORDS = {
   'glen park':[37.733,-122.434],'sunset':[37.754,-122.485],
   'richmond':[37.779,-122.483],'pacific heights':[37.793,-122.436],
   'new york':[40.712,-74.006],'brooklyn':[40.678,-73.944],
+  'manhattan':[40.758,-73.985],'queens':[40.728,-73.795],
   'los angeles':[34.052,-118.244],'chicago':[41.878,-87.630],
   'portland':[45.523,-122.676],'seattle':[47.606,-122.332],
   'austin':[30.267,-97.743],'boston':[42.360,-71.059],
+  'philadelphia':[39.952,-75.165],'philly':[39.952,-75.165],
+  'denver':[39.739,-104.984],'phoenix':[33.448,-112.074],
+  'atlanta':[33.749,-84.388],'miami':[25.761,-80.191],
+  'nashville':[36.174,-86.767],'minneapolis':[44.977,-93.265],
+  'pittsburgh':[40.440,-79.996],'cleveland':[41.499,-81.695],
+  'detroit':[42.331,-83.046],'houston':[29.760,-95.369],
+  'dallas':[32.779,-96.808],'san diego':[32.715,-117.157],
+  'las vegas':[36.175,-115.136],'salt lake city':[40.759,-111.891],
+  'new orleans':[29.951,-90.071],'baltimore':[39.290,-76.612],
+  'washington dc':[38.907,-77.037],'dc':[38.907,-77.037],
+  'american':[39.5,-98.35],'suburb':[39.5,-98.35],
+  'united states':[39.5,-98.35],'usa':[39.5,-98.35],'us':[39.5,-98.35],
+  'north america':[45.0,-100.0],
   'london':[51.507,-0.128],'berlin':[52.520,13.405],
   'paris':[48.857,2.347],'amsterdam':[52.370,4.895],
   'barcelona':[41.390,2.154],'rome':[41.902,12.496],
@@ -623,8 +637,11 @@ const CITY_COORDS = {
 
 function getCoords(city, neighborhood) {
   const s = ((neighborhood||'')+' '+(city||'')).toLowerCase();
-  for (const [k,v] of Object.entries(CITY_COORDS)) { if (s.includes(k)) return [...v]; }
-  return [10+(Math.random()-0.5)*60,(Math.random()-0.5)*300];
+  // try longest match first so "san francisco" beats "san"
+  const keys = Object.keys(CITY_COORDS).sort((a,b) => b.length - a.length);
+  for (const k of keys) { if (s.includes(k)) return [...CITY_COORDS[k]]; }
+  // last resort: center of contiguous US rather than truly random
+  return [39.5 + (Math.random()-0.5)*5, -98.35 + (Math.random()-0.5)*5];
 }
 function jitter(c) { return [c[0]+(Math.random()-0.5)*0.4, c[1]+(Math.random()-0.5)*0.4]; }
 
@@ -635,7 +652,24 @@ function confToLabel(c) {
   return c==='high'?'high confidence':c==='medium'?'medium confidence':c==='low'?'low confidence':'uncertain';
 }
 
-// ── image resize helper ───────────────────────────────────────────────────────
+// ── geocoding via OSM Nominatim (free, no key) ────────────────────────────────
+async function geocode(city, neighborhood) {
+  const query = [neighborhood, city].filter(Boolean).join(', ');
+  try {
+    const resp = await fetch(
+      `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&limit=1`,
+      { headers: { 'Accept-Language': 'en', 'User-Agent': 'little-library-analyzer/1.0' } }
+    );
+    const results = await resp.json();
+    if (results.length > 0) {
+      return [parseFloat(results[0].lat), parseFloat(results[0].lon)];
+    }
+  } catch(e) {
+    console.warn('geocoding failed, falling back to table', e);
+  }
+  // fallback to hardcoded table
+  return getCoords(city, neighborhood);
+}
 // Resizes image client-side before sending to API to avoid Vercel's 4.5MB payload limit.
 // Base64 inflates size ~33%, so large phone photos easily exceed the limit without this.
 async function resizeImageToBase64(base64, mimeType, maxWidth = 1200, quality = 0.82) {
@@ -974,7 +1008,7 @@ async function saveEntry(useCorrection) {
       venueType    = currentResult.venue?.type || '';
     }
 
-    const base = getCoords(city, neighborhood);
+    const base = await geocode(city, neighborhood);
     const [lat, lng] = jitter(base);
 
     // upload photo
