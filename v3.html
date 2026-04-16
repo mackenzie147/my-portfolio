@@ -99,9 +99,9 @@ nav{
 
 /* ── LOGOS ───────────────────────────────────────────────── */
 #logos{border-bottom:1px solid var(--border);}
-.logos-grid{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:auto 1fr;}
+.logos-grid{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:auto 1fr;align-items:center;padding:0 64px;}
 .logos-lbl{padding:28px 32px;border-right:1px solid var(--border);display:flex;align-items:center;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;}
-.logos-row{display:flex;align-items:center;gap:0;overflow:hidden;}
+.logos-row{display:flex;align-items:center;justify-content:flex-start;gap:0;flex-wrap:wrap;width:100%;}
 .logo-item{padding:0 32px;height:64px;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:14px;font-weight:500;color:var(--ink-faint);white-space:nowrap;transition:color .2s;cursor:default;}
 .logo-item:hover{color:var(--ink-mid);}
 
@@ -397,6 +397,7 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
       <span class="logo-item">Impact</span>
       <span class="logo-item">Alice</span>
       <span class="logo-item">Glowing Goddess</span>
+      <span class="logo-item">OpusClip</span>
     </div>
   </div>
 </section>
@@ -433,7 +434,7 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
             <path d="M5 4V3M11 4V3" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round"/>
           </svg>
         </div>
-        <h3>Blueberry sends a personalized DM that converts</h3>
+        <h3>Your AI Agent sends a personalized DM</h3>
         <p>Within seconds, a tailored message goes out with the right offer, product recommendation, or discount — in your brand voice, not a template.</p>
       </div>
       <div class="step">
@@ -468,14 +469,14 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
       <div class="feat-text">
         <div>
           <div class="feat-num">01</div>
-          <h3>Convert engagement into customers</h3>
-          <p>Your AI Agent identifies who engaged with your content, what they care about, and reaches out with an offer that lands. Personalized discounts, product links, and follow-up sequences sent automatically — within seconds of engagement.</p>
+          <h3>Personalized offers that convert</h3>
+          <p>Your AI Agent knows what each customer cares about and reaches out with the exact offer they'll respond to. Dynamic discounts, product recommendations, and follow-up sequences sent automatically across DMs, comments, and stories — turning engagement into revenue instantly.</p>
           <div class="tags">
-            <span class="tag tag-blue">Comment to DM</span>
-            <span class="tag">Personalized offers</span>
-            <span class="tag">Discount automation</span>
-            <span class="tag">Follow-up sequences</span>
-            <span class="tag">Instagram DM campaigns</span>
+            <span class="tag tag-blue">Personalized offers</span>
+            <span class="tag">Dynamic discounts</span>
+            <span class="tag">Product recommendations</span>
+            <span class="tag">Comment responses</span>
+            <span class="tag">DM automation</span>
           </div>
         </div>
       </div>
@@ -514,13 +515,14 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
       <div class="feat-text">
         <div>
           <div class="feat-num">02</div>
-          <h3>Grow your email and SMS subscriber lists</h3>
-          <p>Capture interested customers and build your owned audience directly. Blueberry syncs engagement data with your email and SMS platform, turning social interactions into loyal subscribers and repeat buyers.</p>
+          <h3>Smart comment moderation & influencer tracking</h3>
+          <p>Hide spam, boost ROAS by responding strategically to high-intent comments, and track which influencers are driving real revenue. Blueberry identifies and amplifies the comments and creators that matter most, while capturing interested customers to build your owned audience.</p>
           <div class="tags">
-            <span class="tag tag-blue">Email capture</span>
-            <span class="tag">SMS automation</span>
+            <span class="tag tag-blue">Comment hiding</span>
+            <span class="tag">Influencer tracking</span>
+            <span class="tag">Response automation</span>
+            <span class="tag">Email capture</span>
             <span class="tag">First-party data</span>
-            <span class="tag">Audience building</span>
           </div>
         </div>
       </div>
@@ -576,7 +578,7 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
         <div>
           <div class="feat-num">03</div>
           <h3>Revenue attribution that closes the loop</h3>
-          <p>Stop guessing what's working. Blueberry tracks every touchpoint from first comment to final purchase — giving you clear ROI on every campaign, post, and automated conversation. Connects directly with Shopify.</p>
+          <p>Stop guessing what's working. Blueberry tracks every touchpoint from first comment to final purchase — giving you clear ROI on every campaign, post, and automated conversation.</p>
           <div class="tags">
             <span class="tag tag-blue">Shopify integration</span>
             <span class="tag">LTV tracking</span>
@@ -725,6 +727,10 @@ footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
         <div class="int-item">
           <div class="int-icon">📧</div>
           <div class="int-name">Klaviyo</div>
+        </div>
+        <div class="int-item">
+          <div class="int-icon">✂️</div>
+          <div class="int-name">OpusClip</div>
         </div>
       </div>
     </div>
