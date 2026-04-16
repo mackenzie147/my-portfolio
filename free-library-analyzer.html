@@ -850,6 +850,8 @@ function reset() {
   saveStatus.textContent=''; saveToMapBtn.disabled=false; saveToMapBtn.textContent='add to map →';
   correctionForm.classList.remove('visible');
   saveRow.style.display='none';
+  yesBtn.disabled=false; yesBtn.textContent='yes, looks right →';
+  noBtn.style.display=''; noBtn.textContent='no, let me correct it';
 }
 
 resetBtn.addEventListener('click', reset);
