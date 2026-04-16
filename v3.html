@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blueberry | AI-Powered Social Revenue Platform for B2C</title>
+<meta name="description" content="Blueberry helps global and fast-growing brands convert their social traffic into revenue. AI Agents send personalized DMs and automate replies to drive conversions and loyalty.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Roboto+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* ── TOKENS ─────────────────────────────────────────────── */
+:root {
+  --off-white:  #FFFCF9;
+  --surface:    #F5F3EE;
+  --surface-2:  #EDEAE4;
+  --ink:        #202020;
+  --ink-mid:    #444;
+  --ink-muted:  #888;
+  --ink-faint:  #C8C5BE;
+  --blue:       #0B5FFF;          /* Bright royal blue */
+  --blue-light: #E3F0FF;
+  --blue-mid:   #1A6EFF;
+  --border:     rgba(32,32,32,0.10);
+  --border-md:  rgba(32,32,32,0.16);
+  --max:        1280px;
+  --nav-h:      64px;
+  --mono:       'Roboto Mono', monospace;
+  --sans:       'Inter', sans-serif;
+}
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:var(--sans);background:var(--off-white);color:var(--ink);-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+img{display:block;max-width:100%;}
+a{text-decoration:none;color:inherit;}
+.sr-only{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);}
+
+/* ── NAV ─────────────────────────────────────────────────── */
+nav{
+  position:fixed;top:0;left:0;right:0;height:var(--nav-h);
+  background:rgba(255,252,249,0.94);
+  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border);z-index:200;display:flex;align-items:center;
+}
+.nav-wrap{max-width:var(--max);margin:0 auto;padding:0 64px;width:100%;display:flex;align-items:center;justify-content:space-between;}
+.nav-logo{font-size:16px;font-weight:700;letter-spacing:-0.3px;color:var(--ink);display:flex;align-items:center;gap:8px;}
+.nav-logo-mark{
+  width:24px;height:24px;border-radius:6px;
+  background:var(--blue);display:flex;align-items:center;justify-content:center;
+}
+.nav-logo-mark svg{display:block;}
+.nav-links{display:flex;align-items:center;gap:0;list-style:none;}
+.nav-links li a{font-size:13px;font-weight:400;color:var(--ink-muted);padding:0 18px;height:var(--nav-h);display:flex;align-items:center;border-right:1px solid var(--border);transition:color .18s;}
+.nav-links li:first-child a{border-left:1px solid var(--border);}
+.nav-links li a:hover{color:var(--ink);}
+
+/* ── BUTTONS ─────────────────────────────────────────────── */
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--sans);font-size:13px;font-weight:500;padding:0 24px;height:40px;cursor:pointer;transition:all .15s;border:1px solid transparent;white-space:nowrap;}
+.btn-primary{background:var(--blue);color:#fff;border-color:var(--blue);}
+.btn-primary:hover{background:#4a6ce8;}
+.btn-ghost{background:transparent;color:var(--ink);border-color:var(--border-md);}
+.btn-ghost:hover{background:var(--surface);}
+.btn-lg{height:48px;font-size:14px;padding:0 32px;}
+.btn-white{background:var(--off-white);color:var(--ink);}
+.btn-white:hover{background:#fff;}
+.btn-outline-white{background:transparent;color:var(--off-white);border-color:rgba(255,255,255,0.2);}
+.btn-outline-white:hover{border-color:rgba(255,255,255,0.45);}
+
+/* ── SECTION HEADER PATTERN ──────────────────────────────── */
+.sec-hd{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.sec-hd-l{padding:52px 52px 52px 0;border-right:1px solid var(--border);}
+.sec-hd-r{padding:52px 0 52px 52px;display:flex;flex-direction:column;justify-content:flex-end;}
+.eyebrow{font-family:var(--mono);font-size:10px;font-weight:400;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-muted);margin-bottom:16px;display:flex;align-items:center;gap:8px;}
+.eyebrow-num{color:var(--blue);}
+.h1{font-size:clamp(44px,5.5vw,72px);font-weight:700;line-height:0.98;letter-spacing:-2px;color:var(--ink);}
+.h2{font-size:clamp(28px,3.5vw,44px);font-weight:700;line-height:1.04;letter-spacing:-1px;color:var(--ink);}
+.h3{font-size:22px;font-weight:600;line-height:1.15;letter-spacing:-0.3px;}
+.body-lg{font-size:16px;line-height:1.6;color:var(--ink-muted);font-weight:400;}
+.body-sm{font-size:14px;line-height:1.6;color:var(--ink-muted);}
+.mono-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-muted);}
+
+/* ── HERO ─────────────────────────────────────────────────── */
+#hero{padding-top:var(--nav-h);border-bottom:1px solid var(--border);overflow:hidden;}
+.hero-main{max-width:var(--max);margin:0 auto;padding:72px 64px 64px;display:grid;grid-template-columns:1fr 1fr;gap:80px;align-items:end;border-bottom:1px solid var(--border);}
+.hero-h1-wrap{margin-bottom:36px;}
+.hero-actions{display:flex;align-items:stretch;gap:0;}
+.hero-actions .btn{border-right:1px solid var(--border);}
+.hero-actions .btn:first-child{border-left:1px solid var(--border);}
+.hero-right{display:flex;flex-direction:column;justify-content:flex-end;gap:0;}
+
+/* Hero stats */
+.hero-stats{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);}
+.hstat{padding:28px 36px;border-right:1px solid var(--border);}
+.hstat:first-child{border-left:1px solid var(--border);}
+.hstat-val{font-size:32px;font-weight:700;letter-spacing:-1px;line-height:1;margin-bottom:6px;color:var(--ink);}
+.hstat-val span{color:var(--blue);}
+.hstat-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-muted);}
+
+/* ── LOGOS ───────────────────────────────────────────────── */
+#logos{border-bottom:1px solid var(--border);}
+.logos-grid{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:auto 1fr;}
+.logos-lbl{padding:28px 32px;border-right:1px solid var(--border);display:flex;align-items:center;font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:var(--ink-faint);white-space:nowrap;}
+.logos-row{display:flex;align-items:center;gap:0;overflow:hidden;}
+.logo-item{padding:0 32px;height:64px;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border);font-size:14px;font-weight:500;color:var(--ink-faint);white-space:nowrap;transition:color .2s;cursor:default;}
+.logo-item:hover{color:var(--ink-mid);}
+
+/* ── HOW IT WORKS ────────────────────────────────────────── */
+#how{border-bottom:1px solid var(--border);}
+.how-inner{max-width:var(--max);margin:0 auto;}
+.steps-grid{display:grid;grid-template-columns:repeat(3,1fr);}
+.step{padding:48px 40px;border-right:1px solid var(--border);}
+.step:last-child{border-right:none;}
+.step-num{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--blue);margin-bottom:28px;display:block;}
+.step-icon{width:40px;height:40px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:24px;}
+.step h3{font-size:18px;font-weight:600;letter-spacing:-0.2px;margin-bottom:12px;}
+.step p{font-size:13px;line-height:1.6;color:var(--ink-muted);}
+
+/* ── FEATURES ────────────────────────────────────────────── */
+#features{border-bottom:1px solid var(--border);}
+.features-inner{max-width:var(--max);margin:0 auto;}
+.feat-block{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.feat-block:last-child{border-bottom:none;}
+.feat-block--flip{direction:rtl;}
+.feat-block--flip>*{direction:ltr;}
+.feat-text{padding:56px 48px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:space-between;}
+.feat-block--flip .feat-text{border-right:none;border-left:1px solid var(--border);}
+.feat-num{font-family:var(--mono);font-size:10px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-faint);margin-bottom:28px;display:flex;align-items:center;gap:14px;}
+.feat-num::after{content:'';flex:1;height:1px;background:var(--border);}
+.feat-text h3{font-size:26px;font-weight:700;letter-spacing:-0.5px;line-height:1.1;margin-bottom:16px;}
+.feat-text p{font-size:14px;line-height:1.65;color:var(--ink-muted);margin-bottom:28px;flex:1;}
+.tags{display:flex;flex-wrap:wrap;gap:8px;}
+.tag{font-family:var(--mono);font-size:10px;letter-spacing:0.04em;text-transform:uppercase;padding:5px 12px;border:1px solid var(--border);color:var(--ink-muted);}
+.tag-blue{border-color:var(--blue);color:var(--blue);}
+.feat-vis{background:var(--surface);min-height:340px;display:flex;align-items:center;justify-content:center;padding:32px;overflow:hidden;}
+
+/* ── MOCK DM ─────────────────────────────────────────────── */
+.mock-dm{width:100%;max-width:360px;background:var(--off-white);border:1px solid var(--border);}
+.dm-head{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px;background:#fff;}
+.dm-av{width:32px;height:32px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0;}
+.dm-name{font-size:12px;font-weight:600;}
+.dm-sub{font-family:var(--mono);font-size:9px;color:var(--ink-muted);text-transform:uppercase;letter-spacing:0.04em;}
+.dm-body{padding:18px;display:flex;flex-direction:column;gap:10px;}
+.bub{padding:11px 14px;font-size:12px;line-height:1.45;max-width:80%;}
+.bub-out{background:var(--blue);color:#fff;align-self:flex-start;}
+.bub-in{background:var(--surface-2);color:var(--ink);align-self:flex-end;}
+.bub-meta{font-family:var(--mono);font-size:9px;color:var(--ink-faint);letter-spacing:0.04em;margin-top:2px;}
+.bub-meta-r{text-align:right;}
+.conv-pill{align-self:center;border:1px solid var(--border);padding:5px 14px;font-family:var(--mono);font-size:9px;letter-spacing:0.06em;text-transform:uppercase;color:var(--ink-muted);display:flex;align-items:center;gap:6px;margin-top:4px;}
+.conv-dot{width:6px;height:6px;border-radius:50%;background:#2D8B5A;flex-shrink:0;}
+
+/* ── MOCK FEED ───────────────────────────────────────────── */
+.mock-feed{width:100%;max-width:380px;border:1px solid var(--border);}
+.feed-row{padding:14px 16px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:10px;background:var(--off-white);}
+.feed-row:last-child{border-bottom:none;}
+.fav{width:28px;height:28px;border-radius:50%;background:var(--surface-2);flex-shrink:0;border:1px solid var(--border);}
+.fav-blue{background:var(--blue);}
+.fbody{flex:1;}
+.fname{font-size:11px;font-weight:600;margin-bottom:2px;}
+.ftext{font-size:11px;color:var(--ink-muted);line-height:1.4;}
+.fbadge{font-family:var(--mono);font-size:8px;letter-spacing:0.04em;text-transform:uppercase;padding:3px 8px;flex-shrink:0;align-self:center;margin-left:auto;}
+.fbadge-intent{background:var(--blue-light);color:var(--blue);}
+.fbadge-ai{background:var(--ink);color:var(--off-white);}
+
+/* ── MOCK ANALYTICS ─────────────────────────────────────── */
+.mock-analytics{width:100%;max-width:380px;border:1px solid var(--border);background:var(--off-white);}
+.ma-head{padding:16px 18px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;}
+.ma-title{font-size:11px;font-weight:600;}
+.ma-delta{font-family:var(--mono);font-size:10px;color:var(--blue);}
+.ma-bars{padding:20px 18px;display:flex;align-items:flex-end;gap:5px;height:100px;}
+.bar{flex:1;background:var(--surface-2);}
+.bar-blue{background:var(--blue);}
+.ma-stats{display:grid;grid-template-columns:repeat(3,1fr);border-top:1px solid var(--border);}
+.ma-stat{padding:14px 16px;border-right:1px solid var(--border);}
+.ma-stat:last-child{border-right:none;}
+.ma-val{font-size:18px;font-weight:700;letter-spacing:-0.4px;display:block;color:var(--ink);}
+.ma-lbl{font-family:var(--mono);font-size:9px;letter-spacing:0.04em;text-transform:uppercase;color:var(--ink-muted);display:block;margin-top:2px;}
+
+/* ── METRICS BAND ────────────────────────────────────────── */
+#metrics{background:var(--ink);color:var(--off-white);}
+.metrics-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:repeat(3,1fr);}
+.mcell{padding:56px 44px;border-right:1px solid rgba(255,255,255,0.08);}
+.mcell:last-child{border-right:none;}
+.mval{font-size:52px;font-weight:700;letter-spacing:-2px;line-height:1;margin-bottom:10px;color:var(--off-white);}
+.mval span{color:var(--blue-mid);}
+.mdesc{font-size:13px;color:rgba(255,252,249,.4);line-height:1.5;}
+
+/* ── TESTIMONIALS ────────────────────────────────────────── */
+#testimonials{border-bottom:1px solid var(--border);}
+.testi-inner{max-width:var(--max);margin:0 auto;}
+.testi-grid{display:grid;grid-template-columns:repeat(3,1fr);}
+.tcard{padding:40px 36px;border-right:1px solid var(--border);display:flex;flex-direction:column;}
+.tcard:last-child{border-right:none;}
+.tcard-q{font-size:15px;line-height:1.6;color:var(--ink);flex:1;margin-bottom:28px;}
+.tcard-author{display:flex;align-items:center;gap:12px;padding-top:24px;border-top:1px solid var(--border);}
+.tav{width:36px;height:36px;border-radius:50%;background:var(--blue-light);border:1px solid rgba(91,127,255,.15);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:var(--blue);flex-shrink:0;}
+.tname{font-size:13px;font-weight:600;}
+.trole{font-size:11px;color:var(--ink-muted);}
+
+/* ── INTEGRATIONS ────────────────────────────────────────── */
+#integrations{border-bottom:1px solid var(--border);}
+.integrations-inner{max-width:var(--max);margin:0 auto;}
+.int-section{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border);}
+.int-section:last-child{border-bottom:none;}
+.int-label{padding:32px 40px;border-right:1px solid var(--border);display:flex;flex-direction:column;justify-content:center;background:var(--surface);}
+.int-label h4{font-size:13px;font-weight:600;letter-spacing:-0.2px;margin-bottom:8px;}
+.int-items{display:grid;grid-template-columns:repeat(3,1fr);border-right:1px solid var(--border);}
+.int-section:last-child .int-items{border-right:none;}
+.int-item{padding:32px 24px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;}
+.int-item:nth-child(3n){border-right:none;}
+.int-item:nth-last-child(-n+3){border-bottom:none;}
+.int-icon{width:40px;height:40px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.int-name{font-family:var(--mono);font-size:10px;letter-spacing:0.04em;text-transform:uppercase;color:var(--ink-muted);text-align:center;}
+
+/* ── WHY BLUEBERRY ───────────────────────────────────────── */
+#why{border-bottom:1px solid var(--border);}
+.why-inner{max-width:var(--max);margin:0 auto;}
+.why-grid{display:grid;grid-template-columns:repeat(2,1fr);}
+.why-card{padding:48px 40px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.why-card:nth-child(even){border-right:none;}
+.why-card:nth-last-child(-n+2){border-bottom:none;}
+.why-icon{width:40px;height:40px;border:1px solid var(--border);display:flex;align-items:center;justify-content:center;margin-bottom:20px;}
+.why-card h4{font-size:16px;font-weight:600;letter-spacing:-0.2px;margin-bottom:10px;}
+.why-card p{font-size:13px;line-height:1.6;color:var(--ink-muted);}
+
+/* ── ENTERPRISE BAND ─────────────────────────────────────── */
+#enterprise{background:var(--surface);border-bottom:1px solid var(--border);}
+.enterprise-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;}
+.ent-left{padding:72px 64px 72px 0;border-right:1px solid var(--border);}
+.ent-right{padding:72px 0 72px 64px;display:grid;grid-template-columns:1fr 1fr;gap:0;align-content:start;}
+.ent-proof{padding:28px 24px;border-right:1px solid var(--border);border-bottom:1px solid var(--border);}
+.ent-proof:nth-child(even){border-right:none;}
+.ent-proof:nth-last-child(-n+2){border-bottom:none;}
+.ent-proof-icon{width:32px;height:32px;border:1px solid var(--border-md);display:flex;align-items:center;justify-content:center;margin-bottom:12px;background:var(--off-white);}
+.ent-proof h5{font-size:13px;font-weight:600;margin-bottom:4px;}
+.ent-proof p{font-size:12px;color:var(--ink-muted);line-height:1.4;}
+
+/* ── FAQ ACCORDION ────────────────────────────────────────── */
+#faq{border-bottom:1px solid var(--border);}
+.faq-inner{max-width:var(--max);margin:0 auto;}
+.faq-list{display:grid;grid-template-columns:1fr;}
+.faq-item{border-bottom:1px solid var(--border);padding:24px 40px;}
+.faq-item:last-child{border-bottom:none;}
+.faq-trigger{width:100%;background:none;border:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;padding:0;font-size:15px;font-weight:600;letter-spacing:-0.2px;color:var(--ink);text-align:left;transition:color .2s;}
+.faq-trigger:hover{color:var(--blue);}
+.faq-icon{width:20px;height:20px;display:flex;align-items:center;justify-content:center;color:var(--blue);font-weight:600;transition:transform .2s;}
+.faq-item.active .faq-icon{transform:rotate(180deg);}
+.faq-content{overflow:hidden;max-height:0;transition:max-height .3s ease;color:var(--ink-muted);}
+.faq-item.active .faq-content{max-height:1000px;}
+.faq-content p{font-size:13px;line-height:1.6;margin-top:16px;}
+
+/* ── CTA ─────────────────────────────────────────────────── */
+#cta{background:var(--ink);color:var(--off-white);}
+.cta-inner{max-width:var(--max);margin:0 auto;display:grid;grid-template-columns:1fr 1fr;}
+.cta-l{padding:88px 64px 88px 0;border-right:1px solid rgba(255,255,255,0.08);display:flex;flex-direction:column;justify-content:center;}
+.cta-l .h2{color:var(--off-white);}
+.cta-sub{font-size:15px;line-height:1.6;color:rgba(255,252,249,.5);margin-top:20px;margin-bottom:40px;}
+.cta-acts{display:flex;align-items:stretch;gap:0;}
+.cta-acts .btn{border-right:1px solid rgba(255,255,255,0.15);}
+.cta-acts .btn:first-child{border-left:1px solid rgba(255,255,255,0.15);}
+.cta-r{padding:88px 0 88px 64px;display:flex;flex-direction:column;justify-content:center;}
+.cta-r-lbl{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,252,249,.3);margin-bottom:16px;}
+.cta-big-num{font-size:96px;font-weight:700;letter-spacing:-4px;line-height:1;color:rgba(255,255,255,0.08);margin-bottom:8px;}
+.cta-big-desc{font-size:14px;color:rgba(255,252,249,.4);}
+
+/* ── FOOTER ──────────────────────────────────────────────── */
+footer{background:var(--ink);border-top:1px solid rgba(255,255,255,0.08);}
+.foot-inner{max-width:var(--max);margin:0 auto;}
+.foot-top{display:grid;grid-template-columns:280px 1fr;border-bottom:1px solid rgba(255,255,255,0.08);}
+.foot-brand{padding:52px 40px 52px 0;border-right:1px solid rgba(255,255,255,0.08);}
+.foot-logo{font-size:15px;font-weight:700;color:var(--off-white);margin-bottom:8px;display:flex;align-items:center;gap:8px;}
+.foot-logo-mark{width:20px;height:20px;border-radius:4px;background:var(--blue);display:flex;align-items:center;justify-content:center;}
+.foot-tagline{font-size:12px;color:rgba(255,252,249,.35);}
+.foot-cols{display:grid;grid-template-columns:repeat(4,1fr);padding-left:40px;}
+.foot-col{padding:52px 32px 52px 0;}
+.foot-col-title{font-family:var(--mono);font-size:10px;letter-spacing:0.08em;text-transform:uppercase;color:rgba(255,252,249,.3);margin-bottom:16px;}
+.foot-links{list-style:none;display:flex;flex-direction:column;gap:10px;}
+.foot-links a{font-size:13px;color:rgba(255,252,249,.5);transition:color .2s;}
+.foot-links a:hover{color:var(--off-white);}
+.foot-bottom{display:flex;justify-content:space-between;align-items:center;padding:24px 40px;}
+.foot-copy{font-size:11px;color:rgba(255,252,249,.25);}
+.foot-legal{display:flex;gap:24px;}
+.foot-legal a{font-size:11px;color:rgba(255,252,249,.25);transition:color .2s;}
+.foot-legal a:hover{color:rgba(255,252,249,.5);}
+
+/* ── RESPONSIVE ─────────────────────────────────────────── */
+@media(max-width:1024px){
+  .nav-wrap,.hero-main,.hero-stats,.logos-grid,.how-inner,.features-inner,
+  .testi-inner,.integrations-inner,.why-inner,.enterprise-inner,
+  .faq-inner,.cta-inner,.foot-inner{padding-left:32px;padding-right:32px;}
+  .hero-main{padding-left:32px;padding-right:32px;}
+  .metrics-inner{grid-template-columns:1fr 1fr;}
+  .mcell:nth-child(2){border-right:none;}
+  .mcell:nth-child(3){border-top:1px solid rgba(255,255,255,.08);grid-column:span 2;border-right:none;}
+  .int-items{grid-template-columns:repeat(2,1fr);}
+}
+@media(max-width:768px){
+  .nav-links{display:none;}
+  .hero-main{grid-template-columns:1fr;gap:32px;padding:48px 20px;}
+  .hero-stats{grid-template-columns:1fr 1fr;}
+  .hstat:nth-child(3){grid-column:span 2;border-right:none;}
+  .sec-hd,.feat-block,.feat-block--flip,.testi-grid,.why-grid,.faq-list,
+  .enterprise-inner,.cta-inner,.foot-top{grid-template-columns:1fr;direction:ltr;}
+  .sec-hd-l{border-right:none;border-bottom:1px solid var(--border);padding:32px 20px;}
+  .sec-hd-r{padding:24px 20px 32px;}
+  .feat-text,.feat-block--flip .feat-text{border-right:none;border-left:none;border-bottom:1px solid var(--border);padding:36px 20px;}
+  .feat-vis{min-height:260px;padding:24px;}
+  .tcard{border-right:none;border-bottom:1px solid var(--border);}
+  .tcard:last-child{border-bottom:none;}
+  .why-card{border-right:none;}
+  .why-card:nth-last-child(-n+2){border-bottom:1px solid var(--border);}
+  .why-card:last-child{border-bottom:none;}
+  .steps-grid{grid-template-columns:1fr;}
+  .step{border-right:none;border-bottom:1px solid var(--border);}
+  .step:last-child{border-bottom:none;}
+  .int-section{grid-template-columns:1fr;}
+  .int-label{border-right:none;border-bottom:1px solid var(--border);}
+  .int-items{border-right:none;}
+  .int-item{border-right:1px solid var(--border);}
+  .int-item:nth-child(3n){border-right:1px solid var(--border);}
+  .int-item:nth-child(2n){border-right:none;}
+  .ent-left,.cta-l{border-right:none;border-bottom:1px solid rgba(255,255,255,.08);padding:48px 20px;}
+  .ent-right,.cta-r{padding:32px 20px 48px;}
+  .cta-l{justify-content:flex-start;}
+  .foot-brand{border-right:none;border-bottom:1px solid rgba(255,255,255,.08);padding:40px 20px;}
+  .foot-cols{grid-template-columns:1fr 1fr;padding:0 20px;}
+  .foot-bottom{flex-direction:column;gap:12px;padding:24px 20px;text-align:center;}
+  .metrics-inner{grid-template-columns:1fr;}
+  .mcell{border-right:none;border-bottom:1px solid rgba(255,255,255,.08);}
+  .mcell:last-child{border-bottom:none;}
+  .faq-item{padding:20px;}
+  .nav-wrap,.logos-grid,.foot-inner{padding-left:20px;padding-right:20px;}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-wrap">
+    <a href="/" class="nav-logo">
+      <span class="nav-logo-mark">
+        <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
+          <circle cx="6" cy="6" r="4" fill="white" opacity="0.9"/>
+          <circle cx="6" cy="6" r="2" fill="white"/>
+        </svg>
+      </span>
+      Blueberry
+    </a>
+    <ul class="nav-links">
+      <li><a href="#how">How it works</a></li>
+      <li><a href="#features">Features</a></li>
+      <li><a href="#why">Why Blueberry</a></li>
+    </ul>
+    <a href="/demo" class="btn btn-primary">Book a demo</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="hero-main">
+    <div>
+      <h1 class="h1 hero-h1-wrap">Turn social<br>engagement<br>into revenue.</h1>
+      <div class="hero-actions">
+        <a href="/demo" class="btn btn-primary btn-lg">Book a demo</a>
+        <a href="/coming-soon" class="btn btn-ghost btn-lg">See how it works</a>
+      </div>
+    </div>
+    <div class="hero-right">
+      <p class="body-lg">Automate personalized DMs to consumers who engage with your content, increasing revenue, ROAS, and customer loyalty.</p>
+    </div>
+  </div>
+  <div class="hero-stats">
+    <div class="hstat">
+      <div class="hstat-val">$<span>2M</span>+</div>
+      <div class="hstat-lbl">Revenue attributed to date</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val"><span>3.2</span>×</div>
+      <div class="hstat-lbl">Avg. ROAS lift</div>
+    </div>
+    <div class="hstat">
+      <div class="hstat-val"><span>70</span>%+</div>
+      <div class="hstat-lbl">Email and SMS opt-in rate</div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGOS -->
+<section id="logos">
+  <div class="logos-grid">
+    <div class="logos-lbl">Trusted by</div>
+    <div class="logos-row">
+      <span class="logo-item">Mellowsleep</span>
+      <span class="logo-item">immi</span>
+      <span class="logo-item">Chaos Audio</span>
+      <span class="logo-item">Impact</span>
+      <span class="logo-item">Alice</span>
+      <span class="logo-item">Glowing Goddess</span>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section id="how">
+  <div class="how-inner">
+    <div class="sec-hd">
+      <div class="sec-hd-l">
+        <div class="eyebrow"><span class="eyebrow-num">01</span> How it works</div>
+        <h2 class="h2">A smarter way to convert social traffic.</h2>
+      </div>
+      <div class="sec-hd-r">
+        <p class="body-lg">Automate personalized DMs to consumers who engage with your content, increasing revenue, ROAS, and customer loyalty.</p>
+      </div>
+    </div>
+    <div class="steps-grid">
+      <div class="step">
+        <span class="step-num">01 / 03</span>
+        <div class="step-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M3 8h10M8 3l5 5-5 5" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>A consumer engages with your content</h3>
+        <p>Blueberry detects every comment, like, story reply, and DM request across Instagram, TikTok, Facebook, and YouTube in real time.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">02 / 03</span>
+        <div class="step-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <rect x="2" y="4" width="12" height="9" rx="1" stroke="#5B7FFF" stroke-width="1.5"/>
+            <path d="M2 7h12" stroke="#5B7FFF" stroke-width="1.5"/>
+            <path d="M5 4V3M11 4V3" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Your AI Agent sends a personalized DM</h3>
+        <p>Within seconds, a tailored message goes out with the right offer, product recommendation, or discount — in your brand voice, not a template.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">03 / 03</span>
+        <div class="step-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+            <path d="M2 8l3.5 3.5L14 4" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h3>The sale is tracked back to the source</h3>
+        <p>Every conversion is attributed to the original engagement. You see exactly which posts, comments, and DMs are driving revenue.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURES -->
+<section id="features">
+  <div class="features-inner">
+    <div class="sec-hd">
+      <div class="sec-hd-l">
+        <div class="eyebrow"><span class="eyebrow-num">02</span> Platform</div>
+        <h2 class="h2">Every tool to close the loop on social.</h2>
+      </div>
+      <div class="sec-hd-r">
+        <p class="body-lg">From listening to converting — Blueberry is the only platform that ties social engagement directly to revenue, in one unified workspace built for B2C brands.</p>
+      </div>
+    </div>
+
+    <!-- Feature 1 -->
+    <div class="feat-block">
+      <div class="feat-text">
+        <div>
+          <div class="feat-num">01</div>
+          <h3>Convert comments into customers</h3>
+          <p>Your AI Agent identifies who engaged with your content, what they care about, and reaches out with an offer that lands. Personalized discounts, product links, and follow-up sequences sent automatically — within seconds of engagement.</p>
+          <div class="tags">
+            <span class="tag tag-blue">Comment to DM</span>
+            <span class="tag">Personalized offers</span>
+            <span class="tag">Discount automation</span>
+            <span class="tag">Follow-up sequences</span>
+            <span class="tag">Instagram DM campaigns</span>
+          </div>
+        </div>
+      </div>
+      <div class="feat-vis">
+        <div class="mock-dm">
+          <div class="dm-head">
+            <div class="dm-av">B</div>
+            <div>
+              <div class="dm-name">Blueberry AI Agent</div>
+              <div class="dm-sub">Automated · 2s after comment</div>
+            </div>
+          </div>
+          <div class="dm-body">
+            <div>
+              <div class="bub bub-out">Hey Emma 👋 Saw you liked our Clarity Serum post — here's 15% off just for you: CLARITY15</div>
+              <div class="bub-meta">Agent · just now</div>
+            </div>
+            <div style="align-self:flex-end;text-align:right;">
+              <div class="bub bub-in">omg thank you!! just ordered 🙌</div>
+              <div class="bub-meta bub-meta-r">Emma · 4 min later</div>
+            </div>
+            <div>
+              <div class="bub bub-out">Amazing! Your order is confirmed. Here's your tracking link ✨</div>
+            </div>
+            <div class="conv-pill">
+              <div class="conv-dot"></div>
+              Converted · +$68 attributed
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 2 -->
+    <div class="feat-block feat-block--flip">
+      <div class="feat-text">
+        <div>
+          <div class="feat-num">02</div>
+          <h3>Email & SMS flows that drive first-party data</h3>
+          <p>Capture interested customers and build your owned audience directly. Blueberry syncs engagement data with your email and SMS platform, turning social interactions into loyal subscribers and repeat buyers.</p>
+          <div class="tags">
+            <span class="tag tag-blue">Email capture</span>
+            <span class="tag">SMS automation</span>
+            <span class="tag">First-party data</span>
+            <span class="tag">Audience building</span>
+          </div>
+        </div>
+      </div>
+      <div class="feat-vis">
+        <div class="mock-feed">
+          <div class="feed-row">
+            <div class="fav fav-blue"></div>
+            <div class="fbody">
+              <div class="fname">@sarah.m</div>
+              <div class="ftext">"obsessed, need the serum NOW 😩"</div>
+            </div>
+            <span class="fbadge fbadge-intent">Intent</span>
+          </div>
+          <div class="feed-row">
+            <div class="fav"></div>
+            <div class="fbody">
+              <div class="fname">@taylork</div>
+              <div class="ftext">"does this ship to Canada?? asking for a friend 👀"</div>
+            </div>
+            <span class="fbadge fbadge-ai">AI sent</span>
+          </div>
+          <div class="feed-row">
+            <div class="fav fav-blue"></div>
+            <div class="fbody">
+              <div class="fname">@jake.r</div>
+              <div class="ftext">"where can I buy this I can't find it anywhere"</div>
+            </div>
+            <span class="fbadge fbadge-intent">Intent</span>
+          </div>
+          <div class="feed-row">
+            <div class="fav"></div>
+            <div class="fbody">
+              <div class="fname">@maya.c</div>
+              <div class="ftext">"third time watching this video 😭 I need it"</div>
+            </div>
+            <span class="fbadge fbadge-ai">AI sent</span>
+          </div>
+          <div class="feed-row">
+            <div class="fav fav-blue"></div>
+            <div class="fbody">
+              <div class="fname">@priya.n</div>
+              <div class="ftext">"ok this is on my wishlist, when's the next sale?"</div>
+            </div>
+            <span class="fbadge fbadge-intent">Intent</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Feature 3 -->
+    <div class="feat-block">
+      <div class="feat-text">
+        <div>
+          <div class="feat-num">03</div>
+          <h3>Revenue attribution that closes the loop</h3>
+          <p>Stop guessing what's working. Blueberry tracks every touchpoint from first comment to final purchase — giving you clear ROI on every campaign, post, and automated conversation. Connects directly with Shopify.</p>
+          <div class="tags">
+            <span class="tag tag-blue">Shopify integration</span>
+            <span class="tag">LTV tracking</span>
+            <span class="tag">Post-level ROI</span>
+          </div>
+        </div>
+      </div>
+      <div class="feat-vis">
+        <div class="mock-analytics">
+          <div class="ma-head">
+            <span class="ma-title">Revenue converted · last 30d</span>
+            <span class="ma-delta">↑ 34%</span>
+          </div>
+          <div class="ma-bars">
+            <div class="bar" style="height:38%;"></div>
+            <div class="bar" style="height:52%;"></div>
+            <div class="bar" style="height:44%;"></div>
+            <div class="bar" style="height:62%;"></div>
+            <div class="bar" style="height:50%;"></div>
+            <div class="bar" style="height:70%;"></div>
+            <div class="bar" style="height:58%;"></div>
+            <div class="bar bar-blue" style="height:82%;"></div>
+            <div class="bar bar-blue" style="height:90%;"></div>
+            <div class="bar bar-blue" style="height:100%;"></div>
+          </div>
+          <div class="ma-stats">
+            <div class="ma-stat"><span class="ma-val">$24k</span><span class="ma-lbl">Attributed</span></div>
+            <div class="ma-stat"><span class="ma-val">3.8×</span><span class="ma-lbl">ROAS</span></div>
+            <div class="ma-stat"><span class="ma-val">81%</span><span class="ma-lbl">Auto rate</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- METRICS BAND -->
+<section id="metrics">
+  <div class="metrics-inner">
+    <div class="mcell">
+      <div class="mval">$<span>2M</span>+</div>
+      <div class="mdesc">Revenue directly attributed to Blueberry conversations</div>
+    </div>
+    <div class="mcell">
+      <div class="mval"><span>3.2</span>×</div>
+      <div class="mdesc">Median ROAS lift when replacing manual community management</div>
+    </div>
+    <div class="mcell">
+      <div class="mval"><span>70</span>%+</div>
+      <div class="mdesc">Email and SMS opt-in rate from AI-driven DM campaigns</div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section id="testimonials">
+  <div class="testi-inner">
+    <div class="sec-hd">
+      <div class="sec-hd-l">
+        <div class="eyebrow"><span class="eyebrow-num">03</span> Results</div>
+        <h2 class="h2">What leading brands say.</h2>
+      </div>
+      <div class="sec-hd-r">
+        <p class="body-lg">Blueberry is trusted by the fastest-growing DTC brands in beauty, wellness, food, and fashion.</p>
+      </div>
+    </div>
+    <div class="testi-grid">
+      <div class="tcard">
+        <p class="tcard-q">"Other solutions felt templated and rigid. With Blueberry, the responses feel human. Now it sounds like us, not a script."</p>
+        <div class="tcard-author">
+          <div class="tav">CX</div>
+          <div><div class="tname">CX Lead</div><div class="trole">immi</div></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <p class="tcard-q">"The cost versus value is a no-brainer. We got 10× ROI in less than two weeks."</p>
+        <div class="tcard-author">
+          <div class="tav">DB</div>
+          <div><div class="tname">Dyllan Barnes</div><div class="trole">Head of Strategic Growth & Community, Impact Dog Crates</div></div>
+        </div>
+      </div>
+      <div class="tcard">
+        <p class="tcard-q">"Now every day I first check email, then I check Blueberry."</p>
+        <div class="tcard-author">
+          <div class="tav">LM</div>
+          <div><div class="tname">Landon McCoy</div><div class="trole">Founder, Chaos Audio</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- INTEGRATIONS -->
+<section id="integrations">
+  <div class="integrations-inner">
+    <div class="sec-hd">
+      <div class="sec-hd-l">
+        <div class="eyebrow"><span class="eyebrow-num">04</span> Integrations</div>
+        <h2 class="h2">Connects with your existing stack.</h2>
+      </div>
+      <div class="sec-hd-r">
+        <p class="body-lg">Blueberry fits into the tools you already use. No rip-and-replace. One integration and you're live in under 30 minutes.</p>
+      </div>
+    </div>
+    
+    <div class="int-section">
+      <div class="int-label">
+        <h4>Social</h4>
+        <p style="font-size:12px;color:var(--ink-muted);margin-top:4px;">Where your customers engage</p>
+      </div>
+      <div class="int-items">
+        <div class="int-item">
+          <div class="int-icon">📱</div>
+          <div class="int-name">Instagram</div>
+        </div>
+        <div class="int-item">
+          <div class="int-icon">🎵</div>
+          <div class="int-name">TikTok</div>
+        </div>
+        <div class="int-item">
+          <div class="int-icon">🔵</div>
+          <div class="int-name">Facebook</div>
+        </div>
+        <div class="int-item">
+          <div class="int-icon">▶️</div>
+          <div class="int-name">YouTube</div>
+        </div>
+        <div class="int-item">
+          <div class="int-icon">💬</div>
+          <div class="int-name">Slack</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="int-section">
+      <div class="int-label">
+        <h4>Commerce & Marketing</h4>
+        <p style="font-size:12px;color:var(--ink-muted);margin-top:4px;">Where conversions happen</p>
+      </div>
+      <div class="int-items">
+        <div class="int-item">
+          <div class="int-icon">🛍️</div>
+          <div class="int-name">Shopify</div>
+        </div>
+        <div class="int-item">
+          <div class="int-icon">📧</div>
+          <div class="int-name">Klaviyo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY BLUEBERRY -->
+<section id="why">
+  <div class="why-inner">
+    <div class="sec-hd">
+      <div class="sec-hd-l">
+        <div class="eyebrow"><span class="eyebrow-num">05</span> Why Blueberry</div>
+        <h2 class="h2">Built for B2C, from the ground up.</h2>
+      </div>
+      <div class="sec-hd-r">
+        <p class="body-lg">There's no shortage of social tools. Blueberry is the only one that starts and ends with revenue — built specifically for consumer brands who sell through social.</p>
+      </div>
+    </div>
+    <div class="why-grid">
+      <div class="why-card">
+        <div class="why-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l3.5 3.5L14 4" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h4>Revenue-first, not engagement-first</h4>
+        <p>Every feature is built around one question: did this make money? Likes and impressions are table stakes. Blueberry shows you attributed revenue from every post and every conversation.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="#5B7FFF" stroke-width="1.5"/><path d="M5.5 8l2 2 3-3" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h4>Your brand voice, not generic AI</h4>
+        <p>Our AI is trained on your tone, product catalog, and customer history. Every response sounds like you — not a chatbot. Consistent across millions of conversations without adding headcount.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M2 8h4M8 14v-4M14 8h-4" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h4>One platform for the full funnel</h4>
+        <p>Social listening, DM automation, influencer tracking, revenue attribution — all in one workspace. No more switching between tools and losing context on what converted.</p>
+      </div>
+      <div class="why-card">
+        <div class="why-icon">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1" stroke="#5B7FFF" stroke-width="1.5"/><path d="M5 8h6M8 5v6" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <h4>Setup in under 30 minutes</h4>
+        <p>Connect your channels, upload your brand guidelines, and go live in one click. No engineering required. Most customers see their first attributed conversion within 48 hours.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ENTERPRISE BAND -->
+<section id="enterprise">
+  <div class="enterprise-inner">
+    <div class="ent-left">
+      <div class="eyebrow" style="margin-bottom:16px;"><span class="eyebrow-num">06</span> Enterprise</div>
+      <h2 class="h2" style="margin-bottom:20px;">Enterprise grade scale & control.</h2>
+      <p class="body-lg" style="margin-bottom:0;">Trusted by some of the fastest-growing ecommerce and retail companies. Blueberry meets the highest enterprise standards with controls that keep every interaction on-brand and on-policy.</p>
+    </div>
+    <div class="ent-right">
+      <div class="ent-proof">
+        <div class="ent-proof-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 1l1.5 3.5L12 5l-2.5 2.5.5 3.5L7 9.5 4 11l.5-3.5L2 5l3.5-.5L7 1z" stroke="#5B7FFF" stroke-width="1.2" stroke-linejoin="round"/></svg>
+        </div>
+        <h5>SOC II Type 2 Compliant</h5>
+        <p>Audited security controls across access, availability, and confidentiality.</p>
+      </div>
+      <div class="ent-proof">
+        <div class="ent-proof-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="5" width="10" height="8" rx="1" stroke="#5B7FFF" stroke-width="1.2"/><path d="M4 5V4a3 3 0 116 0v1" stroke="#5B7FFF" stroke-width="1.2" stroke-linecap="round"/></svg>
+        </div>
+        <h5>Single Sign-On (SSO)</h5>
+        <p>SAML and OIDC support for seamless integration with your identity provider.</p>
+      </div>
+      <div class="ent-proof">
+        <div class="ent-proof-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5" stroke="#5B7FFF" stroke-width="1.2"/><path d="M4.5 7l2 2 3-3" stroke="#5B7FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h5>Role-Based Access</h5>
+        <p>Granular permissions across teams, brands, and channels in one workspace.</p>
+      </div>
+      <div class="ent-proof">
+        <div class="ent-proof-icon">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M7 2l5 5-5 5" stroke="#5B7FFF" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <h5>Brand Safety Guardrails</h5>
+        <p>Every automated response goes through your custom policy rules before sending.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section id="faq">
+  <div class="faq-inner">
+    <div class="sec-hd">
+      <div class="sec-hd-l">
+        <div class="eyebrow"><span class="eyebrow-num">07</span> FAQ</div>
+        <h2 class="h2">Common questions.</h2>
+      </div>
+      <div class="sec-hd-r">
+        <p class="body-lg">Everything you need to know before getting started.</p>
+      </div>
+    </div>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-trigger">
+          <span>How long does setup take?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <p>Most brands are fully live within 30 minutes. You connect your social channels, upload your brand voice guidelines and product catalog, and Blueberry handles the rest. No engineering or developer resources required.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger">
+          <span>How does your platform capture first-party data?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <p>Blueberry integrates with your email and SMS platforms to capture interested customers from social conversations. When someone engages with your content, our AI can invite them to join your email list or opt into SMS for exclusive offers and updates.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger">
+          <span>Will the DMs actually sound like us?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <p>Yes. Your AI Agent is trained on your specific tone guidelines, product information, FAQs, and past community interactions. We build in a review period where you can read and correct replies before going to full autopilot.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger">
+          <span>What platforms are supported?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <p>Instagram (including DM campaigns and comment automation), TikTok, Facebook, YouTube, and Slack. Shopify integration is included on all plans for downstream revenue attribution.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger">
+          <span>How is revenue attributed?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <p>Blueberry places a unique tracking link in every DM containing a product recommendation or offer. When a purchase is made, it's tied back to the original social engagement, the post, and the specific conversation — all visible in your dashboard.</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-trigger">
+          <span>Is there a free trial?</span>
+          <span class="faq-icon">+</span>
+        </button>
+        <div class="faq-content">
+          <p>We offer a guided demo and a 14-day pilot program. Book a demo and our team will walk you through the product and scope a pilot that fits your brand. Most pilots generate their first attributed revenue within the first week.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section id="cta">
+  <div class="cta-inner">
+    <div class="cta-l">
+      <h2 class="h2" style="color:var(--off-white);">Your community is talking.<br>Are you converting?</h2>
+      <p class="cta-sub">See how Blueberry's AI Agents turn every comment, like, and story view into a measurable revenue moment. Setup takes under 30 minutes.</p>
+      <div class="cta-acts">
+        <a href="/demo" class="btn btn-white btn-lg">Book a demo</a>
+        <a href="/coming-soon" class="btn btn-outline-white btn-lg">See how it works</a>
+      </div>
+    </div>
+    <div class="cta-r">
+      <div class="cta-r-lbl">Average across all customers</div>
+      <div class="cta-big-num">3.2×</div>
+      <div class="cta-big-desc">ROAS lift from social DM automation</div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-inner">
+    <div class="foot-top">
+      <div class="foot-brand">
+        <div class="foot-logo">
+          <span class="foot-logo-mark">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><circle cx="5" cy="5" r="3" fill="white" opacity="0.9"/></svg>
+          </span>
+          Blueberry
+        </div>
+        <div class="foot-tagline">Turn social engagement into revenue.</div>
+      </div>
+      <div class="foot-cols">
+        <div class="foot-col">
+          <div class="foot-col-title">Product</div>
+          <ul class="foot-links">
+            <li><a href="#how">How it works</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#why">Why Blueberry</a></li>
+            <li><a href="#integrations">Integrations</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <div class="foot-col-title">Company</div>
+          <ul class="foot-links">
+            <li><a href="/about">About</a></li>
+            <li><a href="/blog">Blog</a></li>
+            <li><a href="/careers">Careers</a></li>
+            <li><a href="/contact">Contact</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <div class="foot-col-title">Resources</div>
+          <ul class="foot-links">
+            <li><a href="/blog">Latest posts</a></li>
+            <li><a href="/case-studies">Case studies</a></li>
+            <li><a href="/faq">FAQ</a></li>
+            <li><a href="/docs">Documentation</a></li>
+          </ul>
+        </div>
+        <div class="foot-col">
+          <div class="foot-col-title">Connect</div>
+          <ul class="foot-links">
+            <li><a href="https://instagram.com">Instagram</a></li>
+            <li><a href="https://linkedin.com">LinkedIn</a></li>
+            <li><a href="https://twitter.com">Twitter / X</a></li>
+            <li><a href="/blog">Blog</a></li>
+          </ul>
+        </div>
+      </div>
+    </div>
+    <div class="foot-bottom">
+      <div class="foot-copy">© 2026 Blueberry Social Inc. All rights reserved.</div>
+      <div class="foot-legal">
+        <a href="/privacy">Privacy Policy</a>
+        <a href="/terms">Terms of Service</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+// Smooth scroll for anchor links
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  const h=a.getAttribute('href');
+  if(h==='#')return;
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(h);
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth',block:'start'});}
+  });
+});
+
+// Nav shadow on scroll
+const nav=document.querySelector('nav');
+window.addEventListener('scroll',()=>{
+  nav.style.boxShadow=window.scrollY>4?'0 1px 0 rgba(32,32,32,0.06)':'none';
+},{passive:true});
+
+// FAQ Accordion
+const faqTriggers = document.querySelectorAll('.faq-trigger');
+faqTriggers.forEach(trigger => {
+  trigger.addEventListener('click', () => {
+    const item = trigger.closest('.faq-item');
+    const isActive = item.classList.contains('active');
+    
+    // Close all other items
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('active'));
+    
+    // Toggle current item
+    if (!isActive) {
+      item.classList.add('active');
+    }
+  });
+});
+</script>
+</body>
+</html>
