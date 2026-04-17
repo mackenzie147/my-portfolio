@@ -308,7 +308,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 18px
 
 <!-- FAKE MONEY DISCLAIMER BANNER — always visible -->
 <div class="fake-banner">
-  <span>Play money only — <strong>everyone starts with $500 · no real money involved</strong></span>
+  <span>Play money only — <strong>everyone starts with $500 · no real money involved.</strong> In accordance with the <strong>Wire Act (18 U.S.C. § 1084)</strong> and <strong>FAA regulations prohibiting commercial incentives tied to flight operations</strong>, FlightBet does not involve real currency or prizes.</span>
   <a class="fb-link" onclick="openAuth('signup')">Sign up free →</a>
 </div>
 
@@ -946,17 +946,40 @@ window.placeBet=async function(id){
   await saveUP();pushFeed(CU.displayName,bside,amt,id,f.dest);renderAuth();renderAll();renderDetail(id);showToast('Bet: '+bside+' $'+amt+' on '+id,'ok');refreshLB();updateYYZ();
 };
 
-// ── PORTFOLIO — FIX: no scroll snap on tab switch ─────────────────────────────
-window.showPortfolio=async function(){if(!CU){openAuth();return;}view='portfolio';const bc=document.getElementById('board-content');if(bc)bc.style.display='none';renderPort();};
-async function renderPort(){
+// ── PORTFOLIO ─────────────────────────────────────────────────────────────────
+window.showPortfolio=async function(){if(!CU){openAuth();return;}view='portfolio';const bc=document.getElementById('board-content');if(bc)bc.style.display='none';renderPort(true);};
+async function renderPort(force){
   let pv=document.getElementById('pview');
   if(!pv){
-    pv=document.createElement('div');
-    pv.id='pview';
-    pv.className='pview';
+    pv=document.createElement('div');pv.id='pview';pv.className='pview';
     document.getElementById('main-area').appendChild(pv);
+    renderPV(pv,UP,false);return;
   }
-  renderPV(pv,UP,false);
+  // If already rendered and called from background (autoResolve/setInterval),
+  // only patch the dynamic numbers — never wipe #achart, so tab state is preserved
+  if(!force&&document.getElementById('achart')){
+    patchPortfolio(UP);
+  } else {
+    renderPV(pv,UP,false);
+  }
+}
+// Targeted patch: updates numbers/positions without touching the chart element
+function patchPortfolio(profile){
+  const pos=Object.entries(profile.positions||{});
+  const staked=pos.reduce((s,[,p])=>s+p.amount,0);
+  const res=profile.resolved||[];
+  const wonA=res.filter(r=>r.won).reduce((s,r)=>s+r.payout,0);
+  const lostA=res.filter(r=>!r.won).reduce((s,r)=>s+r.staked,0);
+  const pnl=wonA-lostA;
+  const wr=res.length?Math.round(res.filter(r=>r.won).length/res.length*100):0;
+  const cards=document.querySelectorAll('.pgrid .pcard .pcv');
+  if(cards[0])cards[0].textContent='$'+Math.round(profile.balance);
+  if(cards[1])cards[1].textContent='$'+Math.round(staked);
+  if(cards[2]){cards[2].textContent=(pnl>=0?'+':'')+'$'+Math.round(pnl);cards[2].parentElement.className='pcard '+(pnl>=0?'gr':'re');}
+  if(cards[3])cards[3].textContent=wr+'%';
+  // Keep chart data reference fresh without re-rendering
+  const ac=document.getElementById('achart');
+  if(ac)window['_cp_achart']=profile;
 }
 
 function renderPV(pv,profile,isPublic){
@@ -1117,7 +1140,7 @@ window.showRefill=function(){
     </div>
     <button class="mb" onclick="doRefill()">yeah give me the fake money</button>
     <div style="text-align:center"><button onclick="document.getElementById('refo').remove()" style="background:none;border:none;color:var(--text3);font-size:11px;cursor:pointer;font-family:var(--fu)">no thanks</button></div>
-    <div style="font-size:9px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6">FlightBet uses play money only. No real currency is involved. This is a prediction game.</div>
+    <div style="font-size:9px;color:var(--text3);text-align:center;margin-top:10px;line-height:1.6">FlightBet uses play money only. In accordance with 18 U.S.C. § 1084 (Wire Act) and FAA regulations prohibiting commercial incentives tied to flight operations, no real currency is ever used or awarded.</div>
   </div>`;
   document.body.appendChild(o);
 };
