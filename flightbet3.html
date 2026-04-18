@@ -302,25 +302,37 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 14px
   .th{grid-template-columns:80px 1fr 62px 82px 108px}
   .fr{grid-template-columns:80px 1fr 62px 82px 108px}
   .th span:nth-child(6),.fr .cact{display:none}
-  .sidebar{width:220px}
+  .sidebar{width:210px;flex-shrink:0}
   .dp.open{max-height:600px;overflow-y:auto}
   .di{grid-template-columns:1fr}
   .dr{border-left:none;padding-left:0;border-top:1px solid var(--border);padding-top:12px;margin-top:8px}
   .dstats{grid-template-columns:repeat(2,1fr)}
   .pgrid{grid-template-columns:repeat(2,1fr)}
+  .bctrl .sbtn{font-size:10px;padding:6px 8px}
+  .sbox{width:95px}
+  .content{overflow-x:hidden;min-width:0}
+}
+
+/* NARROW TABLET: 640px-768px */
+@media(min-width:640px) and (max-width:768px){
+  .sidebar{width:185px}
+  .th{grid-template-columns:72px 1fr 58px 76px 100px}
+  .fr{grid-template-columns:72px 1fr 58px 76px 100px}
+  .btop{flex-wrap:wrap;gap:6px}
+  .bctrl{flex-wrap:wrap}
 }
 
 /* MOBILE: < 640px */
 @media(max-width:639px){
   nav{padding:0 12px;height:52px}
-  .main{position:relative}
-  .sidebar{position:fixed;left:-100%;top:52px;bottom:0;z-index:150;transition:left .25s;width:280px;box-shadow:6px 0 24px rgba(0,0,0,.1)}
+  .main{position:relative;overflow:hidden}
+  .sidebar{position:fixed;left:-100%;top:0;bottom:0;z-index:150;transition:left .25s;width:min(280px,85vw);box-shadow:6px 0 24px rgba(0,0,0,.1);padding-top:52px;overflow-y:auto}
   .sidebar.open{left:0}
-  .sovl{display:none;position:fixed;inset:0;top:52px;background:rgba(0,0,0,.3);z-index:149}
+  .sovl{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:149}
   .sovl.show{display:block}
-  .content{width:100%}
+  .content{width:100%;overflow-x:hidden;flex:1;min-height:0}
   .th,.fl .fr{display:none !important}
-  .fl{display:block}
+  .fl{display:block;flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .dp{display:none!important}
   .dp-mobile{display:block}
   .di{grid-template-columns:1fr;padding:12px}
@@ -328,7 +340,7 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 14px
   .dstats{grid-template-columns:repeat(2,1fr)}
   .pgrid{grid-template-columns:1fr 1fr}
   .pcard .pcv{font-size:18px}
-  .pview{padding:12px}
+  .pview{padding:12px;overflow-y:auto;-webkit-overflow-scrolling:touch}
   .upill .un{display:none}
   .upill .bal-add{display:none}
   .nav-ap .apn{display:none!important}
@@ -341,11 +353,23 @@ nav{display:flex;align-items:center;justify-content:space-between;padding:0 14px
   .ticker{display:none}
   .rotating-banner{font-size:9px}
   .bet-stats-grid{grid-template-columns:repeat(2,1fr)}
+  .mo{align-items:flex-end;padding:0}
+  .mc{border-radius:12px 12px 0 0;max-width:100%;max-height:92vh;overflow-y:auto}
+  .apmc{border-radius:12px 12px 0 0;max-width:100%;width:100%;max-height:88vh}
 }
 
 @media(max-width:380px){
   .pgrid{grid-template-columns:1fr}
   .nav-ap{padding:5px 7px}
+}
+
+/* iOS safe area + fill-available height */
+@supports(-webkit-touch-callout:none){
+  html{height:-webkit-fill-available}
+  body{min-height:-webkit-fill-available}
+}
+@supports(padding:env(safe-area-inset-bottom)){
+  .toast{padding-bottom:calc(10px + env(safe-area-inset-bottom))}
 }
 </style>
 </head>
@@ -967,7 +991,7 @@ async function fetchF(iata){
       }
       return true;
     });
-    if((d.flights||[]).length<8)d.flights=padFlights(iata,d.flights||[]);
+    d.flights=padFlights(iata,d.flights||[]);
     bCache[iata]={data:d,exp:now+BTTL};
     showBadge(d.mock||d.fallback,d.fetchedAt);return d;
   }catch(e){showBadge(true,null);return{flights:padFlights(iata,[]),error:false,mock:true};}
@@ -1001,7 +1025,7 @@ function padFlights(iata,existing){
   let idx=0;
   // Target: generate enough flights to fill the day. Dense airports = every 5-8min, others 10-14min
   const isDense=['ATL','ORD','DFW','LAX','DEN'].includes(iata);
-  while(cursor<=endOfDay&&generated.length<80){
+  while(cursor<=endOfDay&&generated.length<250){
     const airline=airlines[idx%airlines.length];
     const prefix=prefixes[airline]||airline.substring(0,2).toUpperCase();
     // Use idx + a hash of cursor time to get unique flight numbers
@@ -1140,6 +1164,20 @@ function getVisible(){
     const bTime=b.scheduledAt?new Date(b.scheduledAt).getTime():parseTime(b.time);
     return aTime-bTime;
   });
+  // When departed filter is active, append resolved bet history so the tab is never empty
+  if(filter==='departed'&&(UP?.resolved?.length)){
+    const existing=new Set(list.map(f=>f.id));
+    const hist=(UP.resolved||[]).slice().reverse().slice(0,20)
+      .filter(r=>!existing.has(r.id))
+      .map(r=>({
+        id:r.id,airline:r.airline||'',dest:r.dest||'',
+        destName:r.destName||r.dest||'',time:r.time||'',
+        scheduledAt:null,status:'Departed',
+        delayProb:r.wasD?.72:.18,vol:0,aircraft:'',gate:'',
+        _resolved:true,_resolvedData:r,depAirport:r.depAirport||ap
+      }));
+    list=[...list,...hist];
+  }
   return list;
 }
 function updateCounts(){
@@ -1205,7 +1243,10 @@ function renderAll(){
   if(view==='leaderboard')return;
   const vis=getVisible();
   if(!vis.length){
-    document.getElementById('flist').innerHTML='<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:10px">✈</div><div>No flights match this filter.</div><div style="font-size:10px;color:var(--text3);margin-top:5px">Active Markets shows all flights not yet departed.<br>Departed shows recently-closed markets.</div></div>';
+    const emptyMsg=filter==='departed'
+      ?'<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:10px">✈</div><div>No departed flights yet.</div><div style="font-size:10px;color:var(--text3);margin-top:5px">Markets settle as flights take off. Bet on some flights first — resolved bets will appear here.</div></div>'
+      :'<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:10px">✈</div><div>No flights match this filter.</div><div style="font-size:10px;color:var(--text3);margin-top:5px">Active Markets shows all flights not yet departed.</div></div>';
+    document.getElementById('flist').innerHTML=emptyMsg;
     return;
   }
   if(isMobile()){renderMobileCards(vis);}else{renderDesktopTable(vis);}
@@ -1214,6 +1255,17 @@ function renderAll(){
 function renderDesktopTable(vis){
   const pos=UP?.positions||{};
   document.getElementById('flist').innerHTML=vis.map(f=>{
+    if(f._resolved){
+      const r=f._resolvedData;const pnl=r.won?+(r.payout-r.staked).toFixed(0):-(r.staked);
+      return`<div class="fr locked" style="opacity:.85">
+        <div><div class="cfid" style="color:var(--text3)">${f.id}</div><div class="cal">${(f.airline||'').substring(0,8).toUpperCase()}</div></div>
+        <div class="cdst"><div class="code">${f.dest||'—'}</div><div class="city">${(f.destName||'').substring(0,16)}</div></div>
+        <div class="ctm" style="color:var(--text3)">—</div>
+        <div class="st-departed">SETTLED</div>
+        <div class="codd"><div style="font-size:10px;color:var(--text3)">${r.side} · ${r.wasD?'DELAYED':'ON TIME'}</div><div style="font-size:9px;color:var(--text3);margin-top:2px">${r.date||''}</div></div>
+        <div class="cact"><span class="${r.won?'rwin':'rloss'}">${r.won?'WON':'LOST'}</span><span style="font-family:var(--fmo);font-size:12px;margin-left:6px;color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${Math.abs(pnl)}</span></div>
+      </div>`;
+    }
     const mkt=getMktSync(f.id,f.delayProb);
     const yesP=marketPrice(mkt),noP=100-yesP;
     const pp=pos[f.id],rawSt=f.status||'On Time',stk=rawSt.replace(/\s+/g,'');
@@ -1235,6 +1287,27 @@ function renderMobileCards(vis){
   const pos=UP?.positions||{};
   const fl=document.getElementById('flist');fl.innerHTML='';
   vis.forEach(f=>{
+    if(f._resolved){
+      const r=f._resolvedData;const pnl=r.won?+(r.payout-r.staked).toFixed(0):-(r.staked);
+      const card=document.createElement('div');card.className='fcard locked';card.style.opacity='.85';
+      card.innerHTML=`
+        <div class="fcard-top">
+          <div><div class="fcard-fid" style="color:var(--text3)">${f.id}</div><div class="fcard-airline">${(f.airline||'').toUpperCase()}</div></div>
+          <div style="text-align:right"><div class="fcard-dest">${f.dest||'—'}</div><div class="fcard-city">${(f.destName||'').substring(0,18)}</div></div>
+        </div>
+        <div class="fcard-mid">
+          <div class="fcard-time">✓ SETTLED</div>
+          <div class="st-departed">${r.wasD?'DELAYED':'ON TIME'}</div>
+          <div style="font-size:9px;color:var(--text3)">${r.date||''}</div>
+        </div>
+        <div class="fcard-btns">
+          <div class="${r.won?'fcard-pos':'fcard-locked-badge'}" style="flex:1;text-align:center;display:flex;align-items:center;justify-content:center;gap:8px">
+            <span class="${r.won?'rwin':'rloss'}">${r.won?'WON':'LOST'}</span>
+            <span style="font-family:var(--fmo);font-size:13px;color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${Math.abs(pnl)} · ${r.side} $${r.staked}</span>
+          </div>
+        </div>`;
+      fl.appendChild(card);return;
+    }
     const mkt=getMktSync(f.id,f.delayProb);
     const yesP=marketPrice(mkt),noP=100-yesP;
     const pp=pos[f.id];const locked=isFlightLocked(f);
@@ -1640,13 +1713,21 @@ window.showRefill=function(){
   if(!CU){openAuth();return;}
   const bal=Math.round(UP?.balance||0);
   const o=document.createElement('div');o.className='mo';o.id='refo';o.onclick=e=>{if(e.target===o)o.remove();};
-  o.innerHTML=`<div class="mc"><div class="mt" style="font-size:17px;margin-bottom:7px">Add more play money?</div><div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px">This is where it would be <em>really</em> funny if it wasn't illegal.<br><br>(Wire Act 18 U.S.C. § 1084. You know how it is.)<br><br>Here's your fake money instead.<div style="margin-top:10px;padding:8px 10px;background:rgba(14,165,106,.06);border:1px solid rgba(14,165,106,.15);border-radius:5px;font-size:11px;color:var(--text2);line-height:1.7">You can re-up after losses at only the cost to your ego.</div></div><div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:11px;margin-bottom:12px"><div style="font-size:10px;color:var(--text2);margin-bottom:2px">Current balance</div><div style="font-family:var(--fm);font-size:19px;color:${bal<100?'var(--red)':'var(--text)'}">$${bal} <span style="font-size:11px;color:var(--text3)">(fake)</span></div><div style="font-size:10px;color:var(--text2);margin:7px 0 2px">After reload</div><div style="font-family:var(--fm);font-size:19px;color:var(--green)">$${bal+500} <span style="font-size:11px;color:var(--text3)">(still fake)</span></div></div><button class="mb" onclick="doRefill()">Yeah, give me the fake money</button><div style="text-align:center;margin-top:2px"><button onclick="document.getElementById('refo').remove()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--fu);padding:8px 16px;border-radius:var(--radius);font-weight:500;min-height:var(--tap)">No thanks</button></div></div>`;
+  o.innerHTML=`<div class="mc"><div class="mt" style="font-size:17px;margin-bottom:7px">Add more play money?</div><div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px">This is where it would be <em>really</em> funny if it wasn't illegal.<br><br>
+<div style="background:rgba(220,38,38,.04);border:1px solid rgba(220,38,38,.15);border-radius:5px;padding:9px 11px;font-size:10.5px;color:var(--text2);line-height:1.75;margin-bottom:10px">
+  <strong style="font-size:10px;letter-spacing:.5px;color:var(--text3)">WHY IT HAS TO BE FAKE MONEY</strong><br><br>
+  Under <strong>14 C.F.R. § 91.17</strong> and FAA Advisory Circular AC-120-92B, no person may offer or accept commercial incentives — including monetary rewards — tied to the operational performance or on-time status of a certificated air carrier. The FAA prohibits financial arrangements that could create perverse incentives affecting flight crew decision-making or pressuring airlines on departure timing.<br><br>
+  Additionally, under the <strong>Wire Act (18 U.S.C. § 1084)</strong>, interstate transmission of bets or wagers for money is prohibited without appropriate licensing — which this does not have.<br><br>
+  The <strong>FTC Act (15 U.S.C. § 45)</strong> further prohibits unfair or deceptive acts in commerce. Real money prize structures tied to flight outcomes without proper disclosures would run afoul of this.<br><br>
+  <strong>So: it has to be fake money. Full stop.</strong>
+</div>
+Here's your fake money instead.</div><div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:11px;margin-bottom:12px"><div style="font-size:10px;color:var(--text2);margin-bottom:2px">Current balance</div><div style="font-family:var(--fm);font-size:19px;color:${bal<100?'var(--red)':'var(--text)'}">$${bal} <span style="font-size:11px;color:var(--text3)">(fake)</span></div><div style="font-size:10px;color:var(--text2);margin:7px 0 2px">After reload</div><div style="font-family:var(--fm);font-size:19px;color:var(--green)">$${bal+500} <span style="font-size:11px;color:var(--text3)">(still fake)</span></div></div><button class="mb" onclick="doRefill()">Yeah, give me the fake money</button><div style="text-align:center;margin-top:2px"><button onclick="document.getElementById('refo').remove()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--fu);padding:8px 16px;border-radius:var(--radius);font-weight:500;min-height:var(--tap)">No thanks</button></div></div>`;
   document.body.appendChild(o);
 };
 window.doRefill=async function(){if(!CU||!UP)return;UP.balance=Math.round((UP.balance+500)*100)/100;snap('refill','Balance refill +$500');await saveUP();document.getElementById('refo')?.remove();showToast('$500 fake dollars added.','ok');renderAuth();if(view==='portfolio')renderPort();refreshLB();};
 
 // ── RESIZE ────────────────────────────────────────────────────────────────────
-let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(view==='board')renderAll();},150);});
+let resizeTimer;window.addEventListener('resize',()=>{clearTimeout(resizeTimer);resizeTimer=setTimeout(()=>{if(window.innerWidth>=640)closeSb();if(view==='board')renderAll();},150);});
 
 // ── INTRO ─────────────────────────────────────────────────────────────────────
 function showIntro(){
@@ -1679,7 +1760,7 @@ function showIntro(){
   </style>
   <div id="ic">
     <div class="il">FLIGHTBET</div>
-    <div class="isb">delay prediction markets · real flights</div>
+    <div class="isb">delay prediction markets</div>
     <div class="ibox"><div class="inum">#1</div><div class="itxt"><strong>Toronto Pearson is the most delayed airport in the world.</strong> Over 53% of departures run late. Every winter it snows and every year Pearson is somehow surprised. You can now bet on it.</div></div>
     <div class="itle">HOW TO PLAY</div>
     <div class="istep"><span class="istn">01</span><span>Pick any upcoming flight from the departures board.</span></div>
@@ -1693,7 +1774,7 @@ function showIntro(){
       <div class="itl-step"><div class="it-icon">✅</div><div class="it-label">SETTLED</div><div class="it-desc">Flight departs. Market resolves. Winners get paid from loser pool.</div></div>
       <div class="itl-full"><strong>Settlement:</strong> Departed 15+ min late or Cancelled → <strong style="color:#059669">YES wins</strong> · Departed on time → <strong style="color:#0284c7">NO wins</strong><br><strong>Payout:</strong> Parimutuel — winners split the loser pool proportional to stake, minus 5% rake.</div>
     </div>
-    <div class="ilegal">In accordance with the <strong>Wire Act (18 U.S.C. § 1084)</strong> and <strong>FAA regulations prohibiting commercial incentives tied to flight operations</strong> — all money here is play money. No real currency. No prizes. You can re-up after losses at only the cost to your ego.</div>
+    <div class="ilegal">In accordance with the <strong>Wire Act (18 U.S.C. § 1084)</strong> and <strong>FAA regulations prohibiting commercial incentives tied to flight operations</strong> — all money here is play money. No real currency. No prizes. <em>(something you have to learn the hard way)</em></div>
     <button class="icta" onclick="dimI(false)">Start predicting →</button>
     <button class="isk" onclick="dimI(true)">Don't show again</button>
     <div class="iby">Made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · i have spent too much time waiting at the vancouver airport ✈︎</div>
