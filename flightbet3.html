@@ -586,19 +586,25 @@ async function writeFeedBet(flightId,side,amount,dest){
 }
 
 // ── FLOATING TOOLTIP SYSTEM ───────────────────────────────────────────────────
+// We store tooltip content in a JS Map keyed by element, never in inline attributes.
+// This avoids ALL escaping issues with quotes, parens, HTML inside onmouseenter strings.
 (function(){
   const tip=document.getElementById('tip-float');
   if(!tip)return;
   let hideTimer;
-  window.showTip=function(el,html){
-    clearTimeout(hideTimer);
-    tip.innerHTML=html;
-    tip.style.display='block';
-    // Need two frames to get accurate offsetHeight after content set
-    requestAnimationFrame(()=>{
-      requestAnimationFrame(()=>{
+  const tipMap=new WeakMap();
+
+  // Register a tooltip on an element — call this after the element exists in DOM
+  window.regTip=function(el,html){
+    if(!el)return;
+    tipMap.set(el,html);
+    el.addEventListener('mouseenter',()=>{
+      clearTimeout(hideTimer);
+      tip.innerHTML=tipMap.get(el)||'';
+      tip.style.display='block';
+      requestAnimationFrame(()=>requestAnimationFrame(()=>{
         const rect=el.getBoundingClientRect();
-        const tw=Math.min(tip.offsetWidth||260,280),th=tip.offsetHeight||100;
+        const tw=Math.min(tip.offsetWidth||260,280),th=tip.offsetHeight||80;
         const margin=10;
         let top=rect.top-th-10;
         if(top<margin)top=rect.bottom+10;
@@ -606,10 +612,31 @@ async function writeFeedBet(flightId,side,amount,dest){
         if(left+tw>window.innerWidth-margin)left=window.innerWidth-tw-margin;
         if(left<margin)left=margin;
         tip.style.top=top+'px';tip.style.left=left+'px';
-      });
+      }));
+    });
+    el.addEventListener('mouseleave',()=>{
+      hideTimer=setTimeout(()=>tip.style.display='none',150);
     });
   };
-  window.hideTip=function(){hideTimer=setTimeout(()=>{tip.style.display='none';},150);};
+
+  // Legacy showTip/hideTip kept for any remaining callers
+  window.showTip=function(el,html){
+    clearTimeout(hideTimer);
+    tip.innerHTML=html;
+    tip.style.display='block';
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      const rect=el.getBoundingClientRect();
+      const tw=Math.min(tip.offsetWidth||260,280),th=tip.offsetHeight||80;
+      const margin=10;
+      let top=rect.top-th-10;
+      if(top<margin)top=rect.bottom+10;
+      let left=rect.left;
+      if(left+tw>window.innerWidth-margin)left=window.innerWidth-tw-margin;
+      if(left<margin)left=margin;
+      tip.style.top=top+'px';tip.style.left=left+'px';
+    }));
+  };
+  window.hideTip=function(){hideTimer=setTimeout(()=>tip.style.display='none',150);};
   tip.addEventListener('mouseenter',()=>clearTimeout(hideTimer));
   tip.addEventListener('mouseleave',()=>hideTip());
 })();
@@ -1226,32 +1253,54 @@ function updateCounts(){
 function updateStats(){
   const a=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';});
   const avg=a.reduce((s,f)=>s+(f.delayProb||0),0)/Math.max(1,a.length);
-  const vol=flights.reduce((s,f)=>s+(f.vol||0),0);
+  const vol=flights.reduce((s,f)=>s+(f.yesPool||0)+(f.noPool||0)+(f.vol||0),0);
   const highRisk=flights.filter(f=>(f.delayProb||0)>.55).length;
   const airportRate=Math.round((APS[ap]?.rate||.25)*100);
 
-  const tipAvg=`<strong>Avg Delay Probability</strong><br>Weighted average across all ${a.length} active flights at ${ap}.<br>Blends airport baseline (${airportRate}% historical) with airline-specific rates and live status updates every 5s.<br><br>At &gt;60% this airport is in a severe delay event.`;
-  const tipVol=`<strong>24h Volume</strong><br>Total $ staked across all active markets at ${ap} today.<br><br>On a real prediction market (like Kalshi or Polymarket), high volume tightens spreads and makes odds more accurate. FlightBet uses this to weight probability signals.`;
-  const tipHigh=`<strong>High Delay Risk</strong><br>${highRisk} flight${highRisk!==1?'s':''} currently above the 55% delay threshold.<br><br>Threshold: &gt;55% delay probability = "high risk." This is where YES odds are compressed enough that savvy bettors prefer NO, but volume is highest.<br><br>Real markets: Kalshi lists flights above ~40% with tighter NO spreads. FlightBet uses 55% as a more conservative cutoff.`;
-  const tipActive=`<strong>Active Markets</strong><br>Flights that are not yet departed, landed, cancelled, or arrived — meaning markets are still open for betting.<br><br>Markets lock at boarding. They auto-settle when the flight departs: if delayed 15+ min = YES wins, otherwise NO wins. Cancelled flights always resolve YES (delayed).`;
-
   document.getElementById('mstats').innerHTML=`
-    <div class="srow has-tip" onmouseenter="showTip(this,'${tipAvg.replace(/'/g,"&#39;")}')" onmouseleave="hideTip()">
+    <div class="srow has-tip" id="tip-avg" style="cursor:help">
       <span class="lbl">Avg Delay Prob <span style="color:var(--text3);font-size:9px">ⓘ</span></span>
       <span class="val">${Math.round(avg*100)}%</span>
     </div>
-    <div class="srow has-tip" onmouseenter="showTip(this,'${tipVol.replace(/'/g,"&#39;")}')" onmouseleave="hideTip()">
+    <div class="srow has-tip" id="tip-vol" style="cursor:help">
       <span class="lbl">24h Volume <span style="color:var(--text3);font-size:9px">ⓘ</span></span>
       <span class="val">$${(vol/1000).toFixed(0)}K</span>
     </div>
-    <div class="srow has-tip" onmouseenter="showTip(this,'${tipHigh.replace(/'/g,"&#39;")}')" onmouseleave="hideTip()">
+    <div class="srow has-tip" id="tip-high" style="cursor:help">
       <span class="lbl">High Risk (&gt;55%) <span style="color:var(--text3);font-size:9px">ⓘ</span></span>
       <span class="val">${highRisk}</span>
     </div>
-    <div class="srow has-tip" onmouseenter="showTip(this,'${tipActive.replace(/'/g,"&#39;")}')" onmouseleave="hideTip()">
+    <div class="srow has-tip" id="tip-active" style="cursor:help">
       <span class="lbl">Active <span style="color:var(--text3);font-size:9px">ⓘ</span></span>
       <span class="val">${a.length}</span>
     </div>`;
+
+  // Register tooltips via WeakMap — no inline string injection, no escaping issues
+  regTip(document.getElementById('tip-avg'),
+    `<strong>Avg Delay Probability</strong><br>
+    Weighted average across all ${a.length} active flights at ${ap}.<br>
+    Blends airport baseline (${airportRate}% historical) with airline rates and live updates every 5s.<br><br>
+    At &gt;60%, this airport is in a severe delay event.`);
+
+  regTip(document.getElementById('tip-vol'),
+    `<strong>Pool Volume</strong><br>
+    Total dollars staked across all active markets at ${ap}.<br><br>
+    Each flight market has a YES pool and NO pool. Volume = YES + NO across all flights.<br><br>
+    On Kalshi or Polymarket, high volume = tighter spreads and more accurate odds. FlightBet uses pool size to calibrate payout estimates.`);
+
+  regTip(document.getElementById('tip-high'),
+    `<strong>High Delay Risk</strong><br>
+    ${highRisk} flight${highRisk!==1?'s':''} above the 55% delay threshold.<br><br>
+    Threshold: &gt;55% = "high risk." This is where YES odds are compressed and savvy bettors look at NO value.<br><br>
+    Kalshi lists flights above ~40% with tighter NO spreads. FlightBet uses 55% as a conservative cutoff.`);
+
+  regTip(document.getElementById('tip-active'),
+    `<strong>Active Markets</strong><br>
+    Flights not yet departed, cancelled, landed, or arrived — markets still open.<br><br>
+    Markets lock at boarding. They auto-settle when the flight departs:<br>
+    Delayed 15+ min → YES wins · On time → NO wins · Cancelled → YES wins.<br><br>
+    Payout is parimutuel: winners split the loser pool minus 5% rake.`);
+}
 }
 
 async function autoResolve(){
@@ -1371,55 +1420,118 @@ function renderDetail(id){
   const totalPool=yp+np2;
   const betsCount=mkt.bets||0;
   const openP=mkt.openingProb!=null?+(mkt.openingProb*100).toFixed(0):Math.round(f.delayProb*100);
-  const priceDelta=yesPrice-openP;
+  const priceDelta=+(yesPrice-openP).toFixed(1);
   const airportRate=Math.round((APS[f.depAirport||ap]?.rate||gr(ap))*100);
   const airlineBase=AR[f.airline]!=null?Math.round(AR[f.airline]*100):null;
   const signalProb=Math.round((f.delayProb||.3)*100);
-  let mvHtml='';
+
+  // Position market value
+  let mvCard='';
+  let mvTipHtml='';
   if(pp){
-    const currentPrice=pp.side==='YES'?yesPrice:noPrice;
-    const entP=pp.entryPrice||currentPrice;
-    const mv=+(pp.amount*(currentPrice/entP)).toFixed(2);
+    const curP=pp.side==='YES'?yesPrice:noPrice;
+    const entP=pp.entryPrice||curP;
+    const mv=+(pp.amount*(curP/entP)).toFixed(2);
     const mvPnl=+(mv-pp.amount).toFixed(2);
-    const tipMv='Market Value:<br>Entry: '+entP.toFixed(1)+'¢ Now: '+currentPrice.toFixed(1)+'¢<br>MV = stake × (current/entry price)<br>= $'+pp.amount+' × ('+currentPrice.toFixed(1)+'/'+entP.toFixed(1)+') = $'+mv+'<br>P&L: '+(mvPnl>=0?'+':'')+'$'+mvPnl.toFixed(2);
-    mvHtml='<div class="dstat" style="cursor:help" onmouseenter="showTip(this,\''+tipMv.replace(/'/g,"&#39;")+'\')\" onmouseleave="hideTip()"><div class="dl">MKT VAL <span style="font-size:8px;color:var(--text3)">ⓘ</span></div><div class="dv" style="font-size:16px;color:'+(mvPnl>=0?'var(--green)':'var(--red)')+'">$'+mv+'</div><div class="ds">'+(mvPnl>=0?'+':'')+'$'+mvPnl.toFixed(2)+' unrealised</div></div>';
+    mvCard=`<div class="dstat" id="dtip-mv" style="cursor:help">
+      <div class="dl">MKT VAL <span style="font-size:8px;color:var(--text3)">ⓘ</span></div>
+      <div class="dv" style="font-size:16px;color:${mvPnl>=0?'var(--green)':'var(--red)'}">$${mv}</div>
+      <div class="ds">${mvPnl>=0?'+':''}$${mvPnl.toFixed(2)} unrealised</div>
+    </div>`;
+    mvTipHtml=`<strong>Market Value</strong><br>
+      Entry price: ${entP.toFixed(1)}¢ &nbsp;·&nbsp; Current: ${curP.toFixed(1)}¢<br>
+      MV = stake × (current ÷ entry price)<br>
+      = $${pp.amount} × (${curP.toFixed(1)} ÷ ${entP.toFixed(1)}) = <strong>$${mv}</strong><br><br>
+      Unrealised P&amp;L: ${mvPnl>=0?'+':''}$${mvPnl.toFixed(2)}`;
   }
-  const tipDelay='Signal Probability: '+signalProb+'%<br>Model estimate — NOT the market price.<br>Blends: '+ap+' airport ('+airportRate+'%)'+(airlineBase!=null?' · '+f.airline+' ('+airlineBase+'%)':'')+' · route factors.<br><br>Market price ('+yesPrice+'¢) reflects real bets. If crowd disagrees with model, price diverges.';
-  const tipPool='Pool Mechanics:<br>YES: $'+yp+' · NO: $'+np2+' · Total: $'+totalPool+' ('+betsCount+' bets)<br><br>Parimutuel: winners split loser pool proportional to stake.<br>Payout = stake + (stake/winPool) × losePool × '+(1-RAKE)+'<br><br>Opening price: '+openP+'¢ (seeded from signal). Price moved '+(priceDelta>=0?'+':'')+priceDelta.toFixed(1)+'¢ from real bets.';
-  panel.innerHTML='<div class="di"><div><div class="dtitle">MARKET — '+f.id+' '+(f.airline||'')+' → '+(f.dest||'')+'</div>'+
-  '<div style="margin-bottom:10px"><div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">'+
-  '<span style="font-size:11px;font-weight:700;color:var(--yes)">YES '+yesPrice.toFixed(1)+'¢ <span style="font-size:9px;font-weight:400;color:'+(priceDelta>=0?'var(--yes)':'var(--no)')+'">'+( priceDelta>=0?'▲+':'▼')+Math.abs(priceDelta).toFixed(1)+' from open</span></span>'+
-  '<span style="font-size:9px;color:var(--text3)">market price · moves with bets</span>'+
-  '<span style="font-size:11px;font-weight:700;color:var(--no)">NO '+noPrice.toFixed(1)+'¢</span></div>'+
-  '<div style="height:6px;background:var(--bg4);border-radius:4px;overflow:hidden;display:flex">'+
-  '<div style="width:'+yesPrice+'%;background:var(--yes);height:100%;border-radius:4px 0 0 4px;transition:width .4s"></div>'+
-  '<div style="flex:1;background:var(--no);height:100%;border-radius:0 4px 4px 0"></div></div>'+
-  '<div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:var(--text3)"><span>DELAYED (YES)</span><span>ON TIME (NO)</span></div></div>'+
-  '<div class="dstats">'+
-  '<div class="dstat" style="cursor:help" onmouseenter="showTip(this,\''+tipDelay.replace(/'/g,"&#39;")+'\')\" onmouseleave="hideTip()"><div class="dl">SIGNAL PROB <span style="font-size:8px;color:var(--text3)">ⓘ</span></div><div class="dv">'+signalProb+'%</div><div class="ds">model estimate</div></div>'+
-  '<div class="dstat" style="cursor:help" onmouseenter="showTip(this,\''+tipPool.replace(/'/g,"&#39;")+'\')\" onmouseleave="hideTip()"><div class="dl">POOL <span style="font-size:8px;color:var(--text3)">ⓘ</span></div><div class="dv" style="font-size:14px">$'+totalPool+'</div><div class="ds">'+betsCount+' bet'+(betsCount!==1?'s':'')+' · '+(RAKE*100)+'% rake</div></div>'+
-  '<div class="dstat"><div class="dl">DEPARTS</div><div class="dv">'+depTime+'</div><div class="ds">Gate '+(f.gate||'TBD')+'</div></div>'+
-  (pp?mvHtml:'<div class="dstat"><div class="dl">STATUS</div><div class="dv" style="font-size:12px">'+(f.status||'—')+'</div><div class="ds">'+(f.aircraft||'—')+'</div></div>')+
-  '</div>'+
-  (pp?'<div style="margin-bottom:6px"><span class="pb '+(pp.side==='YES'?'pby':'pbn')+'">YOUR POSITION: '+pp.side+' $'+pp.amount+' @ '+(pp.entryPrice||0).toFixed(1)+'¢ entry</span></div>':'')+
-  '<div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:8px 10px;margin-bottom:2px">'+
-  '<div style="display:flex;justify-content:space-between;font-size:9px;font-weight:600;margin-bottom:5px">'+
-  '<span style="color:var(--yes)">YES · $'+yp+'</span><span style="font-size:8px;color:var(--text3);font-weight:400">winners split loser pool · '+(RAKE*100)+'% rake</span><span style="color:var(--no)">NO · $'+np2+'</span></div>'+
-  '<div style="height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;display:flex">'+
-  '<div style="width:'+(totalPool?Math.round(yp/totalPool*100):50)+'%;background:var(--yes)"></div><div style="flex:1;background:var(--no)"></div></div>'+
-  '<div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--text3)">'+
-  '<span>YES wins → NO pays</span><span>Open: '+openP+'¢</span><span>NO wins → YES pays</span></div></div>'+
-  '</div><div class="dr"><div class="dtitle">PLACE BET</div>'+
-  (locked?'<div class="locked-notice">🔒 Market locked — '+f.status+'. No new bets once boarding begins. Positions auto-resolve at departure.</div>':
-  '<div class="stog"><button class="sbtn2'+(bside==='YES'?' say':'')+'" onclick="setSide(\'YES\')">YES '+yesPrice.toFixed(1)+'¢ — DELAYED</button><button class="sbtn2'+(bside==='NO'?' san':'')+'" onclick="setSide(\'NO\')">NO '+noPrice.toFixed(1)+'¢ — ON TIME</button></div>'+
-  '<div class="brow"><span class="blbl">AMOUNT</span><input class="binp" type="number" id="bamt" value="10" min="1" max="'+(UP?Math.floor(UP.balance):0)+'" oninput="updPayout()"></div>'+
-  '<div class="presets">'+[5,10,25,50,100].map(v=>'<button class="pre" onclick="setPre('+v+')">$'+v+'</button>').join('')+'</div>'+
-  '<div class="pbox" id="pbox"></div>'+
-  '<button class="plbtn" onclick="placeBet(\''+f.id+'\')" '+(CU?'':'disabled')+'>'+(CU?'PLACE BET':'LOG IN TO BET')+'</button>'+
-  (!CU?'<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:4px">Free — start with $500 in play money</div>':''))+
-  '</div></div>';
+
+  panel.innerHTML=`<div class="di"><div>
+    <div class="dtitle">MARKET — ${f.id} ${f.airline||''} → ${f.dest||''}</div>
+    <div style="margin-bottom:10px">
+      <div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:5px">
+        <span style="font-size:11px;font-weight:700;color:var(--yes)">YES ${yesPrice.toFixed(1)}¢
+          <span style="font-size:9px;font-weight:400;color:${priceDelta>=0?'var(--yes)':'var(--no)'}">
+            ${priceDelta>=0?'▲+':'▼'}${Math.abs(priceDelta)} from open
+          </span>
+        </span>
+        <span style="font-size:9px;color:var(--text3)">market price · moves with bets</span>
+        <span style="font-size:11px;font-weight:700;color:var(--no)">NO ${noPrice.toFixed(1)}¢</span>
+      </div>
+      <div style="height:6px;background:var(--bg4);border-radius:4px;overflow:hidden;display:flex">
+        <div style="width:${yesPrice}%;background:var(--yes);height:100%;border-radius:4px 0 0 4px;transition:width .4s"></div>
+        <div style="flex:1;background:var(--no);height:100%;border-radius:0 4px 4px 0"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:3px;font-size:9px;color:var(--text3)">
+        <span>DELAYED (YES)</span><span>ON TIME (NO)</span>
+      </div>
+    </div>
+    <div class="dstats">
+      <div class="dstat" id="dtip-signal" style="cursor:help">
+        <div class="dl">SIGNAL PROB <span style="font-size:8px;color:var(--text3)">ⓘ</span></div>
+        <div class="dv">${signalProb}%</div>
+        <div class="ds">model estimate</div>
+      </div>
+      <div class="dstat" id="dtip-pool" style="cursor:help">
+        <div class="dl">POOL <span style="font-size:8px;color:var(--text3)">ⓘ</span></div>
+        <div class="dv" style="font-size:14px">$${totalPool}</div>
+        <div class="ds">${betsCount} bet${betsCount!==1?'s':''} · ${RAKE*100}% rake</div>
+      </div>
+      <div class="dstat">
+        <div class="dl">DEPARTS</div><div class="dv">${depTime}</div><div class="ds">Gate ${f.gate||'TBD'}</div>
+      </div>
+      ${pp?mvCard:`<div class="dstat"><div class="dl">STATUS</div><div class="dv" style="font-size:12px">${f.status||'—'}</div><div class="ds">${f.aircraft||'—'}</div></div>`}
+    </div>
+    ${pp?`<div style="margin-bottom:6px"><span class="pb ${pp.side==='YES'?'pby':'pbn'}">YOUR POSITION: ${pp.side} $${pp.amount} @ ${(pp.entryPrice||0).toFixed(1)}¢ entry</span></div>`:''}
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:5px;padding:8px 10px">
+      <div style="display:flex;justify-content:space-between;font-size:9px;font-weight:600;margin-bottom:5px">
+        <span style="color:var(--yes)">YES · $${yp}</span>
+        <span style="font-size:8px;color:var(--text3);font-weight:400">winners split loser pool · ${RAKE*100}% rake</span>
+        <span style="color:var(--no)">NO · $${np2}</span>
+      </div>
+      <div style="height:3px;background:var(--bg4);border-radius:2px;overflow:hidden;display:flex">
+        <div style="width:${totalPool?Math.round(yp/totalPool*100):50}%;background:var(--yes)"></div>
+        <div style="flex:1;background:var(--no)"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;margin-top:4px;font-size:9px;color:var(--text3)">
+        <span>YES wins → NO pays</span><span>Open: ${openP}¢</span><span>NO wins → YES pays</span>
+      </div>
+    </div>
+  </div>
+  <div class="dr">
+    <div class="dtitle">PLACE BET</div>
+    ${locked
+      ? `<div class="locked-notice">🔒 Market locked — ${f.status}. No new bets once boarding begins. Positions auto-resolve at departure.</div>`
+      : `<div class="stog">
+          <button class="sbtn2${bside==='YES'?' say':''}" onclick="setSide('YES')">YES ${yesPrice.toFixed(1)}¢ — DELAYED</button>
+          <button class="sbtn2${bside==='NO'?' san':''}" onclick="setSide('NO')">NO ${noPrice.toFixed(1)}¢ — ON TIME</button>
+        </div>
+        <div class="brow"><span class="blbl">AMOUNT</span><input class="binp" type="number" id="bamt" value="10" min="1" max="${UP?Math.floor(UP.balance):0}" oninput="updPayout()"></div>
+        <div class="presets">${[5,10,25,50,100].map(v=>`<button class="pre" onclick="setPre(${v})">$${v}</button>`).join('')}</div>
+        <div class="pbox" id="pbox"></div>
+        <button class="plbtn" onclick="placeBet('${f.id}')" ${CU?'':'disabled'}>${CU?'PLACE BET':'LOG IN TO BET'}</button>
+        ${!CU?'<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:4px">Free — start with $500 in play money</div>':''}`}
+  </div></div>`;
+
   panel.classList.add('open');
-  if(!locked)updPayout();
+
+  // Register tooltips AFTER innerHTML is set — no inline attribute escaping needed
+  regTip(document.getElementById('dtip-signal'),
+    `<strong>Signal Probability: ${signalProb}%</strong><br>
+    This is the model's estimate — not the market price.<br><br>
+    Blends: ${ap} airport historical (${airportRate}%)${airlineBase!=null?' · '+f.airline+' airline ('+airlineBase+'%)':''} · route and time-of-day factors.<br><br>
+    The market price (${yesPrice.toFixed(1)}¢) reflects actual bets placed. If the crowd disagrees with the model, price diverges from signal.`);
+
+  regTip(document.getElementById('dtip-pool'),
+    `<strong>Pool Mechanics</strong><br>
+    YES pool: $${yp} &nbsp;·&nbsp; NO pool: $${np2} &nbsp;·&nbsp; ${betsCount} bet${betsCount!==1?'s':''}<br><br>
+    This is a <strong>parimutuel market</strong>. Winners split the loser pool proportional to their stake, minus ${RAKE*100}% rake.<br><br>
+    Payout formula:<br>
+    stake + (stake ÷ winnerPool) × loserPool × ${1-RAKE}<br><br>
+    Opening price was ${openP}¢ (seeded from signal probability). It has moved ${priceDelta>=0?'+':''}${priceDelta}¢ based on real bets.`);
+
+  if(pp) regTip(document.getElementById('dtip-mv'), mvTipHtml);
+
+  if(!locked) updPayout();
 }
 window.setSide=function(s){bside=s;if(sel)renderDetail(sel);};
 window.setPre=function(v){const i=document.getElementById('bamt');if(i){i.value=Math.min(v,Math.floor(UP?.balance||0));updPayout();}};
