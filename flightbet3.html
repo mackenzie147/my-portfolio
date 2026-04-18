@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>FlightBet — Delay Markets</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f5f5f5;--bg2:#ffffff;--bg3:#f9f9f9;--bg4:#efefef;
+  --border:#e8e8e8;--border2:#d4d4d4;
+  --green:#0ea56a;--red:#dc2626;--orange:#d97706;--blue:#2563eb;
+  --text:#111111;--text2:#555555;--text3:#999999;
+  --yes:#d97706;--no:#0ea56a;
+  --fm:'IBM Plex Mono',monospace;
+  --fu:'Inter',sans-serif;
+  --fmo:'IBM Plex Mono',monospace;
+  --radius:6px;
+}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:var(--fu);overflow-x:hidden}
+body{display:flex;flex-direction:column}
+
+/* NAV */
+nav{display:flex;align-items:center;justify-content:space-between;padding:0 18px;height:48px;background:var(--bg2);border-bottom:1px solid var(--border);position:sticky;top:0;z-index:200;flex-shrink:0;gap:10px}
+.nav-logo{font-family:'DM Serif Display',serif;font-size:18px;font-style:italic;font-weight:400;color:var(--text);letter-spacing:0px;cursor:pointer;white-space:nowrap;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.nav-logo-dot{width:7px;height:7px;border-radius:50%;background:var(--green);flex-shrink:0}
+.nav-right{display:flex;align-items:center;gap:6px;flex-shrink:0;min-width:0}
+.auth-btns{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.nav-ap{display:flex;align-items:center;gap:4px;font-size:12px;font-weight:500;color:var(--text2);background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:5px 9px;cursor:pointer;white-space:nowrap;flex-shrink:0;transition:border-color .1s}
+.nav-ap:hover{border-color:var(--border2)}
+.nav-ap .code{font-family:var(--fmo);color:var(--text);font-size:12px;font-weight:500}
+.nav-ap .apn{display:none}
+.nav-btn{font-family:var(--fu);font-size:12px;font-weight:600;padding:5px 12px;border-radius:var(--radius);cursor:pointer;border:1px solid;white-space:nowrap;flex-shrink:0;transition:all .1s}
+.btn-out{background:transparent;border-color:var(--border2);color:var(--text2)}.btn-out:hover{border-color:var(--text3);color:var(--text)}
+.btn-pri{background:var(--text);border-color:var(--text);color:#fff}.btn-pri:hover{background:#333}
+.upill{display:flex;align-items:center;gap:6px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:4px 10px;cursor:pointer;flex-shrink:0;max-width:200px;transition:border-color .1s}
+.upill:hover{border-color:var(--border2)}
+.upill .av{width:20px;height:20px;border-radius:50%;background:var(--text);display:flex;align-items:center;justify-content:center;font-size:8px;font-weight:700;color:#fff;flex-shrink:0}
+.upill .un{max-width:70px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:12px;font-weight:500}
+.upill .bal{color:var(--green);font-family:var(--fmo);font-size:11px;white-space:nowrap;flex-shrink:0}
+.upill .bal-add{font-size:10px;color:var(--text3);margin-left:2px;flex-shrink:0}
+.menu-btn{display:none;align-items:center;justify-content:center;width:32px;height:32px;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);cursor:pointer;flex-shrink:0}
+
+/* TICKER */
+.ticker{background:var(--bg2);border-bottom:1px solid var(--border);height:22px;overflow:hidden;flex-shrink:0}
+.ticker-inner{display:flex;align-items:center;height:100%;animation:sticker 40s linear infinite;white-space:nowrap}
+.ti{display:inline-flex;align-items:center;gap:5px;padding:0 14px;font-size:10px;color:var(--text3);font-family:var(--fmo);border-right:1px solid var(--border)}
+.ti .fid{color:var(--text);font-weight:500}.cup{color:var(--green)}.cdn{color:var(--red)}
+@keyframes sticker{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}
+
+/* LAYOUT */
+.main{display:flex;flex:1;overflow:hidden;min-height:0}
+.sidebar{width:240px;flex-shrink:0;border-right:1px solid var(--border);background:var(--bg2);overflow-y:auto;display:flex;flex-direction:column}
+.content{flex:1;overflow-y:auto;display:flex;flex-direction:column;min-width:0}
+.ss{padding:12px 12px 8px;border-bottom:1px solid var(--border)}
+.sl{font-size:10px;font-weight:600;color:var(--text3);margin-bottom:8px;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;justify-content:space-between}
+.fc{display:flex;align-items:center;justify-content:space-between;padding:5px 6px;border-radius:4px;cursor:pointer;font-size:12px;color:var(--text2);transition:background .1s}
+.fc:hover{background:var(--bg3)}
+.fc.active{background:var(--bg3);color:var(--text);font-weight:600}
+.fc .cnt{font-family:var(--fmo);font-size:10px;background:var(--bg4);padding:1px 5px;border-radius:3px;color:var(--text3)}
+.srow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--border)}
+.srow:last-child{border-bottom:none}
+.srow .lbl{font-size:11px;color:var(--text2)}.srow .val{font-family:var(--fmo);font-size:11px;font-weight:500}
+.feed{padding:6px 10px;display:flex;flex-direction:column;gap:3px}
+.fi{font-size:10px;color:var(--text2);line-height:1.5;padding:4px 6px;background:var(--bg3);border-radius:4px}
+.fi .flt{color:var(--text);font-family:var(--fmo);font-weight:500}
+.sy{color:var(--yes);font-weight:600}.sn{color:var(--no);font-weight:600}
+
+/* YYZ BUTTON — redesigned */
+.yyzwrap{padding:10px 10px 8px;border-bottom:1px solid var(--border)}
+.yyzbtn{width:100%;padding:0;background:none;border:1px solid rgba(220,38,38,.3);border-radius:var(--radius);overflow:hidden;cursor:pointer;transition:border-color .15s;display:block;text-align:left}
+.yyzbtn:hover{border-color:rgba(220,38,38,.6)}
+.yyzbtn:disabled{opacity:.4;cursor:not-allowed}
+.yyz-header{background:var(--red);padding:7px 10px;display:flex;align-items:center;justify-content:space-between;gap:6px}
+.yyz-title-text{font-size:11px;font-weight:700;color:#fff;letter-spacing:.3px;font-family:var(--fu)}
+.yyz-badge{font-size:11px;font-family:var(--fmo);background:rgba(255,255,255,.2);padding:2px 7px;border-radius:3px;white-space:nowrap;flex-shrink:0;font-weight:600;color:#fff}
+.yyz-body{padding:8px 10px;background:var(--bg3);display:flex;flex-direction:column;gap:5px}
+.yyz-stat-row{display:flex;align-items:center;justify-content:space-between;gap:4px}
+.yyz-stat{font-size:10px;color:var(--text3)}
+.yyz-stat strong{color:var(--text);font-weight:600}
+.yyz-divider{height:1px;background:var(--border);margin:2px 0}
+.yyz-sub-text{font-size:9px;color:var(--text3);line-height:1.4}
+.yyz-controls{display:flex;align-items:center;gap:6px;margin-top:2px}
+.yyz-lbl{font-size:10px;color:var(--text3)}
+.yyz-amt{width:56px;background:var(--bg2);border:1px solid var(--border);border-radius:4px;color:var(--text);font-family:var(--fmo);font-size:12px;padding:3px 7px;outline:none}
+.yyz-amt:focus{border-color:var(--text)}
+.yyz-go{flex:1;padding:4px 8px;background:var(--red);border:none;border-radius:4px;color:#fff;font-family:var(--fu);font-size:10px;font-weight:700;cursor:pointer;transition:opacity .15s;letter-spacing:.3px}
+.yyz-go:hover{opacity:.85}
+
+/* HIGH RISK THRESHOLD LABEL */
+.threshold-note{font-size:9px;color:var(--text3);padding:3px 0 0;font-style:italic}
+
+/* SIDEBAR LB */
+.lbrow{display:flex;align-items:center;gap:4px;padding:4px 0;border-bottom:1px solid var(--border)}
+.lbrow:last-child{border-bottom:none}
+.lbrank{font-family:var(--fmo);color:var(--text3);font-size:9px;width:14px;flex-shrink:0}
+.lbname{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px;color:var(--text2);cursor:pointer}
+.lbname:hover{color:var(--text)}
+.lbval{font-family:var(--fmo);font-size:10px;flex-shrink:0}
+.lbme .lbname{color:var(--text);font-weight:600}
+
+/* BOARD */
+.btop{display:flex;align-items:center;justify-content:space-between;padding:12px 18px 10px;border-bottom:1px solid var(--border);background:var(--bg2);flex-shrink:0;gap:10px;flex-wrap:wrap}
+.bname{font-size:14px;font-weight:600}
+.bmeta{font-size:11px;color:var(--text3);margin-top:2px}
+.bctrl{display:flex;align-items:center;gap:5px}
+.sbox{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--fu);font-size:12px;padding:5px 10px;width:130px;outline:none}
+.sbox:focus{border-color:var(--border2)}
+.sbox::placeholder{color:var(--text3)}
+.sbtn{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text2);font-size:11px;font-weight:500;padding:5px 10px;cursor:pointer;font-family:var(--fu);transition:all .1s}
+.sbtn.active{background:var(--text);border-color:var(--text);color:#fff}
+.th{display:grid;grid-template-columns:90px 1fr 70px 90px 120px 130px;padding:6px 18px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:10px;font-weight:600;color:var(--text3);flex-shrink:0;letter-spacing:.3px}
+.fl{flex:1;overflow-y:auto}
+.fr{display:grid;grid-template-columns:90px 1fr 70px 90px 120px 130px;padding:0 18px;min-height:52px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .08s;align-items:center}
+.fr:hover{background:var(--bg3)}
+.fr.sel{background:#f0faf5}
+.fr.hp{background:#fafffe}
+/* LOCKED flight — can't bet */
+.fr.locked{opacity:.6;cursor:default}
+.cfid{font-family:var(--fmo);font-size:12px;color:var(--text);font-weight:500}
+.cal{font-size:10px;color:var(--text3);margin-top:2px}
+.cdst .code{font-family:var(--fmo);font-size:14px;font-weight:500;letter-spacing:.5px}
+.cdst .city{font-size:10px;color:var(--text3);margin-top:2px}
+.ctm{font-family:var(--fmo);font-size:13px}
+.st-OnTime,.st-ontime{font-size:10px;color:var(--green);font-weight:600}
+.st-Delayed,.st-delayed{font-size:10px;color:var(--red);font-weight:600}
+.st-Boarding,.st-boarding{font-size:10px;color:var(--blue);font-weight:600}
+.st-Cancelled,.st-cancelled,.st-Departed,.st-departed{font-size:10px;color:var(--text3)}
+.lock-badge{font-size:9px;color:var(--text3);background:var(--bg4);border:1px solid var(--border);border-radius:3px;padding:1px 5px;white-space:nowrap}
+.codd{display:flex;flex-direction:column;gap:2px}
+.onum{display:flex;gap:4px;align-items:baseline}
+.oy{font-family:var(--fmo);font-size:12px;color:var(--yes);font-weight:600}
+.on{font-family:var(--fmo);font-size:12px;color:var(--no);font-weight:600}
+.obar{width:100%;height:2px;background:var(--bg4);border-radius:2px;overflow:hidden}
+.ofill{height:100%;background:var(--yes);border-radius:2px}
+.ovol{font-size:9px;color:var(--text3);font-family:var(--fmo)}
+.cact{display:flex;gap:3px;align-items:center}
+.qb{font-size:11px;font-weight:600;padding:4px 8px;border-radius:4px;cursor:pointer;border:1px solid;font-family:var(--fu);transition:all .1s}
+.qy{border-color:var(--yes);color:var(--yes);background:transparent}.qy:hover{background:var(--yes);color:#fff}
+.qn{border-color:var(--no);color:var(--no);background:transparent}.qn:hover{background:var(--no);color:#fff}
+.pb{font-size:10px;padding:2px 6px;border-radius:3px;font-family:var(--fu);font-weight:600}
+.pby{background:rgba(217,119,6,.1);color:var(--yes);border:1px solid rgba(217,119,6,.2)}
+.pbn{background:rgba(14,165,106,.1);color:var(--no);border:1px solid rgba(14,165,106,.2)}
+
+/* DETAIL */
+.dp{border-top:1px solid var(--border);background:var(--bg3);flex-shrink:0;max-height:0;overflow:hidden;transition:max-height .3s ease}
+.dp.open{max-height:420px}
+.di{padding:14px 18px;display:grid;grid-template-columns:1fr 240px;gap:16px}
+.dtitle{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;margin-bottom:10px;text-transform:uppercase}
+.dstats{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:12px}
+.dstat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px;position:relative}
+.dstat .dl{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;margin-bottom:3px;text-transform:uppercase}
+.dstat .dv{font-size:18px;font-family:var(--fmo);color:var(--text);font-weight:500}
+.dstat .ds{font-size:9px;color:var(--text3);margin-top:1px}
+/* Market value tooltip */
+.dstat.has-tip{cursor:help}
+.dstat.has-tip:hover .tip-popup{display:block}
+.tip-popup{display:none;position:absolute;bottom:calc(100% + 6px);left:0;right:0;background:var(--text);color:#fff;font-size:9px;line-height:1.6;padding:8px 10px;border-radius:5px;z-index:50;white-space:normal;font-family:var(--fu);box-shadow:0 4px 16px rgba(0,0,0,.2)}
+.tip-popup::after{content:'';position:absolute;top:100%;left:14px;border:5px solid transparent;border-top-color:var(--text)}
+.pvis{height:4px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:8px;display:flex}
+.pyf{background:var(--yes);height:100%}.pnf{background:var(--no);height:100%}
+.plbl{display:flex;justify-content:space-between;font-size:11px;margin-bottom:7px;font-weight:600}
+.plbl .yl{color:var(--yes)}.plbl .nl{color:var(--no)}
+.dr{border-left:1px solid var(--border);padding-left:12px}
+.stog{display:flex;margin-bottom:9px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--bg3)}
+.sbtn2{flex:1;padding:7px;text-align:center;cursor:pointer;font-size:11px;font-weight:600;border:none;background:transparent;color:var(--text2);font-family:var(--fu);transition:all .1s}
+.say{background:#fff;color:var(--yes);box-shadow:inset 0 0 0 1px rgba(217,119,6,.2)}
+.san{background:#fff;color:var(--no);box-shadow:inset 0 0 0 1px rgba(14,165,106,.2)}
+.brow{display:flex;gap:6px;margin-bottom:6px;align-items:center}
+.blbl{font-size:10px;font-weight:600;color:var(--text3);width:48px}
+.binp{flex:1;background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--fmo);font-size:12px;padding:5px 8px;outline:none}
+.binp:focus{border-color:var(--border2)}
+.presets{display:flex;gap:2px;margin-bottom:7px}
+.pre{flex:1;padding:3px;background:var(--bg2);border:1px solid var(--border);color:var(--text2);font-size:10px;cursor:pointer;border-radius:3px;font-family:var(--fmo);transition:all .1s}
+.pre:hover{border-color:var(--text);color:var(--text)}
+.pbox{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:6px 8px;margin-bottom:7px}
+.pr{display:flex;justify-content:space-between;font-size:11px;padding:2px 0}
+.pr .pl{color:var(--text2)}.pr .pv{font-family:var(--fmo)}
+.pr.win .pv{color:var(--green);font-weight:600}
+.plbtn{width:100%;padding:9px;background:var(--text);border:none;border-radius:var(--radius);color:#fff;font-family:var(--fu);font-size:12px;font-weight:600;cursor:pointer;transition:background .1s}
+.plbtn:hover{background:#333}
+.plbtn:disabled{background:var(--bg4);color:var(--text3);cursor:not-allowed}
+.locked-notice{background:rgba(37,99,235,.07);border:1px solid rgba(37,99,235,.2);border-radius:var(--radius);padding:8px 10px;font-size:11px;color:var(--blue);text-align:center;font-weight:500}
+
+/* PORTFOLIO */
+.pview{flex:1;overflow-y:auto;padding:20px 22px;min-height:0}
+.pgrid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.pcard{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:14px}
+.pcard .pcl{font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:4px}
+.pcard .pcv{font-family:var(--fmo);font-size:22px;color:var(--text);font-weight:500}
+.pcard .pcs{font-size:10px;color:var(--text3);margin-top:3px}
+.pcard.gr .pcv{color:var(--green)}.pcard.re .pcv{color:var(--red)}
+.psec{margin-bottom:18px}
+.pst{font-size:10px;font-weight:600;color:var(--text3);letter-spacing:.5px;text-transform:uppercase;margin-bottom:9px;padding-bottom:6px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+
+/* ACTIVE positions — distinct card style */
+.poscard{background:var(--bg2);border:1px solid rgba(14,165,106,.25);border-left:3px solid var(--green);border-radius:var(--radius);padding:12px 14px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px}
+.poscard-label{font-size:8px;font-weight:700;letter-spacing:1.5px;color:var(--green);text-transform:uppercase;margin-bottom:6px}
+
+/* RESOLVED positions — distinct muted style */
+.rcard{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:5px;display:flex;align-items:center;justify-content:space-between;gap:10px}
+.rwin{background:rgba(14,165,106,.08);color:var(--green);border:1px solid rgba(14,165,106,.2);font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap}
+.rloss{background:rgba(220,38,38,.06);color:var(--red);border:1px solid rgba(220,38,38,.15);font-size:10px;font-weight:600;padding:2px 7px;border-radius:3px;white-space:nowrap}
+
+/* CHART */
+.ctr{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:12px;margin-bottom:14px}
+.ctabs{display:flex;gap:2px;margin-bottom:10px;background:var(--bg3);border-radius:5px;padding:2px}
+.ctab{flex:1;padding:5px;text-align:center;font-size:11px;font-weight:500;border-radius:4px;cursor:pointer;color:var(--text3);border:none;background:transparent;font-family:var(--fu)}
+.ctab.act{background:var(--bg2);color:var(--text);font-weight:600;box-shadow:0 1px 3px rgba(0,0,0,.06)}
+.cleg{display:flex;gap:10px;flex-wrap:wrap;margin-top:7px}
+.clegitem{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--text3)}
+.cdot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.cempty{padding:24px;text-align:center;color:var(--text3);font-size:12px}
+
+/* SHARE */
+.sbar{background:var(--bg3);border-bottom:1px solid var(--border);padding:6px 14px;display:flex;align-items:center;gap:9px;font-size:12px;flex-wrap:wrap;flex-shrink:0}
+.sbar strong{color:var(--text)}
+.sbar .bl{margin-left:auto;font-size:11px;color:var(--text2);cursor:pointer;font-weight:600}
+.scbtn{font-size:11px;font-weight:600;padding:4px 11px;border-radius:4px;cursor:pointer;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:var(--fu);transition:all .1s;white-space:nowrap}
+.scbtn:hover{border-color:var(--text);color:var(--text)}
+.scbtn.cp{background:var(--bg4)}
+
+/* LB */
+.lbfullrow{display:flex;align-items:center;padding:7px 11px;border-bottom:1px solid var(--border);gap:7px}
+.lbfr{font-family:var(--fmo);color:var(--text3);width:18px;font-size:10px;flex-shrink:0}
+.lbfn{flex:1;font-size:12px;cursor:pointer;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbfn:hover{color:var(--green)}
+.lbfa{font-size:10px;color:var(--text3);font-family:var(--fmo);white-space:nowrap}
+.lbfp{font-family:var(--fmo);font-size:11px;white-space:nowrap}
+.lbfb{font-family:var(--fmo);font-size:11px;color:var(--green);white-space:nowrap}
+.lbme{background:rgba(14,165,106,.04);border-left:2px solid var(--green)}
+
+/* MODAL */
+.mo{position:fixed;inset:0;background:rgba(0,0,0,.3);display:flex;align-items:center;justify-content:center;z-index:300;backdrop-filter:blur(3px);padding:14px}
+.mc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:22px;width:100%;max-width:340px;box-shadow:0 8px 40px rgba(0,0,0,.1)}
+.mt{font-size:17px;font-weight:700;margin-bottom:3px;letter-spacing:-.3px}
+.msub{font-size:12px;color:var(--text2);margin-bottom:14px;line-height:1.6}
+.mi{width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);font-family:var(--fu);font-size:13px;padding:8px 10px;margin-bottom:7px;outline:none;transition:border-color .1s}
+.mi:focus{border-color:var(--border2)}
+.mi::placeholder{color:var(--text3)}
+.mb{width:100%;padding:10px;background:var(--text);border:none;border-radius:var(--radius);color:#fff;font-family:var(--fu);font-size:13px;font-weight:600;cursor:pointer;margin-bottom:7px;transition:background .1s}
+.mb:hover{background:#333}
+.ms{font-size:12px;color:var(--text2);text-align:center}
+.ms a{color:var(--text);cursor:pointer;font-weight:600}
+.merr{color:var(--red);font-size:11px;margin-bottom:7px;padding:5px 7px;background:rgba(220,38,38,.05);border-radius:4px;border:1px solid rgba(220,38,38,.12)}
+.apmc{background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:16px;width:100%;max-width:430px;max-height:88vh;overflow-y:auto}
+.apgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin-top:10px}
+.apopt{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:8px;cursor:pointer;text-align:center;transition:border-color .1s}
+.apopt:hover,.apopt.apo{border-color:var(--border2);background:var(--bg4)}
+.apopt .apc{font-family:var(--fmo);font-size:14px;color:var(--text);font-weight:500}
+.apopt .apcity{font-size:9px;color:var(--text3);margin-top:1px}
+
+/* TOAST */
+.toast{position:fixed;bottom:14px;right:14px;left:14px;max-width:320px;margin:0 auto;background:var(--text);border:none;border-radius:var(--radius);padding:9px 14px;font-size:12px;color:#fff;opacity:0;transform:translateY(6px);transition:all .2s;pointer-events:none;z-index:500;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.toast.show{opacity:1;transform:translateY(0)}
+.spin{display:inline-block;width:12px;height:12px;border:2px solid rgba(255,255,255,.2);border-top-color:currentColor;border-radius:50%;animation:sp .6s linear infinite;vertical-align:middle;margin-right:4px}
+@keyframes sp{to{transform:rotate(360deg)}}
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+/* play money banner */
+.fake-banner{background:var(--bg2);border-bottom:1px solid var(--border);padding:4px 18px;font-size:11px;color:var(--text3);font-family:var(--fu);display:flex;align-items:center;gap:6px;flex-shrink:0}
+.fake-banner strong{color:var(--text2);font-weight:600}
+.fake-banner .fb-link{color:var(--text);text-decoration:none;font-weight:600;margin-left:auto;font-size:11px;cursor:pointer}
+.fake-banner .fb-link:hover{text-decoration:underline}
+
+/* MOBILE */
+@media(min-width:600px){
+  .nav-ap .apn{display:inline}
+  .nav-logo::after{content:' Delay Markets';color:var(--text3);font-size:11px;font-weight:400;margin-left:2px;font-family:var(--fu);font-style:normal}
+}
+@media(max-width:768px){
+  .main{position:relative}
+  .sidebar{position:fixed;left:-100%;top:48px;bottom:0;z-index:150;transition:left .25s;width:260px;box-shadow:4px 0 20px rgba(0,0,0,.08)}
+  .sidebar.open{left:0}
+  .sovl{display:none;position:fixed;inset:0;top:48px;background:rgba(0,0,0,.25);z-index:149}
+  .sovl.show{display:block}
+  .content{width:100%}
+  .th,.fr{grid-template-columns:80px 1fr 58px 78px}
+  .th span:nth-child(5),.th span:nth-child(6),.fr .codd,.fr .cact{display:none}
+  .bctrl .sbtn{display:none}
+  .sbox{width:90px}
+  .pgrid{grid-template-columns:repeat(2,1fr)}
+  .di{grid-template-columns:1fr}
+  .dp.open{max-height:600px;overflow-y:auto}
+  .dr{border-left:none;padding-left:0;border-top:1px solid var(--border);padding-top:12px;margin-top:4px}
+  .dstats{grid-template-columns:repeat(2,1fr)}
+  .pview{padding:14px 14px}
+  .lbfa{display:none}
+  .apgrid{grid-template-columns:repeat(2,1fr)}
+  .menu-btn{display:flex}
+  .upill .un{display:none}
+  .upill .bal-add{display:none}
+  .nav-ap .apn{display:none!important}
+  #achart [style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:repeat(2,1fr)!important}
+  .yyz-controls{flex-wrap:wrap}
+  .rcard{flex-wrap:wrap}
+}
+@media(max-width:400px){
+  .pgrid{grid-template-columns:1fr 1fr}
+  .pcard .pcv{font-size:18px}
+}
+</style>
+</head>
+<body>
+<nav>
+  <div style="display:flex;align-items:center;gap:7px;min-width:0">
+    <div class="menu-btn" onclick="toggleSb()">
+      <svg width="15" height="15" viewBox="0 0 15 15" fill="none"><rect x="1" y="2.5" width="13" height="1.5" rx="1" fill="currentColor"/><rect x="1" y="6.75" width="13" height="1.5" rx="1" fill="currentColor"/><rect x="1" y="11" width="13" height="1.5" rx="1" fill="currentColor"/></svg>
+    </div>
+    <div class="nav-logo" onclick="showBoard()"><div class="nav-logo-dot"></div>FlightBet</div>
+  </div>
+  <div class="nav-right">
+    <div class="nav-ap" onclick="openAP()">
+      <span class="code" id="napc">SFO</span>
+      <span class="apn" id="napn">San Francisco</span>
+      <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M2 4l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+    </div>
+    <div id="auth-area"></div>
+  </div>
+</nav>
+<div class="sovl" id="sovl" onclick="toggleSb()"></div>
+<div class="ticker"><div class="ticker-inner" id="ticker"></div></div>
+
+<!-- BANNER — no em dash, proper capitalization -->
+<div class="fake-banner">
+  <span>Play money only. <strong>Everyone starts with $500. No real money involved.</strong> In accordance with the <strong>Wire Act (18 U.S.C. § 1084)</strong> and <strong>FAA regulations prohibiting commercial incentives tied to flight operations</strong>, FlightBet does not involve real currency or prizes.</span>
+  <a class="fb-link" onclick="openAuth('signup')">Sign up free →</a>
+</div>
+
+<div id="apilim" style="display:none;background:rgba(224,120,32,.12);border-bottom:1px solid rgba(224,120,32,.3);padding:4px 14px;font-size:10px;color:var(--orange);font-family:var(--fmo)"></div>
+
+<div class="main" id="main-area">
+  <div class="sidebar" id="sidebar">
+    <!-- YYZ Button — redesigned pill -->
+    <div class="yyzwrap">
+      <div class="yyzbtn" id="yyzmainbtn">
+        <div class="yyz-header" onclick="yyzShortAll()">
+          <span class="yyz-title-text">SHORT ALL AIR CANADA @ YYZ</span>
+          <span class="yyz-badge" id="yyzbadge">—</span>
+        </div>
+        <div class="yyz-body">
+          <div class="yyz-stat-row">
+            <span class="yyz-stat">Delay rate: <strong id="yyz-rate">65%</strong></span>
+            <span class="yyz-stat">Avg delay: <strong>~47 min</strong></span>
+          </div>
+          <div class="yyz-stat-row">
+            <span class="yyz-stat">Unbetted AC flights: <strong id="yyz-count">—</strong></span>
+          </div>
+          <div class="yyz-divider"></div>
+          <div class="yyz-sub-text" id="yyzstatus">Bet YES DELAYED on every upcoming Air Canada flight at Pearson.</div>
+          <div class="yyz-controls">
+            <span class="yyz-lbl">$ per flight:</span>
+            <input class="yyz-amt" type="number" id="yyzamt" value="10" min="1" max="500" onclick="event.stopPropagation()">
+            <span class="yyz-stat" id="yyztotal"></span>
+            <button class="yyz-go" onclick="yyzShortAll()">BET ALL →</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="ss">
+      <div class="sl">Filter</div>
+      <div class="fc active" data-f="all" onclick="setFilter('all')">All Flights <span class="cnt" id="fc-all">0</span></div>
+      <div class="fc" data-f="active" onclick="setFilter('active')">Active Markets <span class="cnt" id="fc-active">0</span></div>
+      <div class="fc" data-f="high" onclick="setFilter('high')">High Delay Risk <span class="cnt" id="fc-high">0</span></div>
+      <div class="fc" data-f="boarding" onclick="setFilter('boarding')">Boarding Now <span class="cnt" id="fc-boarding">0</span></div>
+      <div class="fc" data-f="departed" onclick="setFilter('departed')">Departed <span class="cnt" id="fc-departed">0</span></div>
+      <!-- threshold note -->
+      <div class="threshold-note">High Delay Risk = &gt;55% delay probability</div>
+    </div>
+
+    <div class="ss">
+      <div class="sl">Market Stats</div>
+      <div id="mstats"></div>
+    </div>
+    <div class="ss" style="flex-shrink:0">
+      <div class="sl">Leaderboard <span style="color:var(--green);cursor:pointer;font-weight:600" onclick="showLeaderboard()">see all →</span></div>
+      <div id="sidelb"><div style="font-size:10px;color:var(--text3);padding:4px 0">Loading...</div></div>
+      <div style="font-size:8px;color:var(--text3);cursor:pointer;margin-top:4px;text-align:right" onclick="refreshLB()">↻ refresh</div>
+    </div>
+    <div class="ss" style="border-bottom:none;flex-shrink:0">
+      <div class="sl">Recent Bets <span style="font-size:8px;font-weight:400;color:var(--text3)">platform-wide</span></div>
+    </div>
+    <div class="feed" id="feed"></div>
+  </div>
+
+  <div class="content" id="board-content">
+    <div class="btop">
+      <div>
+        <div class="bname" id="bname">San Francisco International</div>
+        <div class="bmeta" id="bmeta">SFO — <span id="btime"></span></div>
+      </div>
+      <div class="bctrl">
+        <input class="sbox" placeholder="FLIGHT..." id="sbox" oninput="renderAll()">
+        <button class="sbtn active" data-s="time" onclick="setSort('time')">TIME</button>
+        <button class="sbtn" data-s="delay" onclick="setSort('delay')">DELAY%</button>
+        <button class="sbtn" data-s="vol" onclick="setSort('vol')">VOL</button>
+      </div>
+    </div>
+    <div class="th"><span>FLIGHT</span><span>DESTINATION</span><span>DEPARTS</span><span>STATUS</span><span>DELAY MARKET</span><span>TRADE</span></div>
+    <div class="fl" id="flist"></div>
+    <div class="dp" id="dpanel"></div>
+  </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+import{initializeApp}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js';
+import{getAuth,createUserWithEmailAndPassword,signInWithEmailAndPassword,signOut,onAuthStateChanged,updateProfile}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+import{getFirestore,doc,setDoc,getDoc,updateDoc,collection,getDocs,orderBy,query,limit,serverTimestamp,addDoc,onSnapshot}from'https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js';
+const FC={apiKey:"AIzaSyBs42dL6a1QyeaYgEPZpOkTCxTn6dMbZcs",authDomain:"flightbet-aa5b4.firebaseapp.com",projectId:"flightbet-aa5b4",storageBucket:"flightbet-aa5b4.firebasestorage.app",messagingSenderId:"567745958052",appId:"1:567745958052:web:776fae0df0ff8e61ad5631"};
+const app=initializeApp(FC),auth=getAuth(app),db=getFirestore(app),START=500;
+const APS={YYZ:{name:'Toronto Pearson',city:'Toronto',lat:43.677,lng:-79.630,rate:.65,note:'#1 most delayed airport in the world.'},EWR:{name:'Newark Liberty',city:'Newark',lat:40.689,lng:-74.177,rate:.45},JFK:{name:'JFK International',city:'New York',lat:40.641,lng:-73.778,rate:.38},ORD:{name:"O'Hare",city:'Chicago',lat:41.978,lng:-87.904,rate:.35},SFO:{name:'San Francisco Intl',city:'San Francisco',lat:37.621,lng:-122.379,rate:.30,note:'Marine layer fog causes frequent ground stops.'},BOS:{name:'Logan International',city:'Boston',lat:42.365,lng:-71.010,rate:.28},MIA:{name:'Miami International',city:'Miami',lat:25.795,lng:-80.287,rate:.27},DFW:{name:'Dallas/Fort Worth',city:'Dallas',lat:32.897,lng:-97.040,rate:.25},DEN:{name:'Denver International',city:'Denver',lat:39.856,lng:-104.674,rate:.24},LAX:{name:'Los Angeles Intl',city:'Los Angeles',lat:33.943,lng:-118.408,rate:.21},ATL:{name:'Hartsfield-Jackson',city:'Atlanta',lat:33.640,lng:-84.428,rate:.20},SEA:{name:'Seattle-Tacoma',city:'Seattle',lat:47.449,lng:-122.309,rate:.18}};
+const AR={'Air Canada':.58,'WestJet':.42,'Spirit':.45,'Frontier':.43,'United':.32,'American':.31,'Delta':.22,'Southwest':.28,'JetBlue':.35,'Alaska':.20};
+const gr=i=>APS[i]?.rate||.22;
+let ap='SFO',flights=[],sel=null,filter='all',sort='time',bside='YES';
+let CU=null,UP=null,view='board',viewUid=null;
+const bCache={},BTTL=3*60*1000,ALIM=6000;
+
+function trackApi(){const k='fb_ac',mk='fb_am',m=new Date().toISOString().slice(0,7);if(localStorage.getItem(mk)!==m){localStorage.setItem(mk,m);localStorage.setItem(k,'0');}const n=parseInt(localStorage.getItem(k)||'0')+1;localStorage.setItem(k,n);if(n>=ALIM*.9){const el=document.getElementById('apilim');if(el){el.style.display='block';el.textContent='⚠ '+n+'/'+ALIM+' API calls used';}}return n;}
+
+function snap(ev,note){if(!UP)return;if(!UP.bh)UP.bh=[];UP.bh.push({ts:Date.now(),b:UP.balance,ev,note:note||''});if(UP.bh.length>500)UP.bh=UP.bh.slice(-500);}
+
+// ── IS FLIGHT LOCKED (boarding/departed — no new bets) ────────────────────────
+function isFlightLocked(f){
+  if(!f)return false;
+  const st=(f.status||'').toLowerCase().trim();
+  return ['boarding','departed','cancelled','landed','arrived'].includes(st);
+}
+
+// ── PLATFORM-WIDE RECENT BETS via Firestore live listener ────────────────────
+let feedUnsub=null;
+function startFeedListener(){
+  if(feedUnsub)feedUnsub();
+  try{
+    const q=query(collection(db,'bets'),orderBy('ts','desc'),limit(30));
+    feedUnsub=onSnapshot(q,snap=>{
+      const fd=document.getElementById('feed');if(!fd)return;
+      fd.innerHTML='';
+      snap.docs.forEach(d=>{
+        const b=d.data();
+        const item=document.createElement('div');item.className='fi';
+        item.innerHTML=`<span class="${b.side==='YES'?'sy':'sn'}">${b.side}</span> $${b.amount} on <span class="flt">${b.flightId}</span> ${b.dest||''} — <span style="color:var(--text3)">${b.playerName||'anon'}</span>`;
+        fd.appendChild(item);
+      });
+    });
+  }catch(e){console.warn('Feed listener failed',e);}
+}
+
+async function writeFeedBet(flightId,side,amount,dest){
+  if(!CU)return;
+  try{
+    await addDoc(collection(db,'bets'),{
+      flightId,side,amount,dest:dest||'',
+      playerName:CU.displayName||'anon',
+      uid:CU.uid,
+      ts:serverTimestamp()
+    });
+  }catch(e){console.warn('writeFeedBet failed',e);}
+}
+
+// ── ANALYTICS CHARTS ──────────────────────────────────────────────────────────
+// Default tab is now 'daily' (Daily P&L)
+function renderAnalytics(wrapId, profile){
+  const el=document.getElementById(wrapId);if(!el)return;
+  // Default to daily P&L as first tab
+  const tab=el.dataset.tab||'daily';
+  el.dataset.tab=tab;
+  window['_cp_'+wrapId]=profile;
+  if(!el.querySelector('.ctabs')){
+    el.innerHTML=`<div class="ctabs">
+      <button class="ctab" data-tab="daily" onclick="swtab('${wrapId}','daily')">Daily P&amp;L</button>
+      <button class="ctab" data-tab="stats" onclick="swtab('${wrapId}','stats')">Analytics</button>
+      <button class="ctab" data-tab="balance" onclick="swtab('${wrapId}','balance')">Balance Curve</button>
+    </div><div id="${wrapId}-in"></div>`;
+  }
+  el.querySelectorAll('.ctab').forEach(b=>b.classList.toggle('act',b.dataset.tab===tab));
+  const inn=document.getElementById(wrapId+'-in');
+  if(!inn)return;
+  if(tab==='balance')drawBalance(inn,profile);
+  else if(tab==='daily')drawDaily(inn,profile);
+  else drawStats(inn,profile);
+}
+window.swtab=function(id,tab){
+  const el=document.getElementById(id);if(!el)return;
+  const pv=document.getElementById('pview');
+  const scrollY=pv?pv.scrollTop:0;
+  el.dataset.tab=tab;
+  const p=window['_cp_'+id];
+  if(p){
+    el.querySelectorAll('.ctab').forEach(b=>b.classList.toggle('act',b.dataset.tab===tab));
+    const inn=document.getElementById(id+'-in');
+    if(!inn)return;
+    if(tab==='balance')drawBalance(inn,p);
+    else if(tab==='daily')drawDaily(inn,p);
+    else drawStats(inn,p);
+  }
+  if(pv)pv.scrollTop=scrollY;
+};
+
+function drawBalance(el,profile){
+  const h=profile.bh||[];
+  if(h.length<2){el.innerHTML='<div class="cempty">Place and resolve bets to see your balance curve here.</div>';return;}
+  const W=550,H=150,P={t:8,r:10,b:26,l:48};
+  const iW=W-P.l-P.r,iH=H-P.t-P.b;
+  const bals=[START,...h.map(x=>x.b)];
+  const mn=Math.min(...bals)*.97,mx=Math.max(...bals)*1.03,rng=mx-mn||100;
+  const ts=h.map(x=>x.ts),minT=ts[0],maxT=ts[ts.length-1],tR=maxT-minT||1;
+  const tx=t=>P.l+((t-minT)/tR)*iW,ty=b=>P.t+iH-((b-mn)/rng)*iH;
+  const pts=[{x:P.l,y:ty(START),b:START},...h.map(x=>({x:tx(x.ts),y:ty(x.b),b:x.b,ev:x.ev,note:x.note}))];
+  const lp=pts.map((p,i)=>(i?'L':'M')+p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ');
+  const ap2=lp+' L'+pts[pts.length-1].x.toFixed(1)+','+(P.t+iH)+' L'+P.l+','+(P.t+iH)+' Z';
+  const isUp=h[h.length-1].b>=START,col=isUp?'var(--green)':'var(--red)',gid='bg'+Date.now();
+  const baseY=ty(START);
+  const ylbls=Array.from({length:4},(_,i)=>{const v=mn+(rng/3)*i,y=ty(v);return`<text x="${P.l-3}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">$${Math.round(v)}</text><line x1="${P.l}" y1="${y.toFixed(1)}" x2="${P.l+iW}" y2="${y.toFixed(1)}" stroke="var(--border)" stroke-width="0.5"/>`;}).join('');
+  const dots=pts.filter(p=>p.ev&&p.ev!=='start').map(p=>`<circle cx="${p.x.toFixed(1)}" cy="${p.y.toFixed(1)}" r="2.5" fill="${p.ev==='win'?'var(--green)':p.ev==='loss'?'var(--red)':'var(--orange)'}" stroke="var(--bg2)" stroke-width="1.5"><title>${p.note||p.ev} — $${Math.round(p.b)}</title></circle>`).join('');
+  const fmt=t=>new Date(t).toLocaleDateString([],{month:'short',day:'numeric'});
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" xmlns="http://www.w3.org/2000/svg">
+    <defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="${col}" stop-opacity=".14"/><stop offset="100%" stop-color="${col}" stop-opacity=".01"/></linearGradient></defs>
+    ${ylbls}
+    <line x1="${P.l}" y1="${baseY.toFixed(1)}" x2="${P.l+iW}" y2="${baseY.toFixed(1)}" stroke="var(--border2)" stroke-width="1" stroke-dasharray="4,3"/>
+    <path d="${ap2}" fill="url(#${gid})"/>
+    <path d="${lp}" fill="none" stroke="${col}" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>
+    ${dots}
+    <text x="${P.l}" y="${H-4}" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${fmt(minT)}</text>
+    <text x="${P.l+iW}" y="${H-4}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${fmt(maxT)}</text>
+  </svg>
+  <div class="cleg">
+    <div class="clegitem"><div class="cdot" style="background:var(--green)"></div>Win</div>
+    <div class="clegitem"><div class="cdot" style="background:var(--red)"></div>Loss</div>
+    <div class="clegitem"><div class="cdot" style="background:var(--orange)"></div>Bet placed</div>
+    <div class="clegitem" style="margin-left:auto;font-size:9px;color:var(--text2)">Dashed = $${START} starting</div>
+  </div>`;
+}
+
+function drawDaily(el,profile){
+  const res=profile.resolved||[];
+  if(!res.length){el.innerHTML='<div class="cempty">No resolved bets yet. Markets settle when flights depart.</div>';return;}
+  const byD={};
+  res.forEach(r=>{const d=r.date||'Unknown';if(!byD[d])byD[d]={w:0,l:0,staked:0,pnl:0,bets:0};byD[d].bets++;byD[d].staked+=r.staked||0;if(r.won){byD[d].w++;byD[d].pnl+=(r.payout-r.staked);}else{byD[d].l++;byD[d].pnl-=(r.staked||0);}});
+  const dates=Object.keys(byD).sort((a,b)=>new Date(a)-new Date(b));
+  const profits=dates.map(d=>byD[d].pnl);
+  const maxA=Math.max(...profits.map(Math.abs),1);
+  const W=550,H=150,P={t:8,r:10,b:30,l:48};
+  const iW=W-P.l-P.r,iH=H-P.t-P.b;
+  const bW=Math.max(4,Math.min(28,(iW/dates.length)*.72));
+  const midY=P.t+iH/2,toH=v=>(Math.abs(v)/maxA)*(iH/2);
+  const bars=dates.map((d,i)=>{
+    const x=P.l+(i/dates.length)*iW+(iW/dates.length-bW)/2,pv=byD[d].pnl,h=toH(pv),y=pv>=0?midY-h:midY,col=pv>=0?'var(--green)':'var(--red)';
+    return`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bW}" height="${Math.max(2,h).toFixed(1)}" fill="${col}" rx="2" opacity=".85"><title>${d}: ${byD[d].w}W/${byD[d].l}L · P&L ${pv>=0?'+':''}$${pv.toFixed(0)} · ${byD[d].bets} bets</title></rect>`;
+  }).join('');
+  const ylbls=[-1,0,1].map(v=>{const y=v===0?midY:v>0?midY-toH(maxA):midY+toH(maxA);return`<text x="${P.l-3}" y="${y+3}" text-anchor="end" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${v===0?'$0':(v>0?'+':'')+Math.round(v*maxA)}</text>`;}).join('');
+  const step=Math.max(1,Math.floor(dates.length/5));
+  const xlbls=dates.filter((_,i)=>i===0||i===dates.length-1||i%step===0).map(d=>{const i=dates.indexOf(d),x=P.l+(i/dates.length)*iW+(iW/dates.length)/2,label=d.split('/').slice(-2).join('/');return`<text x="${x.toFixed(1)}" y="${H-4}" text-anchor="middle" fill="var(--text3)" font-size="9" font-family="'IBM Plex Mono',monospace">${label}</text>`;}).join('');
+  el.innerHTML=`<svg viewBox="0 0 ${W} ${H}" style="width:100%;height:${H}px" xmlns="http://www.w3.org/2000/svg">
+    ${ylbls}
+    <line x1="${P.l}" y1="${midY}" x2="${P.l+iW}" y2="${midY}" stroke="var(--border2)" stroke-width="1"/>
+    ${bars}${xlbls}
+  </svg>
+  <div class="cleg"><div class="clegitem"><div class="cdot" style="background:var(--green)"></div>Profit day</div><div class="clegitem"><div class="cdot" style="background:var(--red)"></div>Loss day</div><div class="clegitem" style="margin-left:auto;font-size:9px;color:var(--text2)">Hover bars for details</div></div>`;
+}
+
+function drawStats(el,profile){
+  const res=profile.resolved||[];
+  if(!res.length){el.innerHTML='<div class="cempty">No resolved bets yet.</div>';return;}
+  const wins=res.filter(r=>r.won),losses=res.filter(r=>!r.won);
+  const staked=res.reduce((s,r)=>s+(r.staked||0),0);
+  const wonAmt=wins.reduce((s,r)=>s+(r.payout-r.staked),0);
+  const lostAmt=losses.reduce((s,r)=>s+(r.staked||0),0);
+  const wr=Math.round(wins.length/res.length*100);
+  const roi=staked>0?((wonAmt-lostAmt)/staked*100):0;
+  const yb=res.filter(r=>r.side==='YES'),nb=res.filter(r=>r.side==='NO');
+  const ywr=yb.length?Math.round(yb.filter(r=>r.won).length/yb.length*100):0;
+  const nwr=nb.length?Math.round(nb.filter(r=>r.won).length/nb.length*100):0;
+  const recent=res.slice().reverse();
+  let streak=0,st='';for(const r of recent){if(!st)st=r.won?'W':'L';if((r.won&&st==='W')||(!r.won&&st==='L'))streak++;else break;}
+  const sbox=(lbl,val,sub,col='var(--text)')=>`<div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:9px 10px"><div style="font-size:8px;color:var(--text3);letter-spacing:1px;margin-bottom:3px;font-weight:600">${lbl}</div><div style="font-family:var(--fm);font-size:19px;color:${col}">${val}</div>${sub?`<div style="font-size:9px;color:var(--text3);margin-top:2px">${sub}</div>`:''}</div>`;
+  const brow=(lbl,pct,col,n)=>`<div style="margin-bottom:7px"><div style="display:flex;justify-content:space-between;font-size:10px;margin-bottom:2px"><span style="color:var(--text2)">${lbl}</span><span style="font-family:var(--fmo);color:${col}">${pct}% win rate · ${n} bets</span></div><div style="height:5px;background:var(--bg4);border-radius:3px;overflow:hidden"><div style="width:${pct}%;height:100%;background:${col};border-radius:3px"></div></div></div>`;
+  el.innerHTML=`<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:10px">
+    ${sbox('WIN RATE',wr+'%',wins.length+'W / '+losses.length+'L',wr>=50?'var(--green)':'var(--red)')}
+    ${sbox('ROI',(roi>=0?'+':'')+roi.toFixed(1)+'%','on staked',roi>=0?'var(--green)':'var(--red)')}
+    ${sbox('TOTAL STAKED','$'+Math.round(staked),res.length+' resolved bets')}
+    ${sbox('STREAK',streak+st,'in a row — W=wins, L=losses',st==='W'?'var(--green)':'var(--red)')}
+  </div>
+  <div style="background:var(--bg3);border:1px solid var(--border);border-radius:5px;padding:10px 11px">
+    <div style="font-size:8px;color:var(--text3);letter-spacing:1.5px;margin-bottom:9px;font-weight:600">WIN RATE BY SIDE</div>
+    ${brow('YES — Bet Delayed',ywr,'var(--yes)',yb.length)}
+    ${brow('NO — Bet On Time',nwr,'var(--no)',nb.length)}
+  </div>`;
+}
+
+// ── FIREBASE ──────────────────────────────────────────────────────────────────
+async function loadUP(uid){
+  const ref=doc(db,'users',uid),s=await getDoc(ref);
+  if(s.exists()){UP=s.data();}
+  else{UP={uid,displayName:CU.displayName||'Anonymous',email:CU.email,balance:START,positions:{},resolved:[],totalBets:0,wins:0,bh:[],createdAt:serverTimestamp()};await setDoc(ref,UP);}
+  if(!UP.bh)UP.bh=[];
+}
+async function saveUP(){
+  if(!CU)return;
+  await updateDoc(doc(db,'users',CU.uid),{balance:UP.balance,positions:UP.positions,resolved:UP.resolved,totalBets:UP.totalBets,wins:UP.wins,watched:UP.watched||{},bh:UP.bh||[]});
+}
+async function loadPublic(uid){const s=await getDoc(doc(db,'users',uid));return s.exists()?s.data():null;}
+
+// ── SHARE ─────────────────────────────────────────────────────────────────────
+function shareUrl(uid){return window.location.href.split('#')[0]+'#portfolio/'+uid;}
+window.copyShare=async function(){
+  if(!CU){openAuth();return;}
+  const url=shareUrl(CU.uid);
+  try{await navigator.clipboard.writeText(url);const b=document.getElementById('sharebtn');if(b){b.classList.add('cp');b.textContent='✓ Copied!';setTimeout(()=>{b.classList.remove('cp');b.textContent='↗ Share';},2000);}showToast('Portfolio link copied!','ok');}
+  catch(e){prompt('Your portfolio link:',url);}
+};
+function checkHash(){const m=window.location.hash.match(/^#portfolio\/(.+)$/);if(m&&m[1]){viewUid=m[1];showPub(m[1]);return true;}const lb=window.location.hash.match(/^#leaderboard$/);if(lb){showLeaderboard();return true;}return false;}
+async function showPub(uid){
+  view='portfolio';
+  const bc=document.getElementById('board-content');if(bc)bc.style.display='none';
+  let pv=document.getElementById('pview');
+  if(!pv){pv=document.createElement('div');pv.id='pview';pv.className='pview';document.getElementById('main-area').appendChild(pv);}
+  pv.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)"><span class="spin"></span>Loading...</div>';
+  const profile=await loadPublic(uid);
+  if(!profile){pv.innerHTML='<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:12px">✈</div><div>Portfolio not found.</div><button class="nav-btn btn-out" style="margin-top:14px" onclick="showBoard()">← Departures Board</button></div>';return;}
+  renderPV(pv,profile,!(CU&&CU.uid===uid));
+}
+
+// ── LEADERBOARD VIEW ──────────────────────────────────────────────────────────
+window.showLeaderboard=async function(){
+  view='leaderboard';
+  window.location.hash='leaderboard';
+  const bc=document.getElementById('board-content');if(bc)bc.style.display='none';
+  let pv=document.getElementById('pview');
+  if(!pv){pv=document.createElement('div');pv.id='pview';pv.className='pview';document.getElementById('main-area').appendChild(pv);}
+  pv.innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)"><span class="spin"></span>Loading leaderboard...</div>';
+  const lb=await loadLB();
+  const myRank=CU?lb.findIndex(l=>l.uid===CU.uid)+1:0;
+  pv.innerHTML=`
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div>
+        <div style="font-size:15px;font-weight:600">Leaderboard</div>
+        <div style="font-size:10px;color:var(--text3);margin-top:1px">${lb.length} players · ranked by balance</div>
+      </div>
+      <div style="display:flex;gap:6px">
+        ${CU?`<button class="scbtn" onclick="showPortfolio()">My Portfolio →</button>`:''}
+        <button class="nav-btn btn-out" onclick="showBoard()" style="font-size:11px;padding:5px 10px">← Departures Board</button>
+      </div>
+    </div>
+    ${myRank&&CU?`<div style="background:rgba(14,165,106,.06);border:1px solid rgba(14,165,106,.2);border-radius:var(--radius);padding:10px 14px;margin-bottom:12px;font-size:12px;display:flex;align-items:center;justify-content:space-between"><span>Your rank: <strong style="color:var(--green)">#${myRank}</strong> of ${lb.length}</span><span style="font-family:var(--fmo);color:var(--green)">$${Math.round(CU&&UP?UP.balance:0)}</span></div>`:''}
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden">
+      <div style="display:grid;grid-template-columns:28px 1fr 80px 70px 80px;padding:6px 14px;background:var(--bg3);border-bottom:1px solid var(--border);font-size:9px;font-weight:600;color:var(--text3);letter-spacing:.5px">
+        <span>#</span><span>PLAYER</span><span>BETS</span><span>WIN %</span><span>BALANCE</span>
+      </div>
+      ${lb.map((l,i)=>{
+        const isMe=CU&&l.uid===CU.uid,pnl=Math.round(l.balance-START),wr=l.totalBets?Math.round((l.wins||0)/l.totalBets*100):0;
+        return`<div class="lbfullrow${isMe?' lbme':''}" style="grid-template-columns:28px 1fr 80px 70px 80px;display:grid;cursor:pointer" onclick="viewPub('${l.uid}')">
+          <span class="lbfr">${i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1}</span>
+          <span class="lbfn">${isMe?`<strong>${l.displayName} (you)</strong>`:l.displayName}</span>
+          <span class="lbfa">${l.totalBets||0}b</span>
+          <span class="lbfp" style="color:${wr>=50?'var(--green)':'var(--red)'}">${wr}%</span>
+          <span class="lbfb" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${Math.abs(pnl)}</span>
+        </div>`;
+      }).join('')}
+    </div>
+    <div style="font-size:9px;color:var(--text3);margin-top:8px;text-align:center">Click any player to view their portfolio</div>`;
+};
+
+// ── STALE RESOLUTION ──────────────────────────────────────────────────────────
+async function resolveStale(){
+  if(!CU||!UP)return;
+  const pos=UP.positions||{},ids=Object.keys(pos);if(!ids.length)return;
+  const byA={};for(const id of ids){const p=pos[id],a=p.depAirport||ap;if(!byA[a])byA[a]=[];byA[a].push(id);}
+  let any=false;
+  for(const[airport,fids]of Object.entries(byA)){
+    let af=[];try{trackApi();const r=await fetch('/api/flights?airport='+airport);if(r.ok){const d=await r.json();af=d.flights||[];}}catch(e){continue;}
+    for(const id of fids){
+      const p=pos[id],f=af.find(x=>x.id===id),st=f?(f.status||'').toLowerCase():'gone';
+      if(!['departed','active','landed','arrived','cancelled','gone'].includes(st))continue;
+      let wasD;
+      if(!f||st==='gone')wasD=(p.prob||.3)>=.55;
+      else if(st==='cancelled')wasD=true;
+      else if(f.delayMinutes!=null)wasD=f.delayMinutes>=15;
+      else wasD=(f.delayProb||p.prob||.3)>=.55;
+      const won=(p.side==='YES'&&wasD)||(p.side==='NO'&&!wasD);
+      const prob=p.side==='YES'?(p.prob||.3):(1-(p.prob||.3));
+      const payout=won?p.amount/prob:0;
+      if(won)UP.balance=Math.round((UP.balance+payout)*100)/100;
+      if(!UP.resolved)UP.resolved=[];
+      UP.resolved.push({id,dest:p.dest,destName:p.destName||p.dest,side:p.side,staked:p.amount,won,payout,wasD,delayMinutes:f?.delayMinutes||null,date:new Date().toLocaleDateString(),by:'login'});
+      if(won)UP.wins=(UP.wins||0)+1;
+      snap(won?'win':'loss',(won?'Won':'Lost')+' $'+p.amount.toFixed(0)+' on '+id);
+      delete UP.positions[id];any=true;
+      setTimeout(()=>showToast(won?'✈ '+id+' — WON +$'+(payout-p.amount).toFixed(0)+'!':'✈ '+id+' — lost $'+p.amount.toFixed(0),won?'ok':'err'),200);
+    }
+  }
+  if(any){await saveUP();renderAuth();refreshLB();if(view==='portfolio')renderPort();}
+}
+
+async function loadLB(){const q=query(collection(db,'users'),orderBy('balance','desc'),limit(50));const s=await getDocs(q);return s.docs.map(d=>d.data());}
+
+window.refreshLB=async function(){
+  const el=document.getElementById('sidelb');if(!el)return;
+  try{const lb=await loadLB();if(!lb.length){el.innerHTML='<div style="font-size:10px;color:var(--text3);padding:4px 0">No players yet!</div>';return;}
+  el.innerHTML=lb.slice(0,8).map((l,i)=>{const isMe=CU&&l.uid===CU.uid,pnl=Math.round(l.balance-START);return`<div class="lbrow${isMe?' lbme':''}"><span class="lbrank">${i+1}</span><span class="lbname" onclick="viewPub('${l.uid}')">${l.displayName}${isMe?' ★':''}</span><span class="lbval" style="color:${pnl>=0?'var(--green)':'var(--red)'}">${pnl>=0?'+':''}$${Math.abs(pnl)}</span></div>`;}).join('');}
+  catch(e){el.innerHTML='<div style="font-size:10px;color:var(--text3)">—</div>';}
+};
+window.viewPub=function(uid){window.location.hash='portfolio/'+uid;showPub(uid);};
+
+onAuthStateChanged(auth,async user=>{
+  if(user){CU=user;await loadUP(user.uid);renderAuth();renderAll();refreshLB();resolveStale();updateYYZ();startFeedListener();}
+  else{CU=null;UP=null;renderAuth();renderAll();refreshLB();updateYYZ();startFeedListener();}
+});
+
+// ── FLIGHTS ───────────────────────────────────────────────────────────────────
+async function fetchF(iata){
+  const now=Date.now();if(bCache[iata]&&bCache[iata].exp>now)return bCache[iata].data;
+  try{
+    trackApi();
+    const url=iata==='YYZ'
+      ? '/api/flights?airport='+iata+'&window=48h'
+      : '/api/flights?airport='+iata;
+    const r=await fetch(url);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const d=await r.json();
+    const posIds=Object.keys(UP?.positions||{});
+
+    d.flights=(d.flights||[]).filter(f=>{
+      if(posIds.includes(f.id))return true;
+      const st=(f.status||'').toLowerCase();
+      if(['landed','arrived'].includes(st))return false;
+      if(st==='departed'){
+        if(f.scheduledAt){
+          const diff=(Date.now()-new Date(f.scheduledAt).getTime())/60000;
+          return diff<30;
+        }
+        if(f.time){
+          const nowD=new Date(),dep=new Date();
+          const[h,m]=f.time.split(':').map(Number);
+          dep.setHours(h,m,0,0);
+          return(nowD-dep)/60000<30;
+        }
+        return false;
+      }
+      return true;
+    });
+
+    d.flights.sort((a,b)=>{
+      const aP=posIds.includes(a.id)?0:1,bP=posIds.includes(b.id)?0:1;
+      if(aP!==bP)return aP-bP;
+      const aTime=a.scheduledAt?new Date(a.scheduledAt).getTime():(a.time?parseTime(a.time):Infinity);
+      const bTime=b.scheduledAt?new Date(b.scheduledAt).getTime():(b.time?parseTime(b.time):Infinity);
+      return aTime-bTime;
+    });
+
+    bCache[iata]={data:d,exp:now+BTTL};
+    showBadge(d.mock||d.fallback,d.fetchedAt);
+    return d;
+  }catch(e){showBadge(true,null);return{flights:[],error:true};}
+}
+
+function parseTime(t){
+  if(!t)return Infinity;
+  const[h,m]=t.split(':').map(Number);
+  const d=new Date();d.setHours(h,m,0,0);
+  return d.getTime();
+}
+
+function showBadge(isMock,fat){
+  let b=document.getElementById('dbadge');if(!b){b=document.createElement('span');b.id='dbadge';b.style.cssText='font-size:9px;padding:2px 6px;border-radius:3px;font-family:var(--fmo);margin-left:7px;font-weight:500;';document.getElementById('bname')?.after(b);}
+  if(isMock){b.textContent='API ERROR';b.style.background='rgba(224,70,42,.1)';b.style.color='var(--red)';b.style.border='1px solid rgba(224,70,42,.2)';}
+  else{const t=fat?new Date(fat).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}):'';b.textContent='LIVE·'+t;b.style.background='rgba(0,168,126,.08)';b.style.color='var(--green)';b.style.border='1px solid rgba(0,168,126,.2)';}
+}
+function setAP(code){
+  ap=code;document.getElementById('napc').textContent=code;document.getElementById('napn').textContent=APS[code]?.name||code;
+  document.getElementById('bname').textContent=APS[code]?.name||code;document.getElementById('bmeta').textContent=code+' — ';
+  sel=null;const dp=document.getElementById('dpanel');dp.classList.remove('open');dp.innerHTML='';
+  document.getElementById('flist').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)"><span class="spin"></span>FETCHING LIVE FLIGHTS...</div>';
+  fetchF(code).then(d=>{
+    flights=d.flights||[];
+    flights.forEach(f=>{if(f.delayProb==null){const ar=AR[f.airline]||null,br=gr(code);f.delayProb=ar?(br*.5+ar*.5):br;}if(f.vol==null)f.vol=5000;});
+    showBadge(d.mock||d.fallback,d.fetchedAt);autoResolve();renderAll();updateCounts();updateStats();updateYYZ();
+  });
+}
+setInterval(()=>{const n=new Date(),el=document.getElementById('btime');if(el)el.textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(x=>String(x).padStart(2,'0')).join(':');},1000);
+setInterval(()=>{flights.forEach(f=>{if(f.status==='Departed'||f.status==='Cancelled')return;f.delayProb=Math.max(.04,Math.min(.96,(f.delayProb||.2)+(Math.random()-.5)*.03));});autoResolve();renderAll();updateTicker();updateStats();},5000);
+setInterval(()=>fetchF(ap).then(d=>{flights=d.flights||[];flights.forEach(f=>{if(f.delayProb==null)f.delayProb=gr(ap);if(f.vol==null)f.vol=5000;});renderAll();updateCounts();updateStats();updateYYZ();}),3*60*1000);
+setInterval(window.refreshLB,60*1000);
+
+// ── YYZ ───────────────────────────────────────────────────────────────────────
+function updateYYZ(){
+  const ac=flights.filter(f=>{
+    const airline=(f.airline||'').toLowerCase();
+    const st=(f.status||'').toLowerCase();
+    return airline.includes('air canada')
+      && st!=='departed' && st!=='cancelled' && st!=='landed' && st!=='arrived'
+      && !UP?.positions?.[f.id];
+  });
+  const amt=parseFloat(document.getElementById('yyzamt')?.value)||10;
+  const badge=document.getElementById('yyzbadge');
+  const countEl=document.getElementById('yyz-count');
+  const status=document.getElementById('yyzstatus');
+  const total=document.getElementById('yyztotal');
+
+  if(ap!=='YYZ'){
+    if(badge)badge.textContent='→ YYZ';
+    if(countEl)countEl.textContent='switch to YYZ';
+    if(status)status.textContent='Switch to YYZ to short all upcoming Air Canada flights at Pearson.';
+    if(total)total.textContent='';
+  } else {
+    if(badge)badge.textContent=ac.length+' flights';
+    if(countEl)countEl.textContent=ac.length;
+    const t=ac.length*amt;
+    if(total)total.textContent=ac.length?'= $'+t+' total':'';
+    if(!ac.length){
+      if(status)status.textContent='No unbetted Air Canada flights at YYZ right now. Check back soon.';
+    } else {
+      const tomorrow=new Date();tomorrow.setDate(tomorrow.getDate()+1);tomorrow.setHours(0,0,0,0);
+      const todayF=ac.filter(f=>{const t=f.scheduledAt?new Date(f.scheduledAt).getTime():(f.time?parseTime(f.time):0);return t<tomorrow.getTime();});
+      const futF=ac.length-todayF.length;
+      let txt=`${ac.length} flight${ac.length!==1?'s':''} · $${amt}/ea`;
+      if(futF>0)txt+=` · ${todayF.length} today + ${futF} scheduled`;
+      if(status)status.textContent=txt;
+    }
+  }
+
+  const amtEl=document.getElementById('yyzamt');
+  if(amtEl&&!amtEl._li){amtEl._li=true;amtEl.addEventListener('input',updateYYZ);}
+}
+
+window.yyzShortAll=async function(){
+  if(!CU){openAuth();return;}
+  if(!UP.positions)UP.positions={};
+
+  if(ap!=='YYZ'){
+    ap='YYZ';
+    document.getElementById('napc').textContent='YYZ';
+    document.getElementById('napn').textContent=APS['YYZ'].name;
+    document.getElementById('bname').textContent=APS['YYZ'].name;
+    document.getElementById('bmeta').textContent='YYZ — ';
+    sel=null;
+    const dp=document.getElementById('dpanel');dp.classList.remove('open');dp.innerHTML='';
+    document.getElementById('flist').innerHTML='<div style="padding:40px;text-align:center;color:var(--text3)"><span class="spin"></span>Loading YYZ flights...</div>';
+  }
+
+  delete bCache['YYZ'];
+  showToast('Fetching all Air Canada flights at YYZ...','ok');
+
+  let d;
+  try{d=await fetchF('YYZ');}catch(e){showToast('Failed to load YYZ flights','err');return;}
+
+  flights=d.flights||[];
+  flights.forEach(f=>{
+    if(f.delayProb==null)f.delayProb=gr('YYZ');
+    if(f.vol==null)f.vol=5000;
+  });
+  renderAll();updateCounts();updateStats();
+
+  const amt=Math.max(1,parseFloat(document.getElementById('yyzamt')?.value)||10);
+  const pos=UP.positions||{};
+  const targets=flights.filter(f=>{
+    const airline=(f.airline||'').toLowerCase();
+    const st=(f.status||'').toLowerCase();
+    return airline.includes('air canada')
+      && !isFlightLocked(f)
+      && !pos[f.id];
+  });
+
+  if(!targets.length){
+    showToast('No unbetted Air Canada flights found at YYZ right now','err');
+    updateYYZ();return;
+  }
+
+  const total=targets.length*amt;
+  if(total>UP.balance){
+    showToast('Need $'+total+' — only $'+Math.round(UP.balance)+' available.','err');
+    setTimeout(()=>showRefill(),1200);updateYYZ();return;
+  }
+
+  for(const f of targets){
+    UP.balance=Math.round((UP.balance-amt)*100)/100;
+    UP.positions[f.id]={side:'YES',amount:amt,prob:f.delayProb||.58,dest:f.dest,destName:f.destName,time:f.time,airline:f.airline,depAirport:'YYZ'};
+    UP.totalBets=(UP.totalBets||0)+1;
+    writeFeedBet(f.id,'YES',amt,f.dest);
+  }
+
+  snap('bet','YYZ short: '+targets.length+' AC flights $'+total);
+  await saveUP();
+  showToast('✈ Shorted '+targets.length+' Air Canada flights at Pearson — $'+total+' staked.','ok');
+  renderAuth();renderAll();updateYYZ();refreshLB();
+};
+
+// ── TICKER ────────────────────────────────────────────────────────────────────
+function updateTicker(){
+  if(!flights.length)return;
+  const items=flights.slice(0,12).map(f=>{const p=Math.round((f.delayProb||.2)*100),up=Math.random()>.5,d=Math.round(Math.random()*4)+1;return`<div class="ti"><span class="fid">${f.id}</span><span>${f.dest}</span><span class="${up?'cup':'cdn'}">${up?'▲':'▼'}${d}%</span><span>${p}¢</span></div>`;});
+  document.getElementById('ticker').innerHTML=[...items,...items].join('');
+}
+
+function setFilter(f){
+  filter=f;
+  document.querySelectorAll('.fc').forEach(c=>c.classList.toggle('active',c.dataset.f===f));
+  renderAll();
+}
+function setSort(s){sort=s;document.querySelectorAll('.sbtn').forEach(b=>b.classList.toggle('active',b.dataset.s===s));renderAll();}
+window.setFilter=setFilter;window.setSort=setSort;
+
+window.openAP=function(){
+  const o=document.createElement('div');o.className='mo';o.id='apo';o.onclick=e=>{if(e.target===o)closeAP();};
+  o.innerHTML=`<div class="apmc"><div class="mt" style="font-size:15px">Select Airport</div><div style="display:flex;gap:7px;margin:10px 0"><input id="aps" class="mi" style="margin:0;flex:1;font-family:var(--fm);letter-spacing:2px" placeholder="IATA CODE — YYZ, LHR..." maxlength="4" oninput="this.value=this.value.toUpperCase()" onkeydown="if(event.key==='Enter'){const v=this.value.trim();if(v.length>=3)pickAP(v)}"><button class="nav-btn btn-pri" onclick="const v=document.getElementById('aps').value.trim().toUpperCase();if(v.length>=3)pickAP(v)">GO</button></div><div style="font-size:8px;letter-spacing:1.5px;color:var(--text3);margin-bottom:7px;font-weight:600">RANKED BY DELAY RATE</div><div class="apgrid">${Object.entries(APS).map(([code,a])=>`<div class="apopt${code===ap?' apo':''}" onclick="pickAP('${code}')"><div class="apc">${code}</div><div class="apcity">${a.city}</div><div style="font-size:8px;color:var(--yes);margin-top:1px;font-family:var(--fmo)">${Math.round(a.rate*100)}% delays</div></div>`).join('')}</div></div>`;
+  document.body.appendChild(o);setTimeout(()=>document.getElementById('aps')?.focus(),80);
+};
+window.closeAP=()=>{document.getElementById('apo')?.remove();};
+window.pickAP=function(code){code=code.toUpperCase().trim();if(!code||code.length<3)return;closeAP();if(!APS[code])APS[code]={name:code+' Intl',city:code,lat:0,lng:0,rate:.25};setAP(code);};
+
+function getVisible(){
+  const q=(document.getElementById('sbox')?.value||'').toUpperCase();
+  let list=flights.filter(f=>{
+    if(!f.id)return false;
+    if(q&&!f.id.includes(q)&&!(f.dest||'').includes(q)&&!(f.destName||'').toUpperCase().includes(q))return false;
+    const st=(f.status||'').toLowerCase().trim();
+    // Active Markets = not departed/cancelled/landed/arrived
+    if(filter==='active')return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';
+    if(filter==='high')return(f.delayProb||0)>.55;
+    if(filter==='boarding')return st==='boarding';
+    // Departed shows departed + cancelled + landed (already resolved or resolving)
+    if(filter==='departed')return st==='departed'||st==='cancelled'||st==='landed'||st==='arrived';
+    return true;
+  });
+  list.sort((a,b)=>{
+    if(sort==='delay')return(b.delayProb||0)-(a.delayProb||0);
+    if(sort==='vol')return(b.vol||0)-(a.vol||0);
+    const aTime=a.scheduledAt?new Date(a.scheduledAt).getTime():parseTime(a.time);
+    const bTime=b.scheduledAt?new Date(b.scheduledAt).getTime():parseTime(b.time);
+    return aTime-bTime;
+  });
+  return list;
+}
+
+function updateCounts(){
+  document.getElementById('fc-all').textContent=flights.length;
+  document.getElementById('fc-active').textContent=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';}).length;
+  document.getElementById('fc-high').textContent=flights.filter(f=>(f.delayProb||0)>.55).length;
+  document.getElementById('fc-boarding').textContent=flights.filter(f=>(f.status||'').toLowerCase()==='boarding').length;
+  document.getElementById('fc-departed').textContent=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st==='departed'||st==='cancelled'||st==='landed'||st==='arrived';}).length;
+}
+function updateStats(){
+  const a=flights.filter(f=>{const st=(f.status||'').toLowerCase();return st!=='departed'&&st!=='cancelled'&&st!=='landed'&&st!=='arrived';});
+  const avg=a.reduce((s,f)=>s+(f.delayProb||0),0)/Math.max(1,a.length);
+  const vol=flights.reduce((s,f)=>s+(f.vol||0),0);
+  document.getElementById('mstats').innerHTML=`<div class="srow"><span class="lbl">Avg Delay Prob</span><span class="val">${Math.round(avg*100)}%</span></div><div class="srow"><span class="lbl">24h Volume</span><span class="val">$${(vol/1000).toFixed(0)}K</span></div><div class="srow"><span class="lbl">High Risk (&gt;55%)</span><span class="val">${flights.filter(f=>(f.delayProb||0)>.6).length}</span></div><div class="srow"><span class="lbl">Active</span><span class="val">${a.length}</span></div>`;
+}
+
+async function autoResolve(){
+  if(!CU||!UP)return;const pos=UP.positions||{},ids=Object.keys(pos);if(!ids.length)return;let any=false;
+  for(const id of ids){const f=flights.find(x=>x.id===id);if(!f)continue;const st=(f.status||'').toLowerCase();if(st!=='departed'&&st!=='cancelled')continue;
+  const p=pos[id];let wasD;if(st==='cancelled')wasD=true;else if(f.delayMinutes!=null)wasD=f.delayMinutes>=15;else wasD=(f.delayProb||0)>=.55;
+  const won=(p.side==='YES'&&wasD)||(p.side==='NO'&&!wasD);const prob=p.side==='YES'?(p.prob||.2):(1-(p.prob||.2));const payout=won?p.amount/prob:0;
+  if(won)UP.balance=Math.round((UP.balance+payout)*100)/100;if(!UP.resolved)UP.resolved=[];
+  const di=f.delayMinutes!=null?' ('+f.delayMinutes+'min)':'';
+  UP.resolved.push({id,dest:p.dest,destName:f.destName||p.dest,side:p.side,staked:p.amount,won,payout,wasD,delayMinutes:f.delayMinutes||null,date:new Date().toLocaleDateString(),by:'auto'});
+  if(won)UP.wins=(UP.wins||0)+1;snap(won?'win':'loss',(won?'Won':'Lost')+' $'+p.amount.toFixed(0)+' on '+id+di);delete UP.positions[id];any=true;
+  showToast(won?'✈ '+id+di+' — WON +$'+(payout-p.amount).toFixed(0)+'!':'✈ '+id+di+' — lost $'+p.amount.toFixed(0),won?'ok':'err');
+  setTimeout(()=>{delete bCache[ap];fetchF(ap).then(d=>{flights=d.flights||[];renderAll();});},3000);}
+  if(any){await saveUP();renderAuth();refreshLB();if(view==='portfolio')renderPort();}
+}
+
+// ── MARKET VALUE TOOLTIP ──────────────────────────────────────────────────────
+function mktValTooltip(f, p){
+  const airportRate=Math.round((APS[f.depAirport||ap]?.rate||gr(ap))*100);
+  const airlineBase=AR[f.airline]!=null?Math.round(AR[f.airline]*100):null;
+  const blended=Math.round((f.delayProb||.3)*100);
+  const poolBets=Math.max(3,Math.round((f.vol||5000)/15));
+  const yesOdds=(1/(f.delayProb||.3)).toFixed(2);
+  const noOdds=(1/(1-(f.delayProb||.3))).toFixed(2);
+  const currentMv=p.side==='YES'
+    ?(p.amount/(p.prob||.3))*((f.delayProb||p.prob||.3))
+    :(p.amount/(1-(p.prob||.3)))*((1-(f.delayProb||p.prob||.3)));
+  const pnl=currentMv-p.amount;
+  return `How market value is calculated:
+Airport base rate: ${airportRate}% (${f.depAirport||ap} historical avg)${airlineBase!=null?' · Airline: '+airlineBase+'% ('+f.airline+')':''}
+Blended delay probability: ${blended}% · Updates every 5s
+Your implied odds: ${p.side==='YES'?yesOdds+'x (YES)':noOdds+'x (NO)'}
+Pool estimate: ~${poolBets} bets · Vol $${((f.vol||5000)/1000).toFixed(1)}K
+MV = stake × (current prob / entry prob)
+Your P&L: ${pnl>=0?'+':''}$${pnl.toFixed(2)} vs entry`;
+}
+
+function renderAll(){
+  if(view==='portfolio'){renderPort();return;}
+  if(view==='leaderboard')return;
+  const vis=getVisible();
+  if(!vis.length){document.getElementById('flist').innerHTML='<div style="padding:60px;text-align:center;color:var(--text3)"><div style="font-size:28px;margin-bottom:10px">✈</div><div>No flights match this filter.</div><div style="font-size:10px;color:var(--text3);margin-top:5px">Active Markets shows all flights not yet departed or cancelled.<br>Departed shows flights that have left the gate — markets auto-settle.</div></div>';return;}
+  const pos=UP?.positions||{};
+  document.getElementById('flist').innerHTML=vis.map(f=>{
+    const p=Math.round((f.delayProb||.2)*100),np=100-p,pp=pos[f.id],rawSt=f.status||'On Time',stk=rawSt.replace(/\s+/g,'');
+    const locked=isFlightLocked(f);
+    const depTime=f.scheduledAt?new Date(f.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):(f.time||'--:--');
+    return`<div class="fr${sel===f.id?' sel':''}${pp&&sel!==f.id?' hp':''}${locked&&!pp?' locked':''}" onclick="${locked&&!pp?'':'selFlight(\''+f.id+'\')'}">
+      <div><div class="cfid">${f.id}</div><div class="cal">${(f.airline||'').substring(0,8).toUpperCase()}</div></div>
+      <div class="cdst"><div class="code">${f.dest||'—'}</div><div class="city">${(f.destName||'').substring(0,16)}</div></div>
+      <div class="ctm">${depTime}</div>
+      <div class="st-${stk}">${rawSt.toUpperCase()}</div>
+      <div class="codd"><div class="onum"><span class="oy">${p}¢</span><span style="font-size:9px;color:var(--text3)">/</span><span class="on">${np}¢</span></div><div class="obar"><div class="ofill" style="width:${p}%"></div></div><div class="ovol">$${((f.vol||0)/1000).toFixed(1)}K</div></div>
+      <div class="cact">${pp?`<span class="pb ${pp.side==='YES'?'pby':'pbn'}">${pp.side} $${pp.amount}</span>`:(locked?`<span class="lock-badge">LOCKED</span>`:`<button class="qb qy" onclick="event.stopPropagation();qBet('${f.id}','YES')">YES</button><button class="qb qn" onclick="event.stopPropagation();qBet('${f.id}','NO')">NO</button>`)}</div>
+    </div>`;
+  }).join('');
+}
+
+window.selFlight=function(id){const panel=document.getElementById('dpanel');if(sel===id){sel=null;panel.classList.remove('open');panel.innerHTML='';renderAll();return;}sel=id;bside='YES';renderAll();renderDetail(id);if(window.innerWidth<=768)closeSb();};
+
+function renderDetail(id){
+  const f=flights.find(x=>x.id===id);if(!f)return;
+  const panel=document.getElementById('dpanel'),p=Math.round((f.delayProb||.2)*100),np=100-p,pp=(UP?.positions||{})[id];
+  const locked=isFlightLocked(f)&&!pp;
+  const depTime=f.scheduledAt?new Date(f.scheduledAt).toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',hour12:false}):(f.time||'--:--');
+  const airportRate=Math.round((APS[f.depAirport||ap]?.rate||gr(ap))*100);
+  const airlineBase=AR[f.airline]!=null?Math.round(AR[f.airline]*100):null;
+  const poolEst=Math.max(3,Math.round((f.vol||5000)/15));
+  const yesOdds=(1/(f.delayProb||.2)).toFixed(2);
+  const noOdds=(1/(1-(f.delayProb||.2))).toFixed(2);
+  const mvTip=pp?mktValTooltip(f,pp):'';
+
+  panel.innerHTML=`<div class="di"><div>
+    <div class="dtitle">MARKET — ${f.id} ${f.airline} → ${f.dest}</div>
+    <div class="dstats">
+      <div class="dstat has-tip" title="How this probability is calculated">
+        <div class="dl">DELAY PROB</div><div class="dv">${p}%</div>
+        <div class="ds">${p}¢/$1 payout</div>
+        <div class="tip-popup">Delay probability blends:<br>· ${ap} airport base rate: ${airportRate}%${airlineBase!=null?'<br>· '+f.airline+' airline rate: '+airlineBase+'%':''}<br>· Route/time-of-day factors<br>Updates live every 5s.<br><br>Implied odds: YES ${yesOdds}x · NO ${noOdds}x<br>~${poolEst} bets in pool</div>
+      </div>
+      <div class="dstat"><div class="dl">ON-TIME PROB</div><div class="dv">${np}%</div><div class="ds">${np}¢/$1 payout</div></div>
+      <div class="dstat"><div class="dl">DEPARTS</div><div class="dv">${depTime}</div><div class="ds">Gate ${f.gate||'TBD'}</div></div>
+      <div class="dstat ${pp?'has-tip':''}">
+        <div class="dl">STATUS</div><div class="dv" style="font-size:12px">${f.status||'—'}</div><div class="ds">${f.aircraft||'—'}</div>
+        ${pp?`<div class="tip-popup">${mvTip.replace(/\n/g,'<br>')}</div>`:''}
+      </div>
+    </div>
+    <div class="pvis"><div class="pyf" style="width:${p}%"></div><div class="pnf" style="width:${np}%"></div></div>
+    <div class="plbl"><span class="yl">DELAYED ${p}%</span><span class="nl">ON TIME ${np}%</span></div>
+    ${pp?`<div style="margin-top:4px"><span class="pb ${pp.side==='YES'?'pby':'pbn'}">YOUR POSITION: ${pp.side} $${pp.amount}</span></div>`:''}
+  </div><div class="dr">
+    <div class="dtitle">PLACE BET</div>
+    ${locked?`<div class="locked-notice">🔒 Market locked — this flight is ${f.status}. No new bets accepted once boarding begins. Existing positions resolve automatically when the flight departs.</div>`:`
+    <div class="stog">
+      <button class="sbtn2${bside==='YES'?' say':''}" onclick="setSide('YES')">YES — DELAYED</button>
+      <button class="sbtn2${bside==='NO'?' san':''}" onclick="setSide('NO')">NO — ON TIME</button>
+    </div>
+    <div class="brow"><span class="blbl">AMOUNT</span><input class="binp" type="number" id="bamt" value="10" min="1" max="${UP?Math.floor(UP.balance):0}" oninput="updPayout()"></div>
+    <div class="presets">${[5,10,25,50,100].map(v=>`<button class="pre" onclick="setPre(${v})">$${v}</button>`).join('')}</div>
+    <div class="pbox" id="pbox"></div>
+    <button class="plbtn" onclick="placeBet('${f.id}')" ${CU?'':'disabled'}>${CU?'PLACE BET':'LOG IN TO BET'}</button>
+    ${!CU?'<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:4px">Free — start with $500 in play money</div>':''}`}
+  </div></div>`;
+  panel.classList.add('open');
+  if(!locked)updPayout();
+}
+window.setSide=function(s){bside=s;if(sel)renderDetail(sel);};
+window.setPre=function(v){const i=document.getElementById('bamt');if(i){i.value=Math.min(v,Math.floor(UP?.balance||0));updPayout();}};
+window.updPayout=function(){
+  const f=flights.find(x=>x.id===sel);if(!f)return;
+  const amt=parseFloat(document.getElementById('bamt')?.value)||0,prob=bside==='YES'?(f.delayProb||.2):(1-(f.delayProb||.2));
+  const payout=amt>0?(amt/prob).toFixed(2):'—',profit=amt>0?((amt/prob)-amt).toFixed(2):'—';
+  const b=document.getElementById('pbox');if(b)b.innerHTML=`<div class="pr"><span class="pl">Stake</span><span class="pv">$${amt.toFixed(2)}</span></div><div class="pr"><span class="pl">Implied prob</span><span class="pv">${Math.round(prob*100)}%</span></div><div class="pr win"><span class="pl">If correct</span><span class="pv">+$${profit}</span></div><div class="pr"><span class="pl">Total return</span><span class="pv">$${payout}</span></div>`;
+};
+window.qBet=function(id,side){if(!CU){openAuth();return;}if(isFlightLocked(flights.find(x=>x.id===id))){showToast('Market locked — no bets once boarding starts','err');return;}sel=id;bside=side;renderAll();renderDetail(id);setTimeout(()=>document.getElementById('dpanel').scrollIntoView({behavior:'smooth',block:'nearest'}),100);};
+window.placeBet=async function(id){
+  if(!CU){openAuth();return;}
+  const f=flights.find(x=>x.id===id);if(!f)return;
+  if(isFlightLocked(f)){showToast('Market locked — no bets once boarding starts','err');return;}
+  const amt=parseFloat(document.getElementById('bamt')?.value)||0;
+  if(amt<=0){showToast('Enter a valid amount','err');return;}
+  if(amt>UP.balance){showToast('Insufficient balance','err');setTimeout(()=>showRefill(),1000);return;}
+  UP.balance=Math.round((UP.balance-amt)*100)/100;
+  const prev=UP.positions[id];
+  UP.positions[id]=prev&&prev.side===bside?{side:bside,amount:prev.amount+amt,prob:f.delayProb||.2,dest:f.dest,destName:f.destName,time:f.time,airline:f.airline,depAirport:ap}:{side:bside,amount:amt,prob:f.delayProb||.2,dest:f.dest,destName:f.destName,time:f.time,airline:f.airline,depAirport:ap};
+  UP.totalBets=(UP.totalBets||0)+1;snap('bet',bside+' $'+amt+' on '+id+' → '+f.dest);
+  writeFeedBet(id,bside,amt,f.dest);
+  await saveUP();renderAuth();renderAll();renderDetail(id);showToast('Bet: '+bside+' $'+amt+' on '+id,'ok');refreshLB();updateYYZ();
+};
+
+// ── PORTFOLIO ─────────────────────────────────────────────────────────────────
+window.showPortfolio=async function(){if(!CU){openAuth();return;}view='portfolio';const bc=document.getElementById('board-content');if(bc)bc.style.display='none';renderPort(true);};
+async function renderPort(force){
+  let pv=document.getElementById('pview');
+  if(!pv){
+    pv=document.createElement('div');pv.id='pview';pv.className='pview';
+    document.getElementById('main-area').appendChild(pv);
+    renderPV(pv,UP,false);return;
+  }
+  if(!force&&document.getElementById('achart')){
+    patchPortfolio(UP);
+  } else {
+    renderPV(pv,UP,false);
+  }
+}
+function patchPortfolio(profile){
+  const pos=Object.entries(profile.positions||{});
+  const staked=pos.reduce((s,[,p])=>s+p.amount,0);
+  const res=profile.resolved||[];
+  const wonA=res.filter(r=>r.won).reduce((s,r)=>s+r.payout,0);
+  const lostA=res.filter(r=>!r.won).reduce((s,r)=>s+r.staked,0);
+  const pnl=wonA-lostA;
+  const wr=res.length?Math.round(res.filter(r=>r.won).length/res.length*100):0;
+  const cards=document.querySelectorAll('.pgrid .pcard .pcv');
+  if(cards[0])cards[0].textContent='$'+Math.round(profile.balance);
+  if(cards[1])cards[1].textContent='$'+Math.round(staked);
+  if(cards[2]){cards[2].textContent=(pnl>=0?'+':'')+'$'+Math.round(pnl);cards[2].parentElement.className='pcard '+(pnl>=0?'gr':'re');}
+  if(cards[3])cards[3].textContent=wr+'%';
+  const ac=document.getElementById('achart');
+  if(ac)window['_cp_achart']=profile;
+}
+
+function renderPV(pv,profile,isPublic){
+  const isOwn=CU&&CU.uid===profile.uid;
+  const pos=Object.entries(profile.positions||{});
+  const staked=pos.reduce((s,[,p])=>s+p.amount,0);
+  const res=profile.resolved||[];
+  const wonA=res.filter(r=>r.won).reduce((s,r)=>s+r.payout,0);
+  const lostA=res.filter(r=>!r.won).reduce((s,r)=>s+r.staked,0);
+  const wr=res.length?Math.round(res.filter(r=>r.won).length/res.length*100):0;
+  const pnl=wonA-lostA;
+  const banner=isPublic?`<div class="sbar" style="margin:-14px -14px 14px -14px;border-radius:0"><span>👁 Viewing <strong>${profile.displayName}'s</strong> portfolio</span>${!CU?`<span style="color:var(--text3)"> · <span onclick="openAuth()" style="color:var(--green);cursor:pointer">Sign up free</span> to bet</span>`:''}<span class="bl" onclick="showBoard()">← Departures Board</span></div>`:'';
+
+  const prevScroll=pv.scrollTop;
+
+  pv.innerHTML=banner+`
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;flex-wrap:wrap;gap:7px">
+    <div><div style="font-size:15px;font-weight:600">${isPublic&&!isOwn?profile.displayName+"'s Portfolio":'Your Portfolio'}</div><div style="font-size:10px;color:var(--text3);margin-top:1px">${profile.displayName}${isOwn&&profile.email?' · '+profile.email:''}</div></div>
+    <div style="display:flex;gap:6px;align-items:center;flex-wrap:wrap">
+      ${isOwn?`<button class="scbtn" id="sharebtn" onclick="copyShare()">↗ Share</button><button class="scbtn" onclick="showLeaderboard()">Leaderboard →</button>`:''}
+      <button class="nav-btn btn-out" onclick="showBoard()" style="font-size:11px;padding:5px 10px">← Departures Board</button>
+    </div>
+  </div>
+  <div class="pgrid">
+    <div class="pcard" style="cursor:${isOwn?'pointer':''}" onclick="${isOwn?'showRefill()':''}">
+      <div class="pcl">BALANCE ${isOwn?'<span style="color:var(--green);font-size:8px">+ add more →</span>':''}</div>
+      <div class="pcv">$${Math.round(profile.balance)}</div>
+      <div class="pcs">of $${START} starting · <span style="color:var(--text3)">play money</span></div>
+    </div>
+    <div class="pcard"><div class="pcl">CURRENTLY STAKED</div><div class="pcv">$${Math.round(staked)}</div><div class="pcs">${pos.length} active position${pos.length!==1?'s':''}</div></div>
+    <div class="pcard ${pnl>=0?'gr':'re'}"><div class="pcl">NET P&L</div><div class="pcv">${pnl>=0?'+':''}$${Math.round(pnl)}</div><div class="pcs">${res.length} resolved</div></div>
+    <div class="pcard"><div class="pcl">WIN RATE</div><div class="pcv">${wr}%</div><div class="pcs">${res.filter(r=>r.won).length}W / ${res.filter(r=>!r.won).length}L</div></div>
+  </div>
+  <div class="ctr">
+    <div style="font-size:8px;letter-spacing:2px;color:var(--text3);font-weight:600;margin-bottom:9px">ANALYTICS</div>
+    <div id="achart" data-tab="daily"></div>
+  </div>
+  <div class="psec">
+    <div class="pst" style="color:var(--green)">
+      <span>ACTIVE POSITIONS <span style="font-size:9px;font-weight:400;color:var(--text3)">${pos.length} open</span></span>
+      <span style="font-size:9px;font-weight:400;color:var(--text3)">Auto-settles on departure</span>
+    </div>
+    ${pos.length?pos.map(([id,p])=>{const f=flights.find(x=>x.id===id),cur=f?Math.round((f.delayProb||.2)*100):Math.round((p.prob||.2)*100),mv=p.side==='YES'?(p.amount/(p.prob||.2))*((f?.delayProb||p.prob||.2)):(p.amount/(1-(p.prob||.2)))*((1-(f?.delayProb||p.prob||.2))),pnl2=mv-p.amount;return`<div class="poscard"><div class="poscard-label">LIVE POSITION</div><div style="display:flex;gap:10px;align-items:center;min-width:0;width:100%"><div style="font-family:var(--fm);font-size:14px;color:var(--green);flex-shrink:0">${id}</div><div style="min-width:0;flex:1"><div style="font-size:11px;color:var(--text2)">${p.dest} · ${p.airline||''}</div><div style="font-size:9px;color:var(--text3)">${p.time||''} · ${cur}% delay prob</div></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div><div style="font-size:8px;color:var(--text3);margin-bottom:1px">SIDE</div><span class="pb ${p.side==='YES'?'pby':'pbn'}">${p.side}</span></div><div><div style="font-size:8px;color:var(--text3);margin-bottom:1px">STAKED</div><div style="font-family:var(--fm);font-size:12px">$${p.amount.toFixed(0)}</div></div><div title="${mktValTooltip(f||{id,delayProb:p.prob,vol:5000,airline:p.airline,depAirport:p.depAirport||ap},p).replace(/\n/g,'&#10;')}" style="cursor:help"><div style="font-size:8px;color:var(--text3);margin-bottom:1px">MKT VAL ⓘ</div><div style="font-family:var(--fm);font-size:12px;color:${pnl2>=0?'var(--green)':'var(--red)'}">$${mv.toFixed(0)}</div></div><div><div style="font-size:8px;color:var(--text3);margin-bottom:1px">P&L</div><div style="font-family:var(--fm);font-size:12px;color:${pnl2>=0?'var(--green)':'var(--red)'}">${pnl2>=0?'+':''}$${pnl2.toFixed(0)}</div></div></div></div></div>`;}).join(''):'<div style="color:var(--text3);font-size:11px;padding:12px 0">No active positions. <span style="cursor:pointer;color:var(--green)" onclick="showBoard()">Go bet →</span></div>'}
+  </div>
+  ${res.length?`<div class="psec">
+    <div class="pst" style="color:var(--text3);border-top:2px solid var(--border);padding-top:10px;margin-top:4px">
+      <span>RESOLVED BETS <span style="font-size:9px;font-weight:400">${res.filter(r=>r.won).length} wins · ${res.filter(r=>!r.won).length} losses</span></span>
+    </div>
+    ${res.slice().reverse().slice(0,20).map(r=>`<div class="rcard"><div style="display:flex;gap:9px;align-items:center;min-width:0;flex:1"><div style="font-family:var(--fm);font-size:12px;color:var(--text3);flex-shrink:0">${r.id}</div><div style="min-width:0"><div style="font-size:11px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--text2)">${r.destName||r.dest||''}</div><div style="font-size:9px;color:var(--text3)">${r.side} · $${r.staked}${r.date?' · '+r.date:''}</div></div></div><div style="display:flex;align-items:center;gap:8px;flex-shrink:0"><span class="${r.won?'rwin':'rloss'}">${r.won?'WON':'LOST'}</span><div style="font-family:var(--fm);font-size:12px;color:${r.won?'var(--green)':'var(--red)'}">${r.won?'+$'+(r.payout-r.staked).toFixed(0):'-$'+r.staked}</div></div></div>`).join('')}
+  </div>`:''}
+  <div class="psec">
+    <div class="pst">LEADERBOARD <span style="cursor:pointer;color:var(--green);font-size:9px;font-weight:600" onclick="showLeaderboard()">full board →</span></div>
+    <div style="background:var(--bg2);border:1px solid var(--border);border-radius:6px;overflow:hidden" id="lbfull"><div style="padding:14px;text-align:center;color:var(--text3)"><span class="spin"></span></div></div>
+  </div>`;
+
+  requestAnimationFrame(()=>{ pv.scrollTop=prevScroll; });
+
+  setTimeout(()=>renderAnalytics('achart',profile),30);
+  loadLB().then(lb=>{const el=document.getElementById('lbfull');if(!el)return;if(!lb.length){el.innerHTML='<div style="padding:14px;text-align:center;font-size:11px;color:var(--text3)">No players yet!</div>';return;}el.innerHTML=lb.slice(0,8).map((l,i)=>{const isMe=CU&&l.uid===CU.uid,pnl2=Math.round(l.balance-START);return`<div class="lbfullrow${isMe?' lbme':''}"><span class="lbfr">${i+1}</span><span class="lbfn" onclick="viewPub('${l.uid}')">${isMe?`<strong>${l.displayName} (you)</strong>`:l.displayName}</span><span class="lbfa">${l.totalBets||0}b · ${l.wins||0}W</span><span class="lbfp" style="color:${pnl2>=0?'var(--green)':'var(--red)'}">${pnl2>=0?'+':''}$${pnl2}</span><span class="lbfb">$${Math.round(l.balance).toLocaleString()}</span></div>`;}).join('')+`<div style="font-size:9px;color:var(--text3);padding:5px 10px;text-align:right;cursor:pointer" onclick="showLeaderboard()">See full leaderboard →</div>`;}).catch(()=>{});
+}
+
+// ── AUTH ──────────────────────────────────────────────────────────────────────
+function renderAuth(){
+  const a=document.getElementById('auth-area');if(!a)return;
+  a.innerHTML='';
+  const wrap=document.createElement('div');
+  wrap.className='auth-btns';
+
+  if(CU&&UP){
+    const pill=document.createElement('div');
+    pill.className='upill';
+    pill.title='Click to add more play money';
+    pill.onclick=()=>showRefill();
+    pill.innerHTML=`<div class="av">${(CU.displayName||'?').substring(0,2).toUpperCase()}</div><span class="un">${CU.displayName}</span><span class="bal">$${Math.round(UP.balance)}</span><span class="bal-add">+ add</span>`;
+
+    const portBtn=document.createElement('button');
+    portBtn.className='nav-btn btn-out';
+    portBtn.textContent='Portfolio';
+    portBtn.style.cssText='padding:4px 9px;flex-shrink:0;font-size:10px;';
+    portBtn.onclick=()=>showPortfolio();
+
+    const out=document.createElement('button');
+    out.className='nav-btn btn-out';
+    out.textContent='Out';
+    out.style.cssText='padding:4px 9px;flex-shrink:0;';
+    out.onclick=()=>doLogout();
+
+    wrap.appendChild(pill);
+    wrap.appendChild(portBtn);
+    wrap.appendChild(out);
+  } else {
+    const li=document.createElement('button');
+    li.className='nav-btn btn-out';
+    li.textContent='Log in';
+    li.onclick=()=>openAuth('login');
+
+    const si=document.createElement('button');
+    si.className='nav-btn btn-pri';
+    si.textContent='Sign up';
+    si.onclick=()=>openAuth('signup');
+
+    wrap.appendChild(li);
+    wrap.appendChild(si);
+  }
+
+  a.appendChild(wrap);
+}
+window.openAuth=function(mode='signup'){
+  const o=document.createElement('div');o.className='mo';o.id='autho';o.onclick=e=>{if(e.target===o)closeAuth();};
+  o.innerHTML=`<div class="mc">
+    <div class="mt">${mode==='login'?'Welcome back':'Start With $500 Free'}</div>
+    <div class="msub">${mode==='login'?'Log in to FlightBet.':'Free account. $500 in play money. No real money ever — it\'s a prediction game, not a sportsbook.'}</div>
+    <div class="merr" id="merr" style="display:none"></div>
+    ${mode==='signup'?'<input class="mi" id="mn" placeholder="Display name" autocomplete="off">':''}
+    <input class="mi" id="mem" placeholder="Email" type="email" autocomplete="off">
+    <input class="mi" id="mps" placeholder="Password (min 6)" type="password">
+    <button class="mb" onclick="doAuth('${mode}')">${mode==='login'?'LOG IN':'CREATE ACCOUNT'}</button>
+    <div class="ms">${mode==='login'?'No account? <a onclick="swAuth(\'signup\')">Sign up →</a>':'Have one? <a onclick="swAuth(\'login\')">Log in →</a>'}</div>
+    ${mode==='signup'?'<div style="font-size:9px;color:var(--text3);text-align:center;margin-top:8px;line-height:1.6;">All money is fake. This is a prediction game, not a gambling product. No real money is ever used or collected.</div>':''}
+  </div>`;
+  document.body.appendChild(o);setTimeout(()=>o.querySelector('.mi')?.focus(),50);
+};
+window.swAuth=m=>{closeAuth();openAuth(m);};
+window.closeAuth=()=>document.getElementById('autho')?.remove();
+window.doAuth=async function(mode){
+  const email=(document.getElementById('mem')?.value||'').trim(),pass=(document.getElementById('mps')?.value||'').trim(),name=(document.getElementById('mn')?.value||'').trim();
+  const showErr=msg=>{const e=document.getElementById('merr');if(e){e.textContent=msg;e.style.display='block';}};
+  if(!email||!pass){showErr('Email and password required');return;}
+  const btn=document.querySelector('.mb');if(btn){btn.textContent='...';btn.disabled=true;}
+  try{if(mode==='signup'){if(!name){showErr('Display name required');return;}const cred=await createUserWithEmailAndPassword(auth,email,pass);await updateProfile(cred.user,{displayName:name});closeAuth();showToast('Welcome! You have $'+START+' in play money to start.','ok');}else{await signInWithEmailAndPassword(auth,email,pass);closeAuth();showToast('Welcome back!','ok');}
+  }catch(e){const m={'auth/email-already-in-use':'Email already used.','auth/invalid-email':'Invalid email.','auth/weak-password':'Password min 6 chars.','auth/invalid-credential':'Invalid email or password.'};showErr(m[e.code]||e.message);if(btn){btn.textContent=mode==='login'?'LOG IN':'CREATE ACCOUNT';btn.disabled=false;}}
+};
+window.doLogout=async function(){await signOut(auth);if(view==='portfolio'||view==='leaderboard')showBoard();showToast('Logged out','ok');};
+
+// ── MOBILE SIDEBAR ────────────────────────────────────────────────────────────
+window.toggleSb=function(){const s=document.getElementById('sidebar'),o=document.getElementById('sovl');s.classList.toggle('open');o.classList.toggle('show');};
+function closeSb(){const s=document.getElementById('sidebar'),o=document.getElementById('sovl');s.classList.remove('open');o.classList.remove('show');}
+
+// ── TOAST ─────────────────────────────────────────────────────────────────────
+let tt;window.showToast=function(msg,type='ok'){const t=document.getElementById('toast');t.innerHTML=msg;t.style.borderColor=type==='ok'?'var(--green)':type==='err'?'var(--red)':'var(--border2)';t.classList.add('show');clearTimeout(tt);tt=setTimeout(()=>t.classList.remove('show'),3500);};
+
+// ── BOARD ─────────────────────────────────────────────────────────────────────
+window.showBoard=function(){view='board';viewUid=null;window.location.hash='';const bc=document.getElementById('board-content');if(bc)bc.style.display='flex';const pv=document.getElementById('pview');if(pv)pv.remove();renderAll();};
+
+// ── REFILL ────────────────────────────────────────────────────────────────────
+window.showRefill=function(){
+  if(!CU){openAuth();return;}
+  const bal=Math.round(UP?.balance||0);
+  const o=document.createElement('div');o.className='mo';o.id='refo';o.onclick=e=>{if(e.target===o)o.remove();};
+  o.innerHTML=`<div class="mc">
+    <div class="mt" style="font-size:17px;margin-bottom:7px">Add more play money?</div>
+    <div style="font-size:12px;color:var(--text2);line-height:1.8;margin-bottom:14px">
+      This is where it would be <em>really</em> funny if it wasn't illegal.<br><br>
+      (In accordance with the <strong>Wire Act (18 U.S.C. § 1084)</strong> and <strong>FAA regulations prohibiting commercial incentives tied to flight operations</strong>, FlightBet does not involve real currency or prizes. You're welcome.)<br><br>
+      So here's your <strong>fake</strong> money instead.
+      <div style="margin-top:10px;padding:8px 10px;background:rgba(14,165,106,.06);border:1px solid rgba(14,165,106,.15);border-radius:5px;font-size:11px;color:var(--text2);line-height:1.7">
+        Everyone starts with $500 in fake dollars. You just got it — you don't even have to pass Go.<br>
+        <span style="color:var(--text3);font-size:10px">You can re-up after losses at only the cost to your ego.</span>
+      </div>
+    </div>
+    <div style="background:var(--bg3);border:1px solid var(--border);border-radius:6px;padding:11px;margin-bottom:12px">
+      <div style="font-size:10px;color:var(--text2);margin-bottom:2px">Current balance</div>
+      <div style="font-family:var(--fm);font-size:19px;color:${bal<100?'var(--red)':'var(--text)'}">$${bal} <span style="font-size:11px;color:var(--text3)">(fake)</span></div>
+      <div style="font-size:10px;color:var(--text2);margin:7px 0 2px">After reload</div>
+      <div style="font-family:var(--fm);font-size:19px;color:var(--green)">$${bal+500} <span style="font-size:11px;color:var(--text3)">(still fake)</span></div>
+    </div>
+    <button class="mb" onclick="doRefill()">Yeah, give me the fake money</button>
+    <div style="text-align:center;margin-top:2px">
+      <button onclick="document.getElementById('refo').remove()" style="background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:11px;cursor:pointer;font-family:var(--fu);padding:6px 16px;border-radius:var(--radius);font-weight:500;transition:all .1s" onmouseover="this.style.borderColor='var(--border2)'" onmouseout="this.style.borderColor='var(--border)'">No thanks</button>
+    </div>
+  </div>`;
+  document.body.appendChild(o);
+};
+window.doRefill=async function(){if(!CU||!UP)return;UP.balance=Math.round((UP.balance+500)*100)/100;snap('refill','Balance refill +$500');await saveUP();document.getElementById('refo')?.remove();showToast('$500 fake dollars added. This is where it would be really funny if it was not illegal.','ok');renderAuth();if(view==='portfolio')renderPort();refreshLB();};
+
+// ── INTRO ─────────────────────────────────────────────────────────────────────
+function showIntro(){
+  if(localStorage.getItem('fb_introd')==='1')return;
+  const o=document.createElement('div');o.id='introo';o.style.cssText='position:fixed;inset:0;background:rgba(247,248,250,.96);display:flex;align-items:center;justify-content:center;z-index:600;backdrop-filter:blur(4px);padding:14px;';
+  o.innerHTML=`<style>@keyframes ii{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}#ic{width:420px;max-width:100%;background:#fff;border:1px solid #e2e5ea;border-radius:11px;padding:24px;box-shadow:0 8px 48px rgba(0,0,0,.07);animation:ii .4s cubic-bezier(.22,.9,.36,1) both}.il{font-family:'Inter',sans-serif;font-size:20px;font-weight:700;color:#111;letter-spacing:-.3px;margin-bottom:3px;display:flex;align-items:center;gap:6px}.il::before{content:'';width:8px;height:8px;border-radius:50%;background:#0ea56a;flex-shrink:0}.isb{font-size:9px;color:#9aa0ab;letter-spacing:2px;margin-bottom:16px;text-transform:uppercase}.ibox{background:#fdf7f6;border:1px solid rgba(224,70,42,.15);border-radius:6px;padding:11px 13px;margin-bottom:14px;display:flex;gap:11px}.inum{font-family:'IBM Plex Mono',monospace;font-size:26px;color:#e0462a;line-height:1;flex-shrink:0;padding-top:3px}.itxt{font-size:11px;color:#5a6070;line-height:1.7}.itxt strong{color:#0d1117}.itle{font-size:8px;letter-spacing:2px;color:#9aa0ab;font-weight:600;margin-bottom:7px}.istep{display:flex;gap:8px;margin-bottom:6px;font-size:11px;color:#5a6070;line-height:1.6}.istn{font-family:'IBM Plex Mono',monospace;font-size:11px;color:#00a87e;width:15px;flex-shrink:0;margin-top:1px}.icta{width:100%;padding:10px;background:#00a87e;border:none;border-radius:5px;color:#fff;font-family:'Inter',sans-serif;font-size:12px;font-weight:600;cursor:pointer;margin-top:14px;margin-bottom:7px;display:block;transition:background .1s}.icta:hover{background:#00956b}.isk{font-size:10px;color:#9aa0ab;cursor:pointer;background:none;border:1px solid #e2e5ea;border-radius:4px;font-family:'Inter',sans-serif;padding:5px 14px;transition:all .1s;display:block;margin:0 auto;width:auto}.isk:hover{border-color:#c5cad0;color:#5a6070}.iby{font-size:9px;color:#9aa0ab;margin-top:11px;padding-top:9px;border-top:1px solid #e2e5ea}.iby a{color:#00a87e;text-decoration:none}.ilegal{font-size:9.5px;color:#6b7280;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:5px;padding:9px 11px;margin:12px 0 0;line-height:1.7}</style>
+  <div id="ic">
+    <div class="il">FLIGHTBET</div>
+    <div class="isb">delay prediction markets · real flights</div>
+    <div class="ibox"><div class="inum">#1</div><div class="itxt"><strong>Toronto Pearson is the most delayed airport in the world.</strong> Over 53% of departures run late. Every winter it snows and every year Pearson is somehow surprised.</div></div>
+    <div class="itle">HOW IT WORKS</div>
+    <div class="istep"><span class="istn">01</span><span>Pick any upcoming departure at major airports.</span></div>
+    <div class="istep"><span class="istn">02</span><span>Bet <strong>YES</strong> (delayed 15+ min) or <strong>NO</strong> (on time).</span></div>
+    <div class="istep"><span class="istn">03</span><span>Markets auto-resolve when the flight departs. Balance updates.</span></div>
+    <div class="istep"><span class="istn">04</span><span>Everyone starts with <strong>$500</strong>. Share your portfolio link.</span></div>
+    <div class="ilegal">In accordance with the <strong>Wire Act (18 U.S.C. § 1084)</strong> and <strong>FAA regulations prohibiting commercial incentives tied to flight operations</strong> — all money here is play money. No real currency. No prizes. Everyone starts with $500 in fake dollars. You just got it — you don't even have to pass Go. You can re-up after losses at only the cost to your ego.</div>
+    <button class="icta" onclick="dimI(false)">Start predicting →</button>
+    <button class="isk" onclick="dimI(true)">Don't show again</button>
+    <div class="iby">Made by <a href="https://mackenzies-desk.com" target="_blank">mackenzie sharp</a> · i have spent too much time waiting at the vancouver airport ✈︎</div>
+  </div>`;
+  document.body.appendChild(o);
+}
+window.dimI=function(p){if(p)localStorage.setItem('fb_introd','1');const o=document.getElementById('introo');if(o){o.style.opacity='0';o.style.transition='opacity .3s';setTimeout(()=>o.remove(),300);}};
+
+// ── INIT ──────────────────────────────────────────────────────────────────────
+window.addEventListener('hashchange',()=>checkHash());
+setAP('SFO');
+if(navigator.geolocation)navigator.geolocation.getCurrentPosition(pos=>{const{latitude:lat,longitude:lng}=pos.coords;let best='SFO',bd=Infinity;Object.entries(APS).forEach(([code,a])=>{if(a.lat&&a.lng){const d=Math.hypot(lat-a.lat,lng-a.lng);if(d<bd){bd=d;best=code;}}});if(best!==ap)setAP(best);},()=>{});
+startFeedListener();
+setTimeout(()=>{if(!checkHash())showIntro();},600);
+</script>
+</body>
+</html>
