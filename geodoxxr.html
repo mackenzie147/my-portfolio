@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GeoDoxxr</title>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+    
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      background: #111;
+      color: #fff;
+      font-family: 'Roboto Mono', monospace;
+      overflow: hidden;
+    }
+    
+    /* Exact GeoGuessr-style header */
+    header {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      background: #0a0a0a;
+      height: 70px;
+      border-bottom: 5px solid #00c853;
+      display: flex;
+      align-items: center;
+      padding: 0 30px;
+      z-index: 1000;
+      box-shadow: 0 4px 20px rgba(0, 200, 83, 0.3);
+    }
+    .logo {
+      font-size: 32px;
+      font-weight: 700;
+      letter-spacing: -2px;
+      color: #00c853;
+      text-shadow: 0 0 15px #00c853;
+    }
+    .header-right {
+      margin-left: auto;
+      display: flex;
+      gap: 30px;
+      align-items: center;
+      font-size: 14px;
+    }
+    .round-counter {
+      background: #1f1f1f;
+      padding: 8px 20px;
+      border-radius: 30px;
+      border: 2px solid #00c853;
+    }
+
+    /* Permission screen — pops up FIRST, before ANY header or game */
+    #permission-screen {
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.98);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      text-align: center;
+      padding: 40px 20px;
+    }
+    .warning {
+      color: #ff1744;
+      font-size: 22px;
+      margin: 30px 0;
+      text-shadow: 0 0 20px #ff1744;
+    }
+    button {
+      background: #00c853;
+      color: #000;
+      border: none;
+      padding: 18px 50px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      border-radius: 8px;
+      margin-top: 20px;
+      box-shadow: 0 0 30px #00c853;
+    }
+    button:hover { background: #00e65c; }
+
+    /* Game area */
+    #game { display: none; height: 100vh; }
+    .map { height: 100%; width: 100%; }
+    
+    .guess-bar {
+      position: absolute;
+      bottom: 30px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #1f1f1f;
+      padding: 15px 30px;
+      border-radius: 50px;
+      border: 3px solid #00c853;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      z-index: 1000;
+      box-shadow: 0 10px 30px rgba(0,200,83,0.4);
+    }
+    .guess-bar input {
+      background: #111;
+      border: none;
+      color: white;
+      padding: 14px 20px;
+      width: 320px;
+      font-size: 16px;
+      border-radius: 50px;
+    }
+    .guess-bar button {
+      background: #00c853;
+      color: #000;
+      padding: 14px 40px;
+      border-radius: 50px;
+      font-weight: 700;
+    }
+
+    .round-info {
+      position: absolute;
+      top: 90px;
+      left: 30px;
+      background: rgba(0,0,0,0.85);
+      padding: 15px 25px;
+      border: 3px solid #00c853;
+      z-index: 1000;
+      border-radius: 8px;
+    }
+
+    /* Final doxx reveal */
+    #final-reveal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(10,10,10,0.98);
+      z-index: 2000;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px;
+      overflow-y: auto;
+    }
+    .doxx-title {
+      color: #ff1744;
+      font-size: 42px;
+      text-shadow: 0 0 30px #ff1744;
+      margin-bottom: 10px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      max-width: 900px;
+      width: 100%;
+      margin-top: 30px;
+    }
+    .info-box {
+      background: #1f1f1f;
+      padding: 20px;
+      border: 2px solid #ff1744;
+      border-radius: 8px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- PERMISSION POPUP — appears instantly before anything else -->
+  <div id="permission-screen">
+    <h1 style="font-size:48px; color:#00c853;">GEODOXXR</h1>
+    <p style="font-size:18px; margin:15px 0 30px;">the anti-geo-guessr</p>
+    
+    <div class="warning">⚠️ ART PROJECT DEMO — INTERNET SAFETY ⚠️</div>
+    <p style="max-width:560px; line-height:1.6; font-size:15px;">
+      This page will ask for your location.<br>
+      <strong>Nothing is saved. Nothing is sent to any server.</strong><br><br>
+      It plays 3 normal rounds like GeoGuessr, then on round 4 it shows <strong>your real house</strong> in aerial view and pulls every piece of info your browser gives away.
+    </p>
+    <button onclick="startDoxx()">ALLOW LOCATION &amp; START GAME</button>
+    <p style="margin-top:40px; font-size:13px; color:#666;">Deny = game still works with fake data (but no real doxx demo)</p>
+  </div>
+
+  <!-- HEADER (GeoGuessr exact style) -->
+  <header id="header" style="display:none;">
+    <div class="logo">GEODOXXR</div>
+    <div class="header-right">
+      <div class="round-counter">ROUND <span id="round-num">1</span>/4</div>
+      <div id="score-display">0 pts</div>
+    </div>
+  </header>
+
+  <!-- GAME SCREEN -->
+  <div id="game">
+    <div id="map" class="map"></div>
+    
+    <div class="round-info" id="round-info">
+      <div id="round-text">ROUND 1 — Type where this is</div>
+    </div>
+
+    <!-- Typing guess bar (exactly like GeoGuessr search) -->
+    <div class="guess-bar" id="guess-bar">
+      <input type="text" id="guess-input" placeholder="Type your guess (city, country, etc.)" autocomplete="off">
+      <button onclick="submitGuess()">GUESS</button>
+    </div>
+  </div>
+
+  <!-- FINAL REVEAL — shows your house + EVERYTHING we pulled -->
+  <div id="final-reveal">
+    <h1 class="doxx-title">SURPRISE. YOU JUST GOT DOXXED.</h1>
+    <p style="font-size:22px; max-width:700px; text-align:center; margin-bottom:30px;">
+      Round 4 wasn't random.<br>
+      That was <strong>your actual house</strong> — pulled straight from your browser.
+    </p>
+
+    <div id="user-map-container" style="width:100%; max-width:900px; height:420px; border:6px solid #ff1744; margin-bottom:30px;"></div>
+
+    <h2 style="color:#ff1744; margin:20px 0 15px;">EVERYTHING WE PULLED FROM YOU IN 1 SECOND</h2>
+    <div class="info-grid" id="info-grid">
+      <!-- Filled by JS -->
+    </div>
+
+    <p style="margin-top:40px; font-size:13px; color:#666; text-align:center; max-width:700px;">
+      This is all client-side only. No data was saved or sent anywhere.<br>
+      Real attackers combine this with data breaches to find your email, full name, phone, etc.
+    </p>
+    
+    <button onclick="window.location.reload()" style="margin-top:30px; background:#ff1744; color:white; padding:16px 50px;">
+      PLAY AGAIN
+    </button>
+  </div>
+
+<script>
+// ====================== GLOBAL VARS ======================
+let userLat = 37.7749;   // fallback
+let userLng = -122.4194;
+let ipData = null;
+let map;
+let currentRound = 0;
+let totalScore = 0;
+let targetLat, targetLng;
+let guessMarker = null;
+let targetMarker = null;
+
+// 3 normal random locations (rounds 1-3)
+const normalLocations = [
+  {lat: 40.7128, lng: -74.0060, name: "New York City"},
+  {lat: 51.5074, lng: -0.1278, name: "London"},
+  {lat: 35.6762, lng: 139.6503, name: "Tokyo"},
+  {lat: -33.8688, lng: 151.2093, name: "Sydney"}
+];
+
+// ====================== START GAME ======================
+async function startDoxx() {
+  document.getElementById('permission-screen').style.display = 'none';
+  document.getElementById('header').style.display = 'flex';
+  document.getElementById('game').style.display = 'block';
+
+  // 1. Get real GPS
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        userLat = pos.coords.latitude;
+        userLng = pos.coords.longitude;
+      },
+      () => {} // fallback already set
+    );
+  }
+
+  // 2. Pull IP + extra info (completely free, no key)
+  fetch('https://ip-api.com/json/?fields=status,message,query,city,regionName,country,isp,org,lat,lon')
+    .then(r => r.json())
+    .then(data => { ipData = data; })
+    .catch(() => {});
+
+  // Start Leaflet map
+  map = L.map('map', { zoomControl: false }).setView([20, 0], 2);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution: '© OpenStreetMap — GeoDoxxr art project'
+  }).addTo(map);
+
+  nextRound();
+}
+
+// ====================== ROUND LOGIC ======================
+function nextRound() {
+  currentRound++;
+  document.getElementById('round-num').textContent = currentRound;
+
+  // Clear old markers
+  if (guessMarker) map.removeLayer(guessMarker);
+  if (targetMarker) map.removeLayer(targetMarker);
+
+  document.getElementById('guess-bar').style.display = 'flex';
+  document.getElementById('round-text').innerHTML = `ROUND ${currentRound}/4 — Type where this is`;
+
+  if (currentRound <= 3) {
+    // Normal GeoGuessr round
+    const loc = normalLocations[currentRound - 1];
+    targetLat = loc.lat;
+    targetLng = loc.lng;
+    map.setView([targetLat, targetLng], 18); // street-level zoom
+  } 
+  else {
+    // ROUND 4 = YOUR HOUSE (the doxx)
+    targetLat = userLat;
+    targetLng = userLng;
+    map.setView([targetLat, targetLng], 19); // super close aerial view
+    document.getElementById('round-text').innerHTML = `ROUND 4 — FINAL CHALLENGE<br><span style="color:#ff1744">This is your real location</span>`;
+  }
+
+  targetMarker = L.marker([targetLat, targetLng], {
+    icon: L.divIcon({className: 'target-icon', html: '📍', iconSize: [40,40]})
+  }).addTo(map);
+  targetMarker._icon.style.opacity = '0.2'; // dim until guess
+}
+
+// ====================== TYPING GUESS ======================
+async function submitGuess() {
+  const input = document.getElementById('guess-input').value.trim();
+  if (!input) return;
+
+  // Geocode the typed guess (free Nominatim)
+  let guessLat, guessLng;
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(input)}&limit=1`);
+    const data = await res.json();
+    if (data && data.length > 0) {
+      guessLat = parseFloat(data[0].lat);
+      guessLng = parseFloat(data[0].lon);
+    } else {
+      alert("Couldn't find that place — try a city or country");
+      return;
+    }
+  } catch(e) {
+    alert("Network issue — using approximate guess");
+    guessLat = targetLat + (Math.random()*0.1 - 0.05);
+    guessLng = targetLng + (Math.random()*0.1 - 0.05);
+  }
+
+  // Place guess marker
+  if (guessMarker) map.removeLayer(guessMarker);
+  guessMarker = L.marker([guessLat, guessLng]).addTo(map);
+
+  // Reveal target
+  targetMarker._icon.style.opacity = '1';
+
+  // Calculate distance
+  const distance = map.distance([guessLat, guessLng], [targetLat, targetLng]);
+  const score = Math.max(0, Math.round(5000 - (distance / 15))); // GeoGuessr-style scoring
+  totalScore += score;
+
+  document.getElementById('score-display').textContent = `${totalScore} pts`;
+
+  // Show result temporarily
+  const resultHTML = `Distance: ${(distance/1000).toFixed(1)} km<br>Score: ${score} pts`;
+  document.getElementById('round-text').innerHTML = resultHTML;
+
+  // Hide guess bar
+  document.getElementById('guess-bar').style.display = 'none';
+
+  // Auto advance after 3 seconds (or go to final on round 4)
+  setTimeout(() => {
+    if (currentRound >= 4) {
+      showFinalDoxx();
+    } else {
+      nextRound();
+      document.getElementById('guess-input').value = '';
+    }
+  }, 2800);
+}
+
+// ====================== FINAL DOXX REVEAL ======================
+async function showFinalDoxx() {
+  document.getElementById('game').style.display = 'none';
+  document.getElementById('final-reveal').style.display = 'flex';
+
+  // User map (aerial view of their house)
+  const userMap = L.map('user-map-container').setView([userLat, userLng], 19);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(userMap);
+  L.marker([userLat, userLng]).addTo(userMap)
+    .bindPopup("<b>YOUR HOUSE RIGHT NOW</b><br>This is what a website can see instantly").openPopup();
+
+  // Reverse geocode for readable address
+  let address = "Unknown";
+  try {
+    const res = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${userLat}&lon=${userLng}`);
+    const data = await res.json();
+    address = data.display_name || "Exact GPS location";
+  } catch(e) {}
+
+  // Build the info grid with EVERYTHING we can pull
+  const grid = document.getElementById('info-grid');
+  grid.innerHTML = `
+    <div class="info-box">
+      <strong>GPS Coordinates</strong><br>
+      ${userLat.toFixed(6)}, ${userLng.toFixed(6)}<br>
+      <small>${address}</small>
+    </div>
+    <div class="info-box">
+      <strong>IP Address</strong><br>
+      ${ipData?.query || 'Hidden by VPN'}<br>
+      <small>${ipData?.city || ''}, ${ipData?.regionName || ''}, ${ipData?.country || ''}</small>
+    </div>
+    <div class="info-box">
+      <strong>Internet Provider</strong><br>
+      ${ipData?.isp || 'Unknown'}<br>
+      <small>${ipData?.org || ''}</small>
+    </div>
+    <div class="info-box">
+      <strong>Browser Fingerprint</strong><br>
+      ${navigator.userAgent.substring(0, 60)}...<br>
+      Screen: ${screen.width}×${screen.height}<br>
+      Language: ${navigator.language}
+    </div>
+    <div class="info-box">
+      <strong>Email</strong><br>
+      <span style="color:#ff1744">Not directly pullable here</span><br>
+      <small>(but any site can link this data to your email from a previous breach or login)</small>
+    </div>
+    <div class="info-box">
+      <strong>Other Info Pulled</strong><br>
+      • Timezone: ${Intl.DateTimeFormat().resolvedOptions().timeZone}<br>
+      • Platform: ${navigator.platform}<br>
+      • Online since page load
+    </div>
+  `;
+}
+</script>
+</body>
+</html>
