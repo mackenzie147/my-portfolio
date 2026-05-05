@@ -1,293 +1,82 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>O Relationship Status Tracker</title>
-
-<style>
-  * { box-sizing: border-box; }
-
-  body {
-    margin: 0;
-    min-height: 100vh;
-    font-family: Georgia, serif;
-    background: #fafafa;
-    color: #111;
-    overflow-x: hidden;
-  }
-
-  main {
-    height: 100vh;
-    padding: 18px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-  }
-
-  header {
-    text-align: center;
-    flex: 0 0 auto;
-  }
-
-  h1 {
-    margin: 0;
-    font-size: clamp(28px, 5vw, 64px);
-    line-height: .95;
-  }
-
-  p {
-    margin: 8px 0 0;
-    font-size: clamp(14px, 2vw, 20px);
-  }
-
-  .row {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: clamp(10px, 2vw, 28px);
-    min-height: 0;
-  }
-
-  .card {
-    width: min(18vw, 210px);
-    min-width: 145px;
-    text-align: center;
-  }
-
-  h2 {
-    margin: 0 0 8px;
-    font-size: clamp(12px, 1.4vw, 18px);
-    text-transform: uppercase;
-    letter-spacing: .06em;
-  }
-
-  .circle {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    border: 4px solid #111;
-    border-radius: 50%;
-    background: white;
-    overflow: hidden;
-  }
-
-  .midline {
-    position: absolute;
-    left: 50%;
-    top: 0;
-    width: 4px;
-    height: 100%;
-    background: #111;
-    transform: translateX(-50%);
-  }
-
-  .thirdline {
-    position: absolute;
-    top: 0;
-    width: 4px;
-    height: 100%;
-    background: #111;
-  }
-
-  .thirdline.one { left: 33.33%; }
-  .thirdline.two { left: 66.66%; }
-
-  .label,
-  .num {
-    position: absolute;
-    z-index: 2;
-    font-size: clamp(12px, 1.8vw, 22px);
-    line-height: 1;
-  }
-
-  .label {
-    transform: rotate(-25deg);
-  }
-
-  .gay { left: 9%; top: 45%; }
-  .both { left: 42%; top: 45%; }
-  .straight { right: 5%; top: 45%; }
-
-  .left { left: 11%; top: 45%; }
-  .right { right: 8%; top: 45%; }
-
-  .arrow {
-    position: absolute;
-    z-index: 5;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-    font-size: clamp(18px, 2.4vw, 30px);
-    transform: translate(-50%, -50%);
-    filter: drop-shadow(1px 1px 0 white);
-  }
-
-  .arrow span {
-    font-size: clamp(10px, 1.2vw, 15px);
-    background: white;
-    border: 1.5px solid #111;
-    border-radius: 999px;
-    padding: 1px 6px;
-  }
-
-  /* hard-coded statuses */
-  .arrow-gay {
-    left: 17%;
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(180deg);
-  }
-
-  .arrow-legally-married {
-    left: 25%;
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(180deg);
-  }
-
-  .arrow-spiritually-divorced {
-    left: 75%;
-    top: 50%;
-  }
-
-  .arrow-single {
-    left: 25%;
-    top: 50%;
-    transform: translate(-50%, -50%) rotate(180deg);
-  }
-
-  .partners .spoke {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    width: 4px;
-    height: 50%;
-    background: #111;
-    transform-origin: top center;
-  }
-
-  .s0 { transform: rotate(0deg); }
-  .s1 { transform: rotate(60deg); }
-  .s2 { transform: rotate(120deg); }
-  .s3 { transform: rotate(180deg); }
-  .s4 { transform: rotate(240deg); }
-  .s5 { transform: rotate(300deg); }
-
-  .n0 { left: 66%; top: 14%; }
-  .n1 { right: 9%; top: 48%; transform: translateY(-50%); }
-  .n2 { left: 66%; bottom: 14%; }
-  .n3 { left: 34%; bottom: 14%; }
-  .n4 { left: 9%; top: 48%; transform: translateY(-50%); }
-  .n5 { left: 34%; top: 14%; }
-
-  .arrow-partners-two {
-    left: 68%;
-    top: 72%;
-    transform: translate(-50%, -50%) rotate(55deg);
-  }
-
-  @media (max-width: 800px) {
-    main {
-      height: auto;
-      min-height: 100vh;
-      padding: 14px;
-    }
-
-    .row {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 18px;
-    }
-
-    .card {
-      width: 100%;
-      min-width: 0;
-    }
-
-    body {
-      overflow-y: auto;
-    }
-  }
-
-  @media (max-width: 430px) {
-    .row {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>O Relationship Status Tracker</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
-
 <body>
-<main>
-  <header>
-    <h1>O Relationship Status Tracker</h1>
-    <p>current official status of O, as determined by the committee</p>
-  </header>
+  <main>
+    <header>
+      <h1>O Relationship Status Tracker</h1>
+      <p>current official status of O, as determined by the committee</p>
+    </header>
 
-  <section class="row">
-    <div class="card">
-      <h2>orientation</h2>
-      <div class="circle">
-        <span class="label gay">gay</span>
-        <span class="label both">both</span>
-        <span class="label straight">straight</span>
-        <div class="thirdline one"></div>
-        <div class="thirdline two"></div>
-        <div class="arrow arrow-gay">➤<span>O</span></div>
+    <section class="grid">
+
+      <div class="card">
+        <h2>orientation</h2>
+        <div class="circle split">
+          <span class="label left">gay</span>
+          <span class="label right">straight</span>
+          <div class="midline"></div>
+          <div class="arrow gay">➤<span>O</span></div>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <h2>legally</h2>
-      <div class="circle">
-        <span class="label left">married</span>
-        <span class="label right">divorced</span>
-        <div class="midline"></div>
-        <div class="arrow arrow-legally-married">➤<span>O</span></div>
+      <div class="card">
+        <h2>legally</h2>
+        <div class="circle split">
+          <span class="label left">married</span>
+          <span class="label right">divorced</span>
+          <div class="midline"></div>
+          <div class="arrow legally-married">➤<span>O</span></div>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <h2>spiritually</h2>
-      <div class="circle">
-        <span class="label left">married</span>
-        <span class="label right">divorced</span>
-        <div class="midline"></div>
-        <div class="arrow arrow-spiritually-divorced">➤<span>O</span></div>
+      <div class="card">
+        <h2>spiritually</h2>
+        <div class="circle split">
+          <span class="label left">married</span>
+          <span class="label right">divorced</span>
+          <div class="midline"></div>
+          <div class="arrow spiritually-divorced">➤<span>O</span></div>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <h2>availability</h2>
-      <div class="circle">
-        <span class="label left">single</span>
-        <span class="label right">taken</span>
-        <div class="midline"></div>
-        <div class="arrow arrow-single">➤<span>O</span></div>
+      <div class="card">
+        <h2>availability</h2>
+        <div class="circle split">
+          <span class="label left">single</span>
+          <span class="label right">taken</span>
+          <div class="midline"></div>
+          <div class="arrow single">➤<span>O</span></div>
+        </div>
       </div>
-    </div>
 
-    <div class="card">
-      <h2>partners</h2>
-      <div class="circle partners">
-        <div class="spoke s0"></div>
-        <div class="spoke s1"></div>
-        <div class="spoke s2"></div>
-        <div class="spoke s3"></div>
-        <div class="spoke s4"></div>
-        <div class="spoke s5"></div>
+      <div class="card partners-card">
+        <h2>partners currently</h2>
+        <div class="circle partners">
+          <div class="spoke s0"></div>
+          <div class="spoke s1"></div>
+          <div class="spoke s2"></div>
+          <div class="spoke s3"></div>
+          <div class="spoke s4"></div>
+          <div class="spoke s5"></div>
 
-        <span class="num n0">0</span>
-        <span class="num n1">1</span>
-        <span class="num n2">2</span>
-        <span class="num n3">3</span>
-        <span class="num n4">4</span>
-        <span class="num n5">5</span>
+          <span class="num n0">0</span>
+          <span class="num n1">1</span>
+          <span class="num n2">2</span>
+          <span class="num n3">3</span>
+          <span class="num n4">4</span>
+          <span class="num n5">5</span>
 
-        <div class="arrow arrow-partners-two">➤<span>O</span></div>
+          <div class="arrow partners-two">➤<span>O</span></div>
+        </div>
       </div>
-    </div>
-  </section>
-</main>
+
+    </section>
+  </main>
 </body>
 </html>
