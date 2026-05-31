@@ -1,0 +1,1081 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>folio. a marketplace for real diaries.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300;1,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --paper:#f8f5ef;
+  --paper2:#faf8f4;
+  --ruled:#d6e4f0;
+  --margin:#f2bfc3;
+  --ink:#18181b;
+  --ink2:#3f3f46;
+  --muted:#71717a;
+  --red:#b91c1c;
+  --blue:#1d4ed8;
+  --highlight:#fef08a;
+  --border:#e4e0d8;
+  --shadow:rgba(0,0,0,0.08);
+}
+html{scroll-behavior:smooth;}
+body{
+  background:#ddd8cf;
+  font-family:'DM Sans',sans-serif;
+  color:var(--ink);
+  font-size:15px;
+  line-height:1.6;
+}
+a{text-decoration:none;color:inherit;}
+button{border:none;cursor:pointer;font-family:inherit;}
+.view{display:none;}
+.view.active{display:block;}
+
+/* NOTEBOOK TEXTURE helper */
+.nb{
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(90deg,transparent 63px,var(--margin) 63px,var(--margin) 65px,transparent 65px),
+    repeating-linear-gradient(transparent,transparent 27px,var(--ruled) 27px,var(--ruled) 28px);
+  background-size:100% 100%,100% 28px;
+}
+.nb-wide{
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(90deg,transparent 63px,var(--margin) 63px,var(--margin) 65px,transparent 65px),
+    repeating-linear-gradient(transparent,transparent 27px,var(--ruled) 27px,var(--ruled) 28px);
+  background-size:100% 100%,100% 28px;
+  padding:48px 52px 72px 88px;
+  min-height:calc(100vh - 56px);
+  position:relative;
+}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:200;
+  height:56px;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  background:var(--paper);
+  border-bottom:1.5px solid var(--ink);
+  box-shadow:0 1px 0 var(--border);
+}
+.nav-logo{
+  font-family:'Lora',serif;
+  font-size:1.4rem;font-weight:600;
+  letter-spacing:-0.02em;
+  cursor:pointer;
+}
+.nav-links{display:flex;align-items:center;gap:28px;list-style:none;}
+.nav-links a,.nav-links button{
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);background:none;padding:0;
+  transition:color 0.15s;
+}
+.nav-links a:hover{color:var(--ink);}
+.nav-cta{
+  color:var(--paper)!important;
+  background:var(--ink)!important;
+  padding:7px 18px!important;
+  font-size:0.68rem!important;
+}
+.nav-cta:hover{background:var(--red)!important;}
+
+/* ── HOME ── */
+#view-home .nb-wide{padding-top:56px;}
+
+.home-kicker{
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;letter-spacing:0.12em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:20px;
+}
+
+.home-title{
+  font-family:'Lora',serif;
+  font-size:clamp(2.2rem,4.5vw,4rem);
+  font-weight:600;line-height:1.15;
+  letter-spacing:-0.02em;
+  margin-bottom:28px;
+  max-width:700px;
+}
+.home-title em{font-style:italic;color:var(--red);}
+
+/* intro text — exact from Substack, no changes */
+.home-intro{
+  font-size:1rem;line-height:1.85;
+  color:var(--ink2);
+  max-width:620px;
+  margin-bottom:8px;
+}
+.home-intro p{margin-bottom:1.1em;}
+.home-substack-link{
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--blue);border-bottom:1px solid var(--blue);
+  padding-bottom:1px;
+}
+.home-substack-link:hover{color:var(--red);border-color:var(--red);}
+
+/* stats */
+.stats-strip{
+  display:flex;gap:0;
+  margin:48px -52px 0 -88px;
+  border-top:1.5px solid var(--ink);
+  border-bottom:1.5px solid var(--ink);
+}
+.stat-cell{
+  flex:1;
+  padding:24px 28px;
+  border-right:1px solid var(--border);
+}
+.stat-cell:last-child{border-right:none;}
+.stat-num{
+  font-family:'Lora',serif;
+  font-size:2.2rem;font-weight:600;
+  line-height:1;
+  color:var(--red);
+  display:block;margin-bottom:4px;
+}
+.stat-label{
+  font-family:'DM Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--muted);
+  display:block;
+}
+
+/* actions */
+.home-actions{
+  display:flex;gap:12px;flex-wrap:wrap;
+  margin:48px 0 56px;
+}
+.btn-ink{
+  background:var(--ink);color:var(--paper);
+  padding:12px 28px;
+  font-family:'DM Mono',monospace;
+  font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;
+  transition:background 0.15s;
+}
+.btn-ink:hover{background:var(--red);}
+.btn-ghost{
+  background:transparent;color:var(--ink);
+  border:1.5px solid var(--ink);
+  padding:11px 28px;
+  font-family:'DM Mono',monospace;
+  font-size:0.72rem;letter-spacing:0.1em;text-transform:uppercase;
+  transition:all 0.15s;
+}
+.btn-ghost:hover{background:var(--ink);color:var(--paper);}
+
+/* section label */
+.section-label{
+  font-family:'DM Mono',monospace;
+  font-size:0.68rem;letter-spacing:0.14em;text-transform:uppercase;
+  color:var(--muted);
+  margin-bottom:24px;
+  display:flex;align-items:center;gap:12px;
+}
+.section-label::after{content:'';height:1px;flex:1;background:var(--border);}
+
+/* CARDS GRID */
+.cards-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:1px;
+  background:var(--border);
+  border:1px solid var(--border);
+  margin-bottom:40px;
+}
+.journal-card{
+  background:var(--paper2);
+  padding:28px 24px 22px;
+  cursor:pointer;
+  position:relative;
+  transition:background 0.12s;
+}
+.journal-card:hover{background:#fff;}
+.card-sample-badge{
+  position:absolute;top:14px;right:14px;
+  font-family:'DM Mono',monospace;
+  font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;
+  border:1px solid var(--muted);color:var(--muted);
+  padding:3px 8px;
+}
+.card-exclusive-badge{
+  position:absolute;top:14px;right:14px;
+  font-family:'DM Mono',monospace;
+  font-size:0.58rem;letter-spacing:0.1em;text-transform:uppercase;
+  border:1px solid var(--red);color:var(--red);
+  padding:3px 8px;
+}
+.card-years{
+  font-family:'DM Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.08em;
+  color:var(--muted);margin-bottom:10px;
+}
+.card-title{
+  font-family:'Lora',serif;
+  font-size:1.25rem;font-weight:600;
+  line-height:1.25;margin-bottom:5px;
+}
+.card-author{
+  font-size:0.82rem;color:var(--muted);
+  margin-bottom:14px;font-style:italic;
+}
+.card-desc{
+  font-size:0.88rem;line-height:1.65;
+  color:var(--ink2);margin-bottom:18px;
+  display:-webkit-box;-webkit-line-clamp:3;
+  -webkit-box-orient:vertical;overflow:hidden;
+}
+.card-foot{
+  display:flex;justify-content:space-between;align-items:baseline;
+  border-top:1px solid var(--border);padding-top:14px;
+}
+.card-price{
+  font-family:'Lora',serif;
+  font-size:1.6rem;font-weight:600;color:var(--red);
+}
+.card-meta{
+  font-family:'DM Mono',monospace;
+  font-size:0.6rem;letter-spacing:0.06em;
+  color:var(--muted);text-align:right;line-height:1.5;
+}
+
+/* BROWSE */
+#view-browse .nb-wide{padding-top:48px;}
+.browse-title{
+  font-family:'Lora',serif;
+  font-size:2.4rem;font-weight:600;
+  letter-spacing:-0.02em;margin-bottom:8px;
+}
+.browse-sub{font-size:0.92rem;color:var(--muted);margin-bottom:32px;}
+.filter-bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:36px;}
+.filt{
+  font-family:'DM Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;
+  border:1px solid var(--border);background:none;
+  padding:7px 14px;color:var(--muted);
+  cursor:pointer;transition:all 0.12s;
+}
+.filt:hover,.filt.on{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+
+/* DETAIL */
+#view-detail .detail-wrap{
+  display:grid;grid-template-columns:1fr 320px;
+  gap:0;min-height:calc(100vh - 56px);
+}
+.detail-main{
+  padding:48px 52px 80px 88px;
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(90deg,transparent 63px,var(--margin) 63px,var(--margin) 65px,transparent 65px),
+    repeating-linear-gradient(transparent,transparent 27px,var(--ruled) 27px,var(--ruled) 28px);
+  background-size:100% 100%,100% 28px;
+}
+.detail-sidebar{
+  background:var(--paper2);
+  border-left:1.5px solid var(--ink);
+  padding:40px 28px;
+  position:sticky;top:56px;
+  height:calc(100vh - 56px);
+  overflow-y:auto;
+}
+.back-btn{
+  font-family:'DM Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);background:none;border:none;
+  cursor:pointer;padding:0;margin-bottom:36px;display:block;
+}
+.back-btn:hover{color:var(--ink);}
+.detail-years{
+  font-family:'DM Mono',monospace;
+  font-size:0.65rem;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--red);margin-bottom:12px;
+}
+.detail-title{
+  font-family:'Lora',serif;
+  font-size:clamp(2rem,4vw,3.2rem);
+  font-weight:600;line-height:1.1;
+  letter-spacing:-0.02em;margin-bottom:10px;
+}
+.detail-author{font-size:0.9rem;color:var(--muted);font-style:italic;margin-bottom:40px;}
+.detail-divider{border:none;border-top:1px solid var(--border);margin:32px 0;}
+.detail-desc{
+  font-size:1rem;line-height:1.85;
+  color:var(--ink2);max-width:540px;margin-bottom:0;
+}
+/* sidebar */
+.sidebar-price{
+  font-family:'Lora',serif;
+  font-size:3rem;font-weight:600;
+  color:var(--red);line-height:1;margin-bottom:4px;
+}
+.sidebar-sub{
+  font-family:'DM Mono',monospace;
+  font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:28px;display:block;
+}
+.meta-row{
+  display:flex;justify-content:space-between;align-items:center;
+  border-bottom:1px solid var(--border);padding:9px 0;font-size:0.85rem;
+}
+.meta-k{
+  font-family:'DM Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);
+}
+.btn-buy{
+  width:100%;background:var(--ink);color:var(--paper);
+  padding:14px;margin-top:20px;
+  font-family:'DM Mono',monospace;font-size:0.72rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  transition:background 0.15s;
+}
+.btn-buy:hover{background:var(--red);}
+.btn-save{
+  width:100%;background:none;color:var(--ink);
+  border:1px solid var(--border);padding:12px;margin-top:8px;
+  font-family:'DM Mono',monospace;font-size:0.72rem;
+  letter-spacing:0.1em;text-transform:uppercase;transition:all 0.12s;
+}
+.btn-save:hover{border-color:var(--ink);}
+.sidebar-verify{
+  font-size:0.76rem;color:var(--muted);line-height:1.65;
+  margin-top:20px;border-top:1px solid var(--border);padding-top:16px;
+  font-style:italic;
+}
+
+/* PROFILE / UPLOAD FLOW */
+#view-upload .nb-wide{}
+.upload-title{
+  font-family:'Lora',serif;
+  font-size:2.2rem;font-weight:600;
+  letter-spacing:-0.02em;margin-bottom:10px;
+}
+.upload-sub{font-size:0.95rem;color:var(--ink2);max-width:560px;line-height:1.75;margin-bottom:48px;}
+
+/* multi-step */
+.steps-indicator{
+  display:flex;gap:0;margin-bottom:48px;
+  border:1px solid var(--border);
+  max-width:600px;
+}
+.step-tab{
+  flex:1;padding:12px 16px;text-align:center;
+  font-family:'DM Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--muted);border-right:1px solid var(--border);
+  cursor:pointer;transition:all 0.12s;
+}
+.step-tab:last-child{border-right:none;}
+.step-tab.active{background:var(--ink);color:var(--paper);}
+.step-tab.done{color:var(--red);}
+
+.step-panel{display:none;}
+.step-panel.active{display:block;}
+
+.form-max{max-width:600px;}
+
+/* shared form styles */
+.ff{margin-bottom:22px;}
+.ff label{
+  display:block;
+  font-family:'DM Mono',monospace;font-size:0.65rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:8px;
+}
+.ff input,.ff textarea,.ff select{
+  width:100%;
+  border:1px solid var(--border);
+  background:var(--paper2);
+  padding:11px 14px;
+  font-family:'DM Sans',sans-serif;font-size:0.95rem;
+  color:var(--ink);outline:none;
+  transition:border-color 0.12s;border-radius:0;-webkit-appearance:none;
+}
+.ff input:focus,.ff textarea:focus,.ff select:focus{border-color:var(--ink);}
+.ff textarea{resize:vertical;min-height:110px;line-height:1.65;}
+.ff input[disabled]{background:var(--paper);color:var(--muted);}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+
+.upload-drop{
+  border:2px dashed var(--border);
+  padding:56px 40px;
+  text-align:center;
+  cursor:pointer;
+  background:var(--paper2);
+  transition:all 0.15s;
+  display:block;width:100%;
+}
+.upload-drop:hover{border-color:var(--ink);background:#fff;}
+.upload-drop-icon{font-size:2rem;margin-bottom:14px;opacity:0.5;}
+.upload-drop-title{
+  font-family:'Lora',serif;font-size:1.1rem;
+  font-weight:600;margin-bottom:6px;
+}
+.upload-drop-sub{
+  font-family:'DM Mono',monospace;font-size:0.62rem;
+  letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);
+}
+.upload-hint{
+  font-size:0.8rem;color:var(--muted);
+  font-style:italic;margin-top:10px;
+}
+
+.copies-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);}
+.copy-card{
+  background:var(--paper2);padding:20px 16px;
+  cursor:pointer;transition:background 0.12s;
+  border:none;text-align:left;width:100%;
+}
+.copy-card:hover{background:#fff;}
+.copy-card.sel{background:var(--ink);color:var(--paper);}
+.copy-card-title{
+  font-family:'Lora',serif;font-size:1rem;font-weight:600;
+  margin-bottom:5px;
+}
+.copy-card-desc{font-size:0.8rem;line-height:1.45;opacity:0.6;}
+
+.anon-row{
+  display:flex;align-items:center;gap:16px;
+  padding:16px;border:1px solid var(--border);
+  cursor:pointer;background:none;width:100%;
+  text-align:left;transition:border-color 0.12s;
+}
+.anon-row:hover{border-color:var(--ink);}
+.tog{width:44px;height:24px;border-radius:12px;background:#d4d4d8;position:relative;flex-shrink:0;transition:background 0.2s;}
+.tog.on{background:var(--ink);}
+.tog-dot{width:18px;height:18px;border-radius:50%;background:#fff;position:absolute;top:3px;left:3px;transition:left 0.2s;box-shadow:0 1px 3px rgba(0,0,0,0.25);}
+.tog.on .tog-dot{left:23px;}
+.anon-title{font-family:'DM Mono',monospace;font-size:0.65rem;letter-spacing:0.08em;text-transform:uppercase;margin-bottom:3px;}
+.anon-desc{font-size:0.82rem;color:var(--muted);}
+
+.step-nav{
+  display:flex;justify-content:space-between;align-items:center;
+  padding-top:32px;border-top:1px solid var(--border);margin-top:40px;
+}
+.step-note{font-size:0.8rem;color:var(--muted);font-style:italic;}
+
+/* preview card in step 4 */
+.preview-card{
+  border:1px solid var(--border);
+  background:var(--paper2);
+  padding:28px 24px;
+  max-width:340px;
+  position:relative;
+}
+.preview-label{
+  font-family:'DM Mono',monospace;font-size:0.6rem;
+  letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted);margin-bottom:16px;
+}
+
+/* ABOUT */
+#view-about .nb-wide{}
+.about-title{font-family:'Lora',serif;font-size:2.4rem;font-weight:600;letter-spacing:-0.02em;margin-bottom:32px;}
+.about-body{font-size:1rem;line-height:1.9;color:var(--ink2);max-width:620px;}
+.about-body p{margin-bottom:1.3em;}
+
+/* SUCCESS */
+.success-wrap{
+  padding:100px 52px 100px 88px;
+  min-height:calc(100vh - 56px);
+  background-color:var(--paper);
+  background-image:
+    linear-gradient(90deg,transparent 63px,var(--margin) 63px,var(--margin) 65px,transparent 65px),
+    repeating-linear-gradient(transparent,transparent 27px,var(--ruled) 27px,var(--ruled) 28px);
+  background-size:100% 100%,100% 28px;
+}
+.success-big{
+  font-family:'Lora',serif;
+  font-size:clamp(3rem,7vw,6rem);
+  font-weight:600;line-height:1.05;
+  letter-spacing:-0.03em;margin-bottom:24px;
+}
+.success-big em{font-style:italic;color:var(--red);}
+.success-sub{font-size:1rem;color:var(--muted);max-width:420px;line-height:1.8;margin-bottom:36px;}
+
+/* NOTIF */
+.notif{
+  position:fixed;bottom:28px;right:28px;
+  background:var(--ink);color:var(--paper);
+  padding:14px 20px;
+  font-family:'DM Mono',monospace;font-size:0.7rem;letter-spacing:0.06em;
+  transform:translateY(60px);opacity:0;
+  transition:all 0.25s;z-index:999;
+  max-width:300px;line-height:1.6;
+}
+.notif.show{transform:translateY(0);opacity:1;}
+
+/* FOOTER */
+footer{
+  background:var(--paper);
+  border-top:1px solid var(--border);
+  padding:24px 52px 24px 88px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.footer-logo{font-family:'Lora',serif;font-size:1.1rem;font-weight:600;color:var(--muted);}
+.footer-note{font-family:'DM Mono',monospace;font-size:0.6rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);}
+
+/* uploaded files list */
+.file-list{margin-top:14px;}
+.file-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 12px;border:1px solid var(--border);
+  background:var(--paper2);margin-bottom:4px;
+  font-size:0.85rem;
+}
+.file-remove{background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;padding:0;}
+.file-remove:hover{color:var(--red);}
+
+@media(max-width:860px){
+  .nb-wide,.detail-main,.success-wrap{padding-left:52px!important;padding-right:32px!important;background-image:repeating-linear-gradient(transparent,transparent 27px,var(--ruled) 27px,var(--ruled) 28px)!important;}
+  #view-detail .detail-wrap{grid-template-columns:1fr;}
+  .detail-sidebar{position:static;height:auto;border-left:none;border-top:1.5px solid var(--ink);}
+  .frow{grid-template-columns:1fr;}
+  .copies-grid{grid-template-columns:1fr;}
+  .stats-strip{flex-wrap:wrap;margin:32px 0 0;}
+  .stat-cell{border-right:none;border-bottom:1px solid var(--border);}
+  nav{padding:0 20px;}
+  footer{padding:20px 24px;}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-logo" onclick="showView('home')">folio.</div>
+  <ul class="nav-links">
+    <li><a onclick="showView('browse')">browse</a></li>
+    <li><a onclick="showView('about')">about</a></li>
+    <li><button class="nav-cta" onclick="showView('upload')">sell your journal</button></li>
+  </ul>
+</nav>
+
+<!-- ══════════ HOME ══════════ -->
+<div id="view-home" class="view active">
+  <div class="nb-wide">
+    <div class="home-kicker">a marketplace for real diaries</div>
+
+    <h1 class="home-title">
+      someone out there wants to read <em>your diary.</em> (me)
+    </h1>
+
+    <div class="home-intro">
+      <p>I've been keeping a journal since middle school. Last year I scanned them all, uploaded them to an LLM, and posted the results <a href="https://mackenzie.substack.com" target="_blank" class="home-substack-link">here</a>. Then I tried to buy other people's. Turns out the only things you can buy are fake excerpts from Etsy. So I made this — a real marketplace where you can <strong>buy</strong> strangers' years or <strong>sell</strong> your own.</p>
+    </div>
+
+    <div class="stats-strip">
+      <div class="stat-cell">
+        <span class="stat-num">$12+</span>
+        <span class="stat-label">starting price — no upper limit</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-num">0</span>
+        <span class="stat-label">AI generated ones (probably)</span>
+      </div>
+      <div class="stat-cell">
+        <span class="stat-num">15%</span>
+        <span class="stat-label">our cut — rest is yours</span>
+      </div>
+    </div>
+
+    <div class="home-actions" style="margin-top:40px;">
+      <button class="btn-ink" onclick="showView('browse')">browse journals →</button>
+      <button class="btn-ghost" onclick="showView('upload')">list your own</button>
+    </div>
+
+    <div class="section-label" style="margin-bottom:20px;">recent listings</div>
+    <div class="cards-grid" id="home-grid"></div>
+
+    <p style="font-size:0.85rem;color:var(--muted);margin-bottom:0;">
+      <a onclick="showView('browse')" style="color:var(--blue);cursor:pointer;border-bottom:1px solid var(--blue);">see all →</a>
+    </p>
+  </div>
+  <footer>
+    <div class="footer-logo">folio.</div>
+    <div class="footer-note">© 2025 — real diaries only</div>
+  </footer>
+</div>
+
+<!-- ══════════ BROWSE ══════════ -->
+<div id="view-browse" class="view">
+  <div class="nb-wide">
+    <div class="browse-title">all journals</div>
+    <p class="browse-sub">real people. real years. browse below — sample listings are marked.</p>
+
+    <div class="filter-bar">
+      <button class="filt on" onclick="filterListings(this,'all')">all</button>
+      <button class="filt" onclick="filterListings(this,'exclusive')">one copy only</button>
+      <button class="filt" onclick="filterListings(this,'anon')">anonymous</button>
+      <button class="filt" onclick="filterListings(this,'real')">real listings only</button>
+    </div>
+
+    <div class="cards-grid" id="browse-grid"></div>
+  </div>
+  <footer>
+    <div class="footer-logo">folio.</div>
+    <div class="footer-note">© 2025</div>
+  </footer>
+</div>
+
+<!-- ══════════ DETAIL ══════════ -->
+<div id="view-detail" class="view">
+  <div class="detail-wrap">
+    <div class="detail-main" id="detail-main"></div>
+    <div class="detail-sidebar" id="detail-sidebar"></div>
+  </div>
+</div>
+
+<!-- ══════════ UPLOAD / PROFILE ══════════ -->
+<div id="view-upload" class="view">
+  <div class="nb-wide">
+    <div class="upload-title">list your journal.</div>
+    <p class="upload-sub">set your price. choose how many copies. stay anonymous or don't. we take 15% and you keep the rest. we'll review within 48 hours before it goes live — no AI-generated stuff, we check.</p>
+
+    <div class="steps-indicator">
+      <div class="step-tab active" id="tab-0" onclick="goStep(0)">01 profile</div>
+      <div class="step-tab" id="tab-1" onclick="goStep(1)">02 the journal</div>
+      <div class="step-tab" id="tab-2" onclick="goStep(2)">03 upload</div>
+      <div class="step-tab" id="tab-3" onclick="goStep(3)">04 pricing</div>
+      <div class="step-tab" id="tab-4" onclick="goStep(4)">05 preview</div>
+    </div>
+
+    <!-- step 0: profile -->
+    <div class="step-panel active form-max" id="step-0">
+      <div class="section-label">your seller profile</div>
+      <div class="ff">
+        <label>display name or pen name</label>
+        <input type="text" id="p-name" placeholder="real name, fake name, initials, or nothing">
+      </div>
+      <div class="ff">
+        <label>one line about you (optional)</label>
+        <input type="text" id="p-bio" placeholder="e.g. i've been keeping a journal since i was 11">
+      </div>
+      <div class="ff">
+        <label>email (for listing notifications — not shown publicly)</label>
+        <input type="email" id="p-email" placeholder="you@email.com">
+      </div>
+      <div class="ff">
+        <label>link (substack, website, social — optional)</label>
+        <input type="text" id="p-link" placeholder="https://...">
+      </div>
+      <button class="anon-row" onclick="toggleAnon('p-anon-tog')" style="margin-bottom:20px;">
+        <div class="tog" id="p-anon-tog"><div class="tog-dot"></div></div>
+        <div>
+          <div class="anon-title">sell anonymously</div>
+          <div class="anon-desc">your name won't appear on the listing at all — not even the pen name above.</div>
+        </div>
+      </button>
+
+      <div class="step-nav">
+        <span class="step-note">your profile applies to all your listings</span>
+        <button class="btn-ink" onclick="goStep(1)">next: the journal →</button>
+      </div>
+    </div>
+
+    <!-- step 1: journal info -->
+    <div class="step-panel form-max" id="step-1">
+      <div class="section-label">about this journal</div>
+      <div class="ff">
+        <label>what would you call it?</label>
+        <input type="text" id="j-title" placeholder="give it a title">
+      </div>
+      <div class="frow">
+        <div class="ff">
+          <label>years covered</label>
+          <input type="text" id="j-years" placeholder="e.g. 2008 – 2012">
+        </div>
+        <div class="ff">
+          <label>number of volumes / notebooks</label>
+          <input type="number" id="j-vols" placeholder="3" min="1">
+        </div>
+      </div>
+      <div class="ff">
+        <label>describe it — what's actually in here?</label>
+        <textarea id="j-desc" placeholder="what's in here? what period of your life?"></textarea>
+      </div>
+      <div class="ff">
+        <label>paste one real entry (this is what gets people to buy)</label>
+        <textarea id="j-excerpt" placeholder="a real one. doesn't have to be your best or worst, just real." style="min-height:160px;"></textarea>
+      </div>
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(0)">← back</button>
+        <button class="btn-ink" onclick="goStep(2)">next: upload →</button>
+      </div>
+    </div>
+
+    <!-- step 2: upload -->
+    <div class="step-panel form-max" id="step-2">
+      <div class="section-label">upload your pages</div>
+      <p style="font-size:0.9rem;color:var(--ink2);margin-bottom:24px;line-height:1.75;">
+        best way: scan as PDF or individual photos. my friend grant is supposedly building a video-flip OCR thing but he has one more week before i do it myself. in the meantime — scan, photo, PDF, whatever you've got.
+      </p>
+      <button class="upload-drop" onclick="document.getElementById('file-in').click()">
+        <div class="upload-drop-icon">📖</div>
+        <div class="upload-drop-title">drop your scans here</div>
+        <div class="upload-drop-sub" style="margin-bottom:6px;">PDF, JPG, PNG — up to 2GB</div>
+        <div class="upload-drop-sub">yes, even thousands of pages. we've seen worse.</div>
+      </button>
+      <input type="file" id="file-in" style="display:none" multiple accept=".pdf,.jpg,.jpeg,.png" onchange="handleFiles(this)">
+      <div class="file-list" id="file-list"></div>
+      <p class="upload-hint">we'll OCR everything and give you a chance to review before the listing goes live.</p>
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(1)">← back</button>
+        <button class="btn-ink" onclick="goStep(3)">next: pricing →</button>
+      </div>
+    </div>
+
+    <!-- step 3: pricing -->
+    <div class="step-panel form-max" id="step-3">
+      <div class="section-label">pricing &amp; availability</div>
+      <p style="font-size:0.9rem;color:var(--ink2);margin-bottom:24px;line-height:1.75;">
+        i'd price more recent ones higher. weird periods of your life are probably worth more than the normal ones. that's my theory anyway — you know better than me.
+      </p>
+      <div class="frow">
+        <div class="ff">
+          <label>your price (USD)</label>
+          <input type="number" id="j-price" placeholder="e.g. 45" min="1">
+        </div>
+        <div class="ff">
+          <label>platform fee</label>
+          <input type="text" value="15% per sale — you keep 85%" disabled>
+        </div>
+      </div>
+
+      <div class="ff">
+        <label>how many copies can people buy?</label>
+        <div class="copies-grid">
+          <button class="copy-card sel" onclick="selectCopy(this)">
+            <div class="copy-card-title">just one</div>
+            <div class="copy-card-desc">one buyer. more exclusive. usually commands a higher price.</div>
+          </button>
+          <button class="copy-card" onclick="selectCopy(this)">
+            <div class="copy-card-title">limited</div>
+            <div class="copy-card-desc">you set the cap — 5, 10, 25, whatever feels right.</div>
+          </button>
+          <button class="copy-card" onclick="selectCopy(this)">
+            <div class="copy-card-title">open</div>
+            <div class="copy-card-desc">anyone can buy it. more income, less rarity.</div>
+          </button>
+        </div>
+      </div>
+      <div id="limited-cap-wrap" class="ff" style="display:none;">
+        <label>copy limit</label>
+        <input type="number" placeholder="e.g. 10" min="2">
+      </div>
+
+      <div class="step-nav">
+        <button class="btn-ghost" onclick="goStep(2)">← back</button>
+        <button class="btn-ink" onclick="goStep(4)">preview listing →</button>
+      </div>
+    </div>
+
+    <!-- step 4: preview + submit -->
+    <div class="step-panel" id="step-4">
+      <div class="section-label" style="max-width:600px;">how it'll look</div>
+      <div style="display:grid;grid-template-columns:340px 1fr;gap:40px;max-width:800px;align-items:start;">
+        <div class="preview-card">
+          <div class="preview-label">preview</div>
+          <div class="card-years" id="prev-years">— · —</div>
+          <div class="card-title" id="prev-title" style="margin-bottom:6px;">untitled journal</div>
+          <div class="card-author" id="prev-author">anonymous</div>
+          <div class="card-desc" id="prev-desc" style="color:var(--muted);font-style:italic;">your description will appear here</div>
+          <div class="card-foot">
+            <span class="card-price" id="prev-price">$—</span>
+            <span class="card-meta" id="prev-meta">— copies</span>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:0.9rem;color:var(--ink2);line-height:1.8;margin-bottom:24px;">
+            looks good? we'll review it within 48 hours before it goes live. you'll get an email when it's approved (or if we have questions).
+          </p>
+          <p style="font-size:0.82rem;color:var(--muted);line-height:1.7;margin-bottom:28px;font-style:italic;">
+            one thing: it has to be real. no AI-generated journals. we check. don't try it.
+          </p>
+          <button class="btn-ink" onclick="submitListing()" style="padding:14px 36px;">submit listing →</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+  <footer>
+    <div class="footer-logo">folio.</div>
+    <div class="footer-note">© 2025</div>
+  </footer>
+</div>
+
+<!-- ══════════ ABOUT ══════════ -->
+<div id="view-about" class="view">
+  <div class="nb-wide">
+    <div class="about-title">about folio.</div>
+    <div class="about-body">
+      <p>I am an avid journal keeper. I have been since middle school. Therefore everything that has happened to me or I have thought has been written down somewhere for me to infrequently glance back through. Last year I scanned them all and uploaded them to an LLM, and then posted the results <a href="https://mackenzie.substack.com" target="_blank" style="color:var(--blue);border-bottom:1px solid var(--blue);">here</a>; for all to see and for people to one shot me in the future.</p>
+      <p>Turns out the only things you can buy right now are like fake excerpts from etsy and no other great options. Therefore this prompted me to want to make my own diary selling and buying marketplace.</p>
+      <p><strong>for sellers:</strong> set your price. publish under your name or a pen name. choose one copy or many. we take 15%.</p>
+      <p><strong>for buyers:</strong> scroll through real people's real years. read an excerpt. buy the one that speaks to you.</p>
+      <p><strong>the one rule:</strong> it has to be real. no AI-generated journals. we check.</p>
+    </div>
+    <div style="margin-top:40px;display:flex;gap:12px;">
+      <button class="btn-ink" onclick="showView('upload')">list your journal →</button>
+      <button class="btn-ghost" onclick="showView('browse')">browse</button>
+    </div>
+  </div>
+  <footer>
+    <div class="footer-logo">folio.</div>
+    <div class="footer-note">© 2025 — human diaries only</div>
+  </footer>
+</div>
+
+<!-- ══════════ SUCCESS ══════════ -->
+<div id="view-success" class="view">
+  <div class="success-wrap">
+    <div class="success-big">listing<br><em>submitted.</em></div>
+    <p class="success-sub">we'll look it over within 48 hours and get back to you. thanks for putting your inner life on the market — it takes something.</p>
+    <button class="btn-ink" onclick="showView('browse')">browse other journals →</button>
+  </div>
+  <footer>
+    <div class="footer-logo">folio.</div>
+    <div class="footer-note">© 2025</div>
+  </footer>
+</div>
+
+<div class="notif" id="notif"></div>
+
+<script>
+// ── DATA ──
+// isSample: true = seeded example, false = "real" listing
+const LISTINGS = [
+  {
+    id:1,title:"The Long Summer",author:"M. Ashworth",years:"1994 – 1997",
+    volumes:4,pages:812,price:85,copies:"exclusive",copiesLeft:1,
+    anonymous:false,isSample:true,
+    description:"Four years after the death of my father. I was 23. I moved to New York and wrote everything down: every bad decision, every bar, every person I thought I was in love with. I read this back now and barely recognize myself. That's probably why I'm selling it.",
+    excerpt:"March 14, 1995\n\nI keep telling people I'm fine and then crying in the bathroom of whatever restaurant we're at. Three minutes, cold water, back out. Nobody notices or nobody says. I haven't decided which is worse."
+  },
+  {
+    id:2,title:"Year One",author:"anonymous",years:"2017 – 2018",
+    volumes:1,pages:340,price:28,copies:"unlimited",copiesLeft:"∞",
+    anonymous:true,isSample:true,
+    description:"First year at a startup that later became something you've heard of. I will not say which one. Everything here is about the work: the doubt, the hours, the specific way optimism curdles.",
+    excerpt:"July 3, 2017\n\nHad the meeting where they told me we were going to be okay. I believed them for about four hours. We celebrated with expensive sparkling water because our CEO doesn't drink. I wrote \"this is the dream\" in a Google Doc and then deleted it."
+  },
+  {
+    id:3,title:"Before I Knew Better",author:"T. Beaumont-Hall",years:"2003 – 2009",
+    volumes:6,pages:1480,price:145,copies:"limited",copiesLeft:3,
+    anonymous:false,isSample:true,
+    description:"Six years of being a teenager and then not being one. Embarrassing in the way only total sincerity can be. I was deeply earnest and deeply wrong about most things. The handwriting gets better.",
+    excerpt:"Sept 9, 2004\n\nI want to be someone worth writing about. I don't know what that means yet. I think it has something to do with being interesting? Or being brave. I wrote that and it sounded fake.\n\nActually I just want people to know what I mean when I talk."
+  }
+];
+
+// user-uploaded listings stored locally
+let USER_LISTINGS = [];
+
+function allListings(){ return [...LISTINGS, ...USER_LISTINGS]; }
+
+function renderCard(l, container){
+  const card = document.createElement('div');
+  card.className = 'journal-card';
+  const isEx = l.copies === 'exclusive';
+  const tagHtml = l.isSample
+    ? `<div class="card-sample-badge">example</div>`
+    : isEx ? `<div class="card-exclusive-badge">one copy</div>` : '';
+  const copiesStr = l.copies==='exclusive' ? '1 copy · exclusive'
+    : l.copies==='limited' ? `${l.copiesLeft} copies left`
+    : 'open edition';
+  card.innerHTML = `
+    ${tagHtml}
+    <div class="card-years">${l.years}</div>
+    <div class="card-title">${l.title}</div>
+    <div class="card-author">${l.author}</div>
+    <div class="card-desc">${l.description}</div>
+    <div class="card-foot">
+      <span class="card-price">$${l.price}</span>
+      <span class="card-meta">${l.volumes} vol${l.volumes>1?'s':''} · ${typeof l.pages==='number'?l.pages.toLocaleString():l.pages} pp<br>${copiesStr}</span>
+    </div>`;
+  card.onclick = () => openDetail(l);
+  container.appendChild(card);
+}
+
+function initGrids(){
+  const hg = document.getElementById('home-grid');
+  hg.innerHTML = '';
+  allListings().slice(0,3).forEach(l => renderCard(l, hg));
+  renderBrowse('all');
+}
+
+function renderBrowse(filter){
+  const bg = document.getElementById('browse-grid');
+  bg.innerHTML = '';
+  let f = allListings();
+  if(filter==='exclusive') f = f.filter(l => l.copies==='exclusive');
+  if(filter==='anon')      f = f.filter(l => l.anonymous);
+  if(filter==='real')      f = f.filter(l => !l.isSample);
+  if(!f.length){
+    bg.innerHTML = `<div style="padding:60px 40px;color:var(--muted);font-size:0.9rem;font-style:italic;grid-column:1/-1;">no listings here yet — <span style="color:var(--blue);cursor:pointer;border-bottom:1px solid var(--blue);" onclick="showView('upload')">be the first</span>.</div>`;
+  } else {
+    f.forEach(l => renderCard(l, bg));
+  }
+}
+
+function filterListings(btn, filter){
+  document.querySelectorAll('.filt').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  renderBrowse(filter);
+}
+
+function openDetail(l){
+  const excerptHtml = l.excerpt ? l.excerpt.split('\n\n').map(p=>`<p>${p}</p>`).join('') : '';
+  const avail = l.copies==='exclusive' ? 'one copy only'
+    : l.copies==='limited' ? `${l.copiesLeft} copies remaining`
+    : 'open edition';
+  const sampleNote = l.isSample ? `<div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.08em;text-transform:uppercase;color:var(--muted);border:1px solid var(--border);display:inline-block;padding:4px 10px;margin-bottom:24px;">example listing</div>` : '';
+
+  document.getElementById('detail-main').innerHTML = `
+    <button class="back-btn" onclick="showView('browse')">← back</button>
+    ${sampleNote}
+    <div class="detail-years">${l.years} · ${l.volumes} volume${l.volumes>1?'s':''}</div>
+    <h1 class="detail-title">${l.title}</h1>
+    <div class="detail-author">by ${l.author}</div>
+    <hr class="detail-divider">
+    <p class="detail-desc">${l.description}</p>
+    ${excerptHtml ? `<hr class="detail-divider"><div style="font-family:'DM Mono',monospace;font-size:0.62rem;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:16px;">sample entry</div><div style="background:rgba(254,240,138,0.2);border-left:2px solid var(--muted);padding:20px 24px;font-style:italic;font-size:0.95rem;line-height:1.9;color:var(--ink2);max-width:540px;">${excerptHtml}</div>` : ''}
+    <p style="font-size:0.8rem;color:var(--muted);font-style:italic;margin-top:28px;">full ${typeof l.pages==='number'?l.pages.toLocaleString():l.pages}-page scan delivered as searchable PDF after purchase.</p>`;
+
+  document.getElementById('detail-sidebar').innerHTML = `
+    <div class="sidebar-price">$${l.price}</div>
+    <span class="sidebar-sub">+ 0% buyer fee</span>
+    <div class="meta-row"><span class="meta-k">availability</span><span>${avail}</span></div>
+    <div class="meta-row"><span class="meta-k">pages</span><span>${typeof l.pages==='number'?l.pages.toLocaleString():l.pages}</span></div>
+    <div class="meta-row"><span class="meta-k">volumes</span><span>${l.volumes}</span></div>
+    <div class="meta-row"><span class="meta-k">period</span><span>${l.years}</span></div>
+    <div class="meta-row"><span class="meta-k">format</span><span>digital PDF</span></div>
+    <div class="meta-row"><span class="meta-k">verified</span><span>human ✓</span></div>
+    <button class="btn-buy" onclick="showNotif('payments coming soon — we\\'ll email you when it\\'s live.')">i want this one</button>
+    <button class="btn-save">save for later</button>
+    <p class="sidebar-verify">every listing is verified human-written before it goes live. no AI journals. we're working on making the verification better every week.</p>`;
+
+  showView('detail');
+}
+
+// ── UPLOAD FLOW ──
+let currentStep = 0;
+let uploadedFiles = [];
+let anonStates = {};
+
+function goStep(n){
+  if(n===4) buildPreview();
+  document.querySelectorAll('.step-panel').forEach((p,i) => p.classList.toggle('active', i===n));
+  document.querySelectorAll('.step-tab').forEach((t,i) => {
+    t.classList.toggle('active', i===n);
+    t.classList.toggle('done', i<n);
+  });
+  currentStep = n;
+}
+
+function buildPreview(){
+  const title = document.getElementById('j-title').value || 'untitled journal';
+  const years = document.getElementById('j-years').value || '—';
+  const vols = document.getElementById('j-vols').value || '1';
+  const desc = document.getElementById('j-desc').value || 'your description will appear here.';
+  const price = document.getElementById('j-price').value || '—';
+  const name = document.getElementById('p-name').value || 'anonymous';
+  const selCopy = document.querySelector('.copy-card.sel');
+  const copyLabel = selCopy ? selCopy.querySelector('.copy-card-title').textContent : '—';
+
+  document.getElementById('prev-title').textContent = title;
+  document.getElementById('prev-years').textContent = years;
+  document.getElementById('prev-author').textContent = 'by '+name;
+  document.getElementById('prev-desc').textContent = desc;
+  document.getElementById('prev-price').textContent = price !== '—' ? '$'+price : '$—';
+  document.getElementById('prev-meta').textContent = copyLabel+' · '+vols+' vol'+(vols>1?'s':'');
+}
+
+function handleFiles(input){
+  const list = document.getElementById('file-list');
+  Array.from(input.files).forEach(f => {
+    uploadedFiles.push(f);
+    const item = document.createElement('div');
+    item.className = 'file-item';
+    item.innerHTML = `<span>📄 ${f.name} <span style="color:var(--muted);font-size:0.8em;">(${(f.size/1024/1024).toFixed(1)}MB)</span></span><button class="file-remove" onclick="removeFile(this,'${f.name}')">×</button>`;
+    list.appendChild(item);
+  });
+}
+
+function removeFile(btn, name){
+  uploadedFiles = uploadedFiles.filter(f=>f.name!==name);
+  btn.closest('.file-item').remove();
+}
+
+function selectCopy(el){
+  el.closest('.copies-grid').querySelectorAll('.copy-card').forEach(c=>c.classList.remove('sel'));
+  el.classList.add('sel');
+  const isLimited = el.querySelector('.copy-card-title').textContent === 'limited';
+  document.getElementById('limited-cap-wrap').style.display = isLimited ? 'block' : 'none';
+}
+
+let anonOn = false;
+function toggleAnon(id){
+  anonOn = !anonOn;
+  document.getElementById(id).classList.toggle('on', anonOn);
+}
+
+function submitListing(){
+  // build a "real" listing from form data and push to USER_LISTINGS
+  const title = document.getElementById('j-title').value || 'untitled journal';
+  const years = document.getElementById('j-years').value || '—';
+  const vols = parseInt(document.getElementById('j-vols').value) || 1;
+  const desc = document.getElementById('j-desc').value || '';
+  const excerpt = document.getElementById('j-excerpt').value || '';
+  const price = parseInt(document.getElementById('j-price').value) || 0;
+  const name = anonOn ? 'anonymous' : (document.getElementById('p-name').value || 'anonymous');
+  const selCopy = document.querySelector('.copy-card.sel');
+  const copies = selCopy ? (['just one','limited','open'][['just one','limited','open'].indexOf(selCopy.querySelector('.copy-card-title').textContent)] || 'exclusive') : 'exclusive';
+  const copyKey = copies==='just one' ? 'exclusive' : copies==='open' ? 'unlimited' : 'limited';
+
+  USER_LISTINGS.push({
+    id: Date.now(), title, author: name, years, volumes: vols,
+    pages: uploadedFiles.length > 0 ? '?' : '—',
+    price, copies: copyKey, copiesLeft: copyKey==='exclusive' ? 1 : copyKey==='limited' ? 10 : '∞',
+    anonymous: anonOn, isSample: false, description: desc, excerpt
+  });
+
+  // reset form
+  goStep(0);
+  uploadedFiles = [];
+  document.getElementById('file-list').innerHTML = '';
+  ['p-name','p-bio','p-email','p-link','j-title','j-years','j-vols','j-desc','j-excerpt','j-price'].forEach(id => {
+    const el = document.getElementById(id);
+    if(el) el.value = '';
+  });
+  anonOn = false;
+  document.getElementById('p-anon-tog').classList.remove('on');
+  document.querySelectorAll('.copy-card').forEach((c,i)=>c.classList.toggle('sel',i===0));
+
+  initGrids();
+  showView('success');
+}
+
+function showView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('view-'+name).classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function showNotif(msg){
+  const el = document.getElementById('notif');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(()=>el.classList.remove('show'),4000);
+}
+
+initGrids();
+</script>
+</body>
+</html>
