@@ -1,0 +1,208 @@
+@import url('https://fonts.googleapis.com/css2?family=Patrick+Hand&family=Inter:wght@400;700;900&display=swap');
+
+:root {
+  --paper: #fbfaf6;
+  --ink: #111;
+  --grid: #e6ded2;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+    var(--paper);
+  background-size: 34px 34px;
+  color: var(--ink);
+  font-family: Inter, system-ui, sans-serif;
+  text-align: center;
+}
+
+main {
+  width: min(1000px, 94vw);
+  margin: 36px auto 70px;
+}
+
+header {
+  margin-bottom: 30px;
+}
+
+h1 {
+  margin: 0;
+  font-size: clamp(2.5rem, 7vw, 5.5rem);
+  line-height: 0.9;
+  letter-spacing: -0.07em;
+}
+
+header p {
+  margin: 14px 0 0;
+  color: #555;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(270px, 1fr));
+  gap: 34px;
+}
+
+.card {
+  display: grid;
+  place-items: center;
+  gap: 12px;
+  padding: 18px;
+  border-radius: 28px;
+  background: rgba(255, 255, 255, 0.55);
+}
+
+.partners-card {
+  grid-column: 1 / -1;
+}
+
+h2 {
+  margin: 0;
+  font-size: 0.95rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+}
+
+.circle {
+  position: relative;
+  width: min(315px, 80vw);
+  aspect-ratio: 1;
+  border: 5px solid var(--ink);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.8);
+  overflow: hidden;
+}
+
+.midline {
+  position: absolute;
+  left: 50%;
+  top: 0;
+  width: 5px;
+  height: 100%;
+  background: var(--ink);
+  transform: translateX(-50%);
+}
+
+.label,
+.num {
+  position: absolute;
+  z-index: 2;
+  font-family: "Patrick Hand", cursive;
+}
+
+.label {
+  font-size: 2rem;
+  transform: rotate(-28deg);
+}
+
+.left {
+  left: 13%;
+  top: 42%;
+}
+
+.right {
+  right: 10%;
+  top: 42%;
+}
+
+.arrow {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-family: "Patrick Hand", cursive;
+  font-size: 2.25rem;
+  filter: drop-shadow(2px 2px 0 white);
+  transform: translate(-50%, -50%);
+}
+
+.arrow span {
+  font-size: 1.1rem;
+  background: white;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 1px 9px;
+}
+
+/* HARD-CODED STATUSES */
+
+.gay {
+  left: 25%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.legally-married {
+  left: 25%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+.spiritually-divorced {
+  left: 75%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(0deg);
+}
+
+.single {
+  left: 25%;
+  top: 50%;
+  transform: translate(-50%, -50%) rotate(180deg);
+}
+
+/* PARTNERS WHEEL */
+
+.partners .spoke {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 5px;
+  height: 50%;
+  background: var(--ink);
+  transform-origin: top center;
+}
+
+.s0 { transform: rotate(0deg); }
+.s1 { transform: rotate(60deg); }
+.s2 { transform: rotate(120deg); }
+.s3 { transform: rotate(180deg); }
+.s4 { transform: rotate(240deg); }
+.s5 { transform: rotate(300deg); }
+
+/* numbers are centered inside gaps, not on lines */
+.num {
+  font-size: 2.2rem;
+  line-height: 1;
+}
+
+.n0 { left: 66%; top: 14%; }
+.n1 { right: 10%; top: 47%; transform: translateY(-50%); }
+.n2 { left: 66%; bottom: 14%; }
+.n3 { left: 34%; bottom: 14%; }
+.n4 { left: 10%; top: 47%; transform: translateY(-50%); }
+.n5 { left: 34%; top: 14%; }
+
+/* points to the “2” gap */
+.partners-two {
+  left: 68%;
+  top: 72%;
+  transform: translate(-50%, -50%) rotate(55deg);
+}
+
+@media (max-width: 720px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+
+  .partners-card {
+    grid-column: auto;
+  }
+}
