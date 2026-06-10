@@ -1,0 +1,463 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Common Good TO — Work that actually matters</title>
+<meta name="description" content="Jobs, bounties, and open problems for Toronto builders who want their work to count. Matched to your skills. Updated daily.">
+<style>
+  :root {
+    --red: #A32D2D;
+    --red-light: #FCEBEB;
+    --red-mid: #F7C1C1;
+    --red-dark: #791F1F;
+    --red-deep: #501313;
+    --amber: #FAEEDA;
+    --amber-dark: #633806;
+    --amber-mid: #FAC775;
+    --purple-light: #EEEDFE;
+    --purple-dark: #3C3489;
+    --purple-mid: #CECBF6;
+    --green-light: #EAF3DE;
+    --green-dark: #27500A;
+    --green-mid: #C0DD97;
+    --text: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #9b9b9b;
+    --border: rgba(0,0,0,0.1);
+    --border-med: rgba(0,0,0,0.15);
+    --bg: #ffffff;
+    --bg-secondary: #f9f9f8;
+    --radius: 8px;
+    --radius-lg: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { font-size: 16px; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; color: var(--text); background: var(--bg); line-height: 1.5; }
+  a { text-decoration: none; color: inherit; }
+
+  /* NAV */
+  .nav { display: flex; align-items: center; justify-content: space-between; padding: 1rem 2rem; border-bottom: 0.5px solid var(--border); position: sticky; top: 0; background: var(--bg); z-index: 100; }
+  .logo { font-size: 15px; font-weight: 600; letter-spacing: 0.02em; text-transform: uppercase; color: var(--text); }
+  .logo span { color: var(--red); }
+  .nav-links { display: flex; gap: 1.5rem; align-items: center; }
+  .nav-links a { font-size: 13px; color: var(--text-secondary); transition: color 0.15s; }
+  .nav-links a:hover { color: var(--text); }
+  .nav-cta { font-size: 13px; font-weight: 500; padding: 7px 16px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; transition: opacity 0.15s; }
+  .nav-cta:hover { opacity: 0.88; }
+
+  /* HERO */
+  .hero { padding: 4rem 2rem 0; border-bottom: 0.5px solid var(--border); max-width: 900px; margin: 0 auto; }
+  .eyebrow { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--red-dark); background: var(--red-light); padding: 4px 10px; border-radius: 20px; font-weight: 500; margin-bottom: 1.25rem; }
+  .pulse { width: 5px; height: 5px; border-radius: 50%; background: var(--red); animation: blink 2s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+  .hero h1 { font-size: clamp(28px, 4vw, 42px); font-weight: 500; line-height: 1.18; letter-spacing: -0.03em; color: var(--text); margin-bottom: 1rem; max-width: 560px; }
+  .hero h1 em { font-style: italic; color: var(--red); }
+  .hero-sub { font-size: 15px; color: var(--text-secondary); line-height: 1.65; max-width: 440px; margin-bottom: 2rem; }
+  .hero-form { display: flex; gap: 8px; max-width: 400px; margin-bottom: 0.85rem; }
+  .hero-form input { flex: 1; font-size: 14px; padding: 0 12px; height: 42px; border-radius: var(--radius); border: 0.5px solid var(--border-med); background: var(--bg); color: var(--text); outline: none; transition: border-color 0.15s; }
+  .hero-form input:focus { border-color: var(--red); }
+  .hero-form input::placeholder { color: var(--text-tertiary); }
+  .hero-form button { font-size: 13px; font-weight: 500; padding: 0 20px; height: 42px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; white-space: nowrap; transition: opacity 0.15s; }
+  .hero-form button:hover { opacity: 0.88; }
+  .hero-social-proof { font-size: 12px; color: var(--text-tertiary); margin-bottom: 2.5rem; }
+  .hero-social-proof strong { color: var(--text-secondary); font-weight: 500; }
+
+  /* IMPACT BAR */
+  .impact-bar { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); border-top: 0.5px solid var(--border); }
+  .istat { padding: 1.25rem 1rem; border-right: 0.5px solid var(--border); text-align: center; }
+  .istat:last-child { border-right: none; }
+  .istat-n { font-size: 22px; font-weight: 500; color: var(--text); letter-spacing: -0.03em; }
+  .istat-l { font-size: 11px; color: var(--text-tertiary); margin-top: 2px; }
+  .istat-d { font-size: 10px; color: var(--red); margin-top: 3px; font-weight: 500; }
+
+  /* SECTIONS */
+  .section { padding: 2rem 2rem; border-bottom: 0.5px solid var(--border); max-width: 900px; margin: 0 auto; }
+  .section-bg { background: var(--bg-secondary); }
+  .section-label { font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-tertiary); font-weight: 500; margin-bottom: 1.25rem; }
+
+  /* QUIZ */
+  .quiz-wrap { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; }
+  .qprog { display: flex; gap: 4px; margin-bottom: 1.25rem; }
+  .qpip { height: 3px; flex: 1; border-radius: 2px; background: var(--border); transition: background 0.2s; }
+  .qpip.done { background: var(--red); }
+  .qpip.act { background: var(--red-mid); }
+  .quiz-q { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 1rem; line-height: 1.4; }
+  .quiz-opts { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 1.25rem; }
+  .qopt { font-size: 13px; padding: 7px 14px; border-radius: 20px; border: 0.5px solid var(--border-med); color: var(--text-secondary); cursor: pointer; background: var(--bg); transition: all 0.15s; }
+  .qopt:hover { border-color: var(--red); color: var(--red-dark); }
+  .qopt.sel { background: var(--red-light); border-color: var(--red); color: var(--red-dark); font-weight: 500; }
+  .quiz-nav { display: flex; align-items: center; justify-content: space-between; }
+  .quiz-step { font-size: 12px; color: var(--text-tertiary); }
+  .quiz-btn { font-size: 13px; font-weight: 500; padding: 8px 20px; background: var(--red); color: #fff; border: none; border-radius: var(--radius); cursor: pointer; transition: opacity 0.15s; }
+  .quiz-btn:hover { opacity: 0.88; }
+  .quiz-btn:disabled { opacity: 0.3; cursor: default; }
+
+  /* PROBLEMS */
+  .methodology-link { font-size: 12px; color: var(--red); cursor: pointer; margin-bottom: 1.25rem; display: inline-flex; align-items: center; gap: 4px; }
+  .filter-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1.25rem; }
+  .chip { font-size: 12px; padding: 5px 12px; border-radius: 20px; border: 0.5px solid var(--border-med); color: var(--text-secondary); cursor: pointer; background: var(--bg); transition: all 0.15s; }
+  .chip:hover { border-color: var(--red); color: var(--red-dark); }
+  .chip.on { background: var(--red-light); border-color: var(--red); color: var(--red-dark); font-weight: 500; }
+  .prow { display: flex; align-items: flex-start; gap: 14px; padding: 1rem 0; border-bottom: 0.5px solid var(--border); }
+  .prow:last-child { border-bottom: none; }
+  .prank { font-size: 12px; font-weight: 500; color: var(--text-tertiary); width: 20px; text-align: center; flex-shrink: 0; margin-top: 2px; }
+  .pbody { flex: 1; min-width: 0; }
+  .pname { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .pdesc { font-size: 12px; color: var(--text-secondary); line-height: 1.55; margin-bottom: 7px; }
+  .pbar-bg { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; margin-bottom: 7px; }
+  .pbar-fill { height: 4px; border-radius: 2px; background: var(--red); }
+  .ptags { display: flex; gap: 4px; flex-wrap: wrap; }
+  .ptag { font-size: 10px; padding: 2px 7px; border-radius: 6px; background: var(--red-light); color: var(--red-dark); border: 0.5px solid var(--red-mid); }
+  .pscore { font-size: 12px; color: var(--text-tertiary); width: 30px; text-align: right; flex-shrink: 0; font-weight: 500; }
+
+  /* FEED */
+  .feed-header { display: flex; gap: 0; border-bottom: 0.5px solid var(--border); }
+  .ftab { font-size: 13px; padding: 0.9rem 1.1rem; cursor: pointer; color: var(--text-secondary); border-bottom: 2px solid transparent; margin-bottom: -0.5px; display: flex; align-items: center; gap: 6px; transition: color 0.15s; }
+  .ftab:hover { color: var(--text); }
+  .ftab.active { color: var(--text); font-weight: 500; border-bottom-color: var(--red); }
+  .fcount { font-size: 10px; background: var(--bg-secondary); color: var(--text-secondary); border-radius: 8px; padding: 1px 7px; }
+  .ftab.active .fcount { background: var(--red); color: #fff; }
+  .agent-strip { display: flex; align-items: center; gap: 8px; margin: 0.9rem 0 0; background: var(--bg-secondary); border-radius: var(--radius); padding: 0.6rem 1rem; border: 0.5px solid var(--border); }
+  .adot { width: 7px; height: 7px; border-radius: 50%; background: var(--red); flex-shrink: 0; }
+  .atxt { font-size: 12px; color: var(--text-secondary); }
+  .atxt strong { color: var(--text); font-weight: 500; }
+  .item { display: flex; gap: 12px; padding: 1rem 0; border-bottom: 0.5px solid var(--border); }
+  .item:last-child { border-bottom: none; }
+  .idot { width: 34px; height: 34px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 600; flex-shrink: 0; margin-top: 1px; }
+  .ibody { flex: 1; min-width: 0; }
+  .ititle { font-size: 14px; font-weight: 500; color: var(--text); line-height: 1.35; margin-bottom: 3px; }
+  .imeta { font-size: 12px; color: var(--text-secondary); margin-bottom: 7px; }
+  .tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .tag { font-size: 11px; padding: 2px 7px; border-radius: 7px; border: 0.5px solid var(--border); color: var(--text-secondary); background: var(--bg-secondary); }
+  .tag-red { background: var(--red-light); color: var(--red-dark); border-color: var(--red-mid); }
+  .tag-amber { background: var(--amber); color: var(--amber-dark); border-color: var(--amber-mid); }
+  .tag-purple { background: var(--purple-light); color: var(--purple-dark); border-color: var(--purple-mid); }
+  .reward { font-size: 14px; font-weight: 500; color: var(--amber-dark); white-space: nowrap; flex-shrink: 0; margin-top: 2px; }
+
+  /* COMMUNITY */
+  .community-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 1rem; }
+  .ccard { background: var(--bg); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .ccard-icon { font-size: 22px; color: var(--red); margin-bottom: 10px; }
+  .ccard-title { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 5px; }
+  .ccard-desc { font-size: 12px; color: var(--text-secondary); line-height: 1.55; }
+
+  /* ABOUT */
+  .about-body { font-size: 14px; color: var(--text-secondary); line-height: 1.75; max-width: 560px; margin-bottom: 1.75rem; }
+  .sponsor-tiers { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 1rem; }
+  .stier { border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; background: var(--bg); }
+  .stier.featured { border-color: var(--red); border-width: 2px; }
+  .stier-badge { font-size: 10px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--red); font-weight: 500; margin-bottom: 5px; }
+  .stier-name { font-size: 15px; font-weight: 500; color: var(--text); margin-bottom: 2px; }
+  .stier-price { font-size: 13px; color: var(--text-secondary); margin-bottom: 10px; }
+  .stier-perks { font-size: 12px; color: var(--text-secondary); line-height: 1.65; }
+
+  /* BOTTOM CTA */
+  .bottom-cta { display: flex; gap: 12px; padding: 1.5rem 2rem; max-width: 900px; margin: 0 auto; border-bottom: 0.5px solid var(--border); }
+  .cta-join { flex: 2; background: var(--red); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .cta-join-t { font-size: 15px; font-weight: 500; color: #fff; margin-bottom: 4px; }
+  .cta-join-s { font-size: 12px; color: rgba(255,255,255,0.75); line-height: 1.5; }
+  .cta-join-btn { font-size: 13px; font-weight: 500; padding: 9px 18px; border-radius: var(--radius); background: #fff; color: var(--red); border: none; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: opacity 0.15s; }
+  .cta-join-btn:hover { opacity: 0.88; }
+  .cta-donate { flex: 1; background: var(--bg-secondary); border: 0.5px solid var(--border); border-radius: var(--radius-lg); padding: 1.5rem; display: flex; flex-direction: column; justify-content: space-between; }
+  .cta-donate-t { font-size: 14px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .cta-donate-s { font-size: 12px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 12px; }
+  .cta-donate-btn { font-size: 13px; font-weight: 500; padding: 9px 0; border-radius: var(--radius); background: var(--bg); color: var(--text); border: 0.5px solid var(--border-med); cursor: pointer; width: 100%; transition: border-color 0.15s; }
+  .cta-donate-btn:hover { border-color: var(--text); }
+
+  /* FOOTER */
+  .footer { display: flex; align-items: center; justify-content: space-between; padding: 1.25rem 2rem; max-width: 900px; margin: 0 auto; }
+  .footer-logo { font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.02em; color: var(--text); }
+  .footer-logo span { color: var(--red); }
+  .footer-social { display: flex; gap: 14px; }
+  .footer-social a { font-size: 16px; color: var(--text-tertiary); transition: color 0.15s; cursor: pointer; }
+  .footer-social a:hover { color: var(--text); }
+  .footer-note { font-size: 11px; color: var(--text-tertiary); }
+
+  /* RESPONSIVE */
+  @media (max-width: 640px) {
+    .nav { padding: 1rem; }
+    .nav-links { display: none; }
+    .hero { padding: 2.5rem 1rem 0; }
+    .section { padding: 1.5rem 1rem; }
+    .impact-bar { grid-template-columns: repeat(2, 1fr); }
+    .community-grid { grid-template-columns: 1fr; }
+    .sponsor-tiers { grid-template-columns: 1fr; }
+    .bottom-cta { flex-direction: column; padding: 1rem; }
+    .footer { padding: 1rem; flex-direction: column; gap: 0.75rem; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="logo">Common Good <span>TO</span></div>
+  <div class="nav-links">
+    <a href="#feed">jobs</a>
+    <a href="#feed">bounties</a>
+    <a href="#problems">problems</a>
+    <a href="#about">for orgs</a>
+    <a href="#about">about</a>
+  </div>
+  <button class="nav-cta" onclick="document.getElementById('email-input').focus()">join free</button>
+</nav>
+
+<!-- HERO -->
+<div style="border-bottom: 0.5px solid var(--border);">
+<section class="hero">
+  <div class="eyebrow"><span class="pulse"></span>Toronto · live</div>
+  <h1>Your skills.<br>Work that <em>actually matters.</em></h1>
+  <p class="hero-sub">Jobs, bounties, and open problems for Toronto builders who want their work to count. Take the quiz to find where you fit.</p>
+  <div class="hero-form">
+    <input type="email" id="email-input" placeholder="your email" />
+    <button onclick="handleJoin()">get your weekly match</button>
+  </div>
+  <p class="hero-social-proof"><strong>840 builders</strong> already in the network · free, always</p>
+  <div class="impact-bar">
+    <div class="istat"><div class="istat-n">$284k</div><div class="istat-l">bounties claimed</div><div class="istat-d">↑ $12k this month</div></div>
+    <div class="istat"><div class="istat-n">47</div><div class="istat-l">problems worked on</div><div class="istat-d">↑ 6 this month</div></div>
+    <div class="istat"><div class="istat-n">312</div><div class="istat-l">builders placed</div><div class="istat-d">↑ 18 this month</div></div>
+    <div class="istat"><div class="istat-n">1,840</div><div class="istat-l">builders in network</div><div class="istat-d">↑ 94 this month</div></div>
+  </div>
+</section>
+</div>
+
+<!-- QUIZ -->
+<div class="section-bg" style="border-bottom: 0.5px solid var(--border);">
+<section class="section">
+  <div class="section-label">find your fit — 3 questions</div>
+  <div class="quiz-wrap">
+    <div class="qprog"><div class="qpip done" id="p0"></div><div class="qpip act" id="p1"></div><div class="qpip" id="p2"></div></div>
+    <div class="quiz-q" id="qq"></div>
+    <div class="quiz-opts" id="qopts"></div>
+    <div class="quiz-nav">
+      <div class="quiz-step" id="qstep"></div>
+      <button class="quiz-btn" id="qnext" disabled onclick="nextQ()">next →</button>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- PROBLEMS -->
+<section class="section" id="problems">
+  <div class="section-label">the biggest problems right now</div>
+  <p style="font-size:13px;color:var(--text-secondary);line-height:1.65;max-width:520px;margin-bottom:0.75rem;">Before you dive into jobs and bounties — an honest map of where builders are needed most. Scored by urgency, tractability, and how neglected each area is.</p>
+  <div class="methodology-link" onclick="showMethodology()">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    how we score these →
+  </div>
+  <div class="filter-chips">
+    <div class="chip on" onclick="filterProblems('all',this)">all problems</div>
+    <div class="chip" onclick="filterProblems('ai',this)">AI & tech</div>
+    <div class="chip" onclick="filterProblems('climate',this)">climate</div>
+    <div class="chip" onclick="filterProblems('housing',this)">housing</div>
+    <div class="chip" onclick="filterProblems('civic',this)">civic</div>
+    <div class="chip" onclick="filterProblems('arts',this)">arts & culture</div>
+    <div class="chip" onclick="filterProblems('health',this)">health</div>
+  </div>
+  <div id="plist">
+    <div class="prow" data-cat="ai"><div class="prank">1</div><div class="pbody"><div class="pname">AI alignment & safety</div><div class="pdesc">Ensuring powerful AI systems remain beneficial as they become more capable. Severely underfunded relative to the pace of development.</div><div class="pbar-bg"><div class="pbar-fill" style="width:94%"></div></div><div class="ptags"><span class="ptag">urgent</span><span class="ptag">neglected</span><span class="ptag">ML engineers</span></div></div><div class="pscore">94</div></div>
+    <div class="prow" data-cat="housing"><div class="prank">2</div><div class="pbody"><div class="pname">Housing affordability</div><div class="pdesc">Toronto's housing crisis is data-rich and policy-starved. Builders can help with transparency tools, policy modeling, and tenant infrastructure.</div><div class="pbar-bg"><div class="pbar-fill" style="width:87%"></div></div><div class="ptags"><span class="ptag">local</span><span class="ptag">data eng</span><span class="ptag">policy</span></div></div><div class="pscore">87</div></div>
+    <div class="prow" data-cat="health"><div class="prank">3</div><div class="pbody"><div class="pname">Mental health infrastructure</div><div class="pdesc">Peer support tools, crisis routing, and accessible mental health resources. Tech solutions exist but rarely reach the people who need them most.</div><div class="pbar-bg"><div class="pbar-fill" style="width:83%"></div></div><div class="ptags"><span class="ptag">health</span><span class="ptag">mobile</span><span class="ptag">access</span></div></div><div class="pscore">83</div></div>
+    <div class="prow" data-cat="climate"><div class="prank">4</div><div class="pbody"><div class="pname">Climate infrastructure</div><div class="pdesc">Grid modernization, emissions tracking, and climate adaptation tools. Massive public datasets, massive shortage of builders who know the domain.</div><div class="pbar-bg"><div class="pbar-fill" style="width:80%"></div></div><div class="ptags"><span class="ptag">urgent</span><span class="ptag">full-stack</span><span class="ptag">data</span></div></div><div class="pscore">80</div></div>
+    <div class="prow" data-cat="civic"><div class="prank">5</div><div class="pbody"><div class="pname">Civic & democratic infrastructure</div><div class="pdesc">Voting systems, public consultation tools, government digital services. Chronically under-resourced and critically important.</div><div class="pbar-bg"><div class="pbar-fill" style="width:76%"></div></div><div class="ptags"><span class="ptag">civic tech</span><span class="ptag">design</span><span class="ptag">Toronto</span></div></div><div class="pscore">76</div></div>
+    <div class="prow" data-cat="arts"><div class="prank">6</div><div class="pbody"><div class="pname">Arts access & cultural equity</div><div class="pdesc">Funding infrastructure for artists, tools for orgs that can't afford SaaS, platforms that don't extract from the communities they serve.</div><div class="pbar-bg"><div class="pbar-fill" style="width:68%"></div></div><div class="ptags"><span class="ptag">design</span><span class="ptag">Toronto</span><span class="ptag">community</span></div></div><div class="pscore">68</div></div>
+  </div>
+</section>
+
+<!-- FEED -->
+<section class="section" id="feed">
+  <div class="feed-header">
+    <div class="ftab active" onclick="switchTab(this,'jobs')">jobs <span class="fcount">214</span></div>
+    <div class="ftab" onclick="switchTab(this,'bounties')">bounties <span class="fcount">38</span></div>
+    <div class="ftab" onclick="switchTab(this,'problems-feed')">problems <span class="fcount">61</span></div>
+  </div>
+  <div class="agent-strip"><div class="adot"></div><div class="atxt"><strong>Scout agent</strong> — scanned 47 Toronto org boards 2 hrs ago · 6 new roles added today</div></div>
+
+  <div id="tab-jobs">
+    <div class="item"><div class="idot" style="background:var(--red-light);color:var(--red-dark);">CC</div><div class="ibody"><div class="ititle">Lead engineer, civic infrastructure</div><div class="imeta">Code for Canada · Toronto · $110–130k · full-time</div><div class="tags"><span class="tag tag-red">civic tech</span><span class="tag">typescript</span><span class="tag">full-stack</span></div></div></div>
+    <div class="item"><div class="idot" style="background:var(--purple-light);color:var(--purple-dark);">OA</div><div class="ibody"><div class="ititle">Designer in residence</div><div class="imeta">Ontario Arts Council · Toronto · $85–95k · full-time</div><div class="tags"><span class="tag tag-red">arts infrastructure</span><span class="tag">product design</span><span class="tag">research</span></div></div></div>
+    <div class="item"><div class="idot" style="background:var(--red-light);color:var(--red-dark);">MH</div><div class="ibody"><div class="ititle">Data lead, housing analytics</div><div class="imeta">Maytree Foundation · Toronto · $95–115k · full-time</div><div class="tags"><span class="tag tag-red">housing</span><span class="tag">data eng</span><span class="tag">python</span></div></div></div>
+    <div class="item"><div class="idot" style="background:var(--green-light);color:var(--green-dark);">CE</div><div class="ibody"><div class="ititle">Hardware engineer, grid edge devices</div><div class="imeta">Opus One Solutions · Toronto · $115–135k · full-time</div><div class="tags"><span class="tag tag-red">climate</span><span class="tag">hardware</span><span class="tag">embedded</span></div></div></div>
+    <div class="item"><div class="idot" style="background:var(--purple-light);color:var(--purple-dark);">CI</div><div class="ibody"><div class="ititle">Technical program lead, community energy</div><div class="imeta">Clean Air Partnership · Toronto · $85–100k · full-time</div><div class="tags"><span class="tag tag-red">climate</span><span class="tag">community</span><span class="tag">program mgmt</span></div></div></div>
+  </div>
+
+  <div id="tab-bounties" style="display:none">
+    <div class="item"><div class="idot" style="background:var(--amber);color:var(--amber-dark);font-size:16px;">⬡</div><div class="ibody"><div class="ititle">Interpretability tool for small language models</div><div class="imeta">Alignment Forum · open · deadline Aug 1</div><div class="tags"><span class="tag tag-amber">bounty</span><span class="tag">AI safety</span><span class="tag">pytorch</span></div></div><div class="reward">$8,000</div></div>
+    <div class="item"><div class="idot" style="background:var(--amber);color:var(--amber-dark);font-size:16px;">⬡</div><div class="ibody"><div class="ititle">Low-cost air quality sensor for Toronto neighbourhoods</div><div class="imeta">Toronto Environmental Alliance · open · deadline Sep 15</div><div class="tags"><span class="tag tag-amber">bounty</span><span class="tag">hardware</span><span class="tag">climate</span></div></div><div class="reward">$6,500</div></div>
+    <div class="item"><div class="idot" style="background:var(--amber);color:var(--amber-dark);font-size:16px;">⬡</div><div class="ibody"><div class="ititle">Flood sensor prototype for Toronto ravine system</div><div class="imeta">TRCA · open · deadline Oct 1</div><div class="tags"><span class="tag tag-amber">bounty</span><span class="tag">hardware</span><span class="tag">LoRaWAN</span></div></div><div class="reward">$9,000</div></div>
+    <div class="item"><div class="idot" style="background:var(--amber);color:var(--amber-dark);font-size:16px;">⬡</div><div class="ibody"><div class="ititle">Open dataset: Toronto shelter system 2015–2024</div><div class="imeta">Wellesley Institute · open · deadline Jul 15</div><div class="tags"><span class="tag tag-amber">bounty</span><span class="tag">housing</span><span class="tag">open data</span></div></div><div class="reward">$2,500</div></div>
+  </div>
+
+  <div id="tab-problems-feed" style="display:none">
+    <div class="item"><div class="idot" style="background:var(--purple-light);color:var(--purple-dark);font-size:18px;">?</div><div class="ibody"><div class="ititle">How do we make AI tools accessible to artists who can't afford them?</div><div class="imeta">Open problem · arts + technology · no bounty</div><div class="tags"><span class="tag tag-purple">open problem</span><span class="tag">access</span><span class="tag">policy</span></div></div></div>
+    <div class="item"><div class="idot" style="background:var(--purple-light);color:var(--purple-dark);font-size:18px;">?</div><div class="ibody"><div class="ititle">What does community-owned energy look like at the neighbourhood scale?</div><div class="imeta">Open problem · climate & hardware · no bounty</div><div class="tags"><span class="tag tag-purple">open problem</span><span class="tag">hardware</span><span class="tag">climate</span></div></div></div>
+    <div class="item"><div class="idot" style="background:var(--purple-light);color:var(--purple-dark);font-size:18px;">?</div><div class="ibody"><div class="ititle">How do you make building retrofit data simple enough that landlords actually use it?</div><div class="imeta">Open problem · climate & civic · no bounty</div><div class="tags"><span class="tag tag-purple">open problem</span><span class="tag">data</span><span class="tag">housing</span></div></div></div>
+  </div>
+</section>
+
+<!-- COMMUNITY -->
+<div class="section-bg" style="border-bottom: 0.5px solid var(--border); border-top: 0.5px solid var(--border);">
+<section class="section">
+  <div class="section-label">meet like-minded builders</div>
+  <p style="font-size:13px;color:var(--text-secondary);line-height:1.65;max-width:480px;margin-bottom:0;">Toronto has incredible builders. Most of them don't know each other yet.</p>
+  <div class="community-grid">
+    <div class="ccard">
+      <div class="ccard-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="ccard-title">Builder circles</div>
+      <div class="ccard-desc">Small groups of 5–6 builders at similar stages. Monthly check-ins, no agenda, just people doing good work.</div>
+    </div>
+    <div class="ccard">
+      <div class="ccard-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div class="ccard-title">Slack community</div>
+      <div class="ccard-desc">Channels by problem area. Share what you're working on, find collaborators, ask for help.</div>
+    </div>
+    <div class="ccard">
+      <div class="ccard-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div class="ccard-title">Monthly events</div>
+      <div class="ccard-desc">In-person Toronto meetups. Builders present what they're working on. No pitching, no sponsors, just work.</div>
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ABOUT -->
+<section class="section" id="about">
+  <div class="section-label">who we are</div>
+  <p class="about-body">Common Good TO is a volunteer-run network for Toronto builders who want their skills to matter. We don't take a cut. We don't sell your data. We curate jobs, aggregate bounties, and surface open problems — then get out of the way.<br><br>The platform runs on agents so nothing goes stale. Built by one person who got tired of seeing great builders in Toronto not know where the real work was.</p>
+  <div class="section-label">support the network</div>
+  <div class="sponsor-tiers">
+    <div class="stier">
+      <div class="stier-badge">friend</div>
+      <div class="stier-name">$10 / month</div>
+      <div class="stier-price">individual</div>
+      <div class="stier-perks">Keep the lights on. Name in our monthly thank-you newsletter.</div>
+    </div>
+    <div class="stier featured">
+      <div class="stier-badge">partner</div>
+      <div class="stier-name">$500 / month</div>
+      <div class="stier-price">org or company</div>
+      <div class="stier-perks">Featured org listing, post unlimited roles, logo in footer, Slack shoutout.</div>
+    </div>
+    <div class="stier">
+      <div class="stier-badge">founding sponsor</div>
+      <div class="stier-name">$2,000 / month</div>
+      <div class="stier-price">anchor sponsor</div>
+      <div class="stier-perks">Named founding sponsor, co-host events, direct access to builder network.</div>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<div class="bottom-cta">
+  <div class="cta-join">
+    <div>
+      <div class="cta-join-t">Get your weekly match</div>
+      <div class="cta-join-s">Three jobs, two bounties, one problem — picked for you every week.</div>
+    </div>
+    <button class="cta-join-btn" onclick="document.getElementById('email-input').focus();window.scrollTo({top:0,behavior:'smooth'})">join free ↗</button>
+  </div>
+  <div class="cta-donate">
+    <div>
+      <div class="cta-donate-t">Keep it free</div>
+      <div class="cta-donate-s">Runs on volunteer time and small donations.</div>
+    </div>
+    <button class="cta-donate-btn">donate ↗</button>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="footer">
+  <div class="footer-logo">Common Good <span>TO</span></div>
+  <div class="footer-social">
+    <a href="https://linkedin.com" target="_blank" title="LinkedIn">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect x="2" y="9" width="4" height="12"/><circle cx="4" cy="4" r="2"/></svg>
+    </a>
+    <a href="https://twitter.com" target="_blank" title="Twitter/X">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+    </a>
+    <a href="https://instagram.com" target="_blank" title="Instagram">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+    </a>
+  </div>
+  <div class="footer-note">Toronto · volunteer-run · agent-powered · always free for builders</div>
+</footer>
+
+<script>
+const questions = [
+  { q: "What do you primarily build?", opts: ["software / engineering","design / UX","data / analytics","community / programs","writing / content","hardware / physical"] },
+  { q: "Which problems keep you up at night?", opts: ["AI safety","climate & energy","housing & cities","arts & culture","civic infrastructure","health & mental health"] },
+  { q: "How do you want to engage?", opts: ["full-time role","part-time / contract","weekend bounties","open problems (unpaid)","not sure yet"] }
+];
+let cur = 0, ans = [];
+
+function renderQ() {
+  const q = questions[cur];
+  document.getElementById('qq').textContent = q.q;
+  document.getElementById('qstep').textContent = 'question ' + (cur + 1) + ' of ' + questions.length;
+  const opts = document.getElementById('qopts');
+  opts.innerHTML = '';
+  q.opts.forEach(o => {
+    const b = document.createElement('button');
+    b.className = 'qopt'; b.textContent = o;
+    b.onclick = function() {
+      document.querySelectorAll('.qopt').forEach(x => x.classList.remove('sel'));
+      b.classList.add('sel');
+      document.getElementById('qnext').disabled = false;
+    };
+    opts.appendChild(b);
+  });
+  document.getElementById('qnext').disabled = true;
+  for (let i = 0; i < 3; i++) {
+    const p = document.getElementById('p' + i);
+    if (p) p.className = 'qpip' + (i < cur ? ' done' : i === cur ? ' act' : '');
+  }
+  document.getElementById('qnext').textContent = cur === questions.length - 1 ? 'see my matches →' : 'next →';
+}
+
+function nextQ() {
+  const sel = document.querySelector('.qopt.sel');
+  if (!sel) return;
+  ans.push(sel.textContent);
+  if (cur < questions.length - 1) { cur++; renderQ(); }
+  else { alert('Thanks! In the real version this sends your personalized weekly digest. Join the waitlist above to get matched.'); }
+}
+
+function filterProblems(cat, el) {
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('on'));
+  el.classList.add('on');
+  document.querySelectorAll('.prow').forEach(r => {
+    r.style.display = (cat === 'all' || r.dataset.cat === cat) ? 'flex' : 'none';
+  });
+}
+
+function switchTab(el, tab) {
+  document.querySelectorAll('.ftab').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  ['jobs','bounties','problems-feed'].forEach(t => {
+    const el2 = document.getElementById('tab-' + t);
+    if (el2) el2.style.display = t === tab ? 'block' : 'none';
+  });
+}
+
+function handleJoin() {
+  const email = document.getElementById('email-input').value;
+  if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+  alert('You\'re on the list! We\'ll send your first match soon.');
+}
+
+function showMethodology() {
+  alert('Score = (urgency × 0.4) + (neglectedness × 0.35) + (tractability × 0.25). Urgency: how fast is this getting worse? Neglectedness: how many skilled builders are already on it relative to need? Tractability: can a small team move the needle?');
+}
+
+renderQ();
+</script>
+</body>
+</html>
