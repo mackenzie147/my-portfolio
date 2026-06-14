@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Blueberry — Turn engagement into revenue</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600&family=Instrument+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0A1F44;
+    --navy-deep:#0A1F44;
+    --cream:#0A1F44;
+    --paper:#FFFFFF;
+    --page-bg:#F5F8FF;
+    --blueberry:#0088FF;
+    --blueberry-light:#0088FF;
+    --berry-glow:#0088FF;
+    --line:rgba(10,31,68,0.08);
+    --line-strong:rgba(10,31,68,0.14);
+    --muted:rgba(10,31,68,0.58);
+  }
+  .bb-page *{margin:0;padding:0;box-sizing:border-box;}
+  .bb-page{
+    font-family:'Inter',sans-serif;
+    color:var(--cream);
+    background:
+      radial-gradient(ellipse 900px 500px at 50% -10%, rgba(0,136,255,0.10), transparent 60%),
+      var(--page-bg);
+    min-height:auto;
+  }
+  .bb-wrap{max-width:1080px;margin:0 auto;padding:0 32px;}
+
+  /* NAV */
+  .bb-page nav.bb-nav{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:28px 32px;max-width:1080px;margin:0 auto;
+  }
+  .bb-logo{display:flex;align-items:center;gap:10px;font-family:'Fraunces',serif;font-weight:600;font-size:20px;letter-spacing:0.01em;color:var(--navy-deep);}
+  .bb-logo .bb-dot{width:10px;height:10px;border-radius:50%;background:var(--blueberry);}
+  .bb-nav-links{display:flex;align-items:center;gap:32px;font-size:14px;color:var(--muted);}
+  .bb-nav-links a{color:inherit;text-decoration:none;transition:color 0.2s;}
+  .bb-nav-links a:hover{color:var(--cream);}
+  .bb-nav-cta{
+    background:var(--blueberry);color:#fff;
+    padding:10px 20px;border-radius:999px;font-size:14px;font-weight:600;
+    text-decoration:none;border:0.5px solid transparent;
+    transition:transform 0.15s ease;
+  }
+  .bb-nav-cta:hover{transform:translateY(-1px);}
+
+  /* HERO */
+  .bb-hero{padding:80px 0 0;text-align:center;}
+  .bb-hero h1{margin-top:0;}
+  .bb-eyebrow{
+    display:inline-flex;align-items:center;gap:8px;
+    border:0.5px solid var(--line-strong);border-radius:999px;
+    padding:6px 14px;font-size:12px;letter-spacing:0.06em;text-transform:uppercase;
+    color:var(--blueberry);margin-bottom:28px;
+    background:rgba(0,136,255,0.05);
+  }
+  .bb-eyebrow .bb-pulse{width:6px;height:6px;border-radius:50%;background:var(--blueberry);animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.35;transform:scale(1.4);}}
+
+  .bb-hero h1{
+    font-family:'Fraunces',serif;font-weight:600;
+    font-size:clamp(40px,6vw,68px);line-height:1.08;letter-spacing:-0.01em;
+    max-width:820px;margin:0 auto 20px;
+    color:var(--navy-deep);
+  }
+  .bb-hero h1 em{font-style:italic;font-weight:400;color:var(--blueberry);}
+  .bb-sub{
+    font-size:18px;color:var(--muted);max-width:540px;margin:0 auto 44px;line-height:1.6;
+  }
+
+  /* INPUT MODULE */
+  .bb-console{
+    max-width:660px;margin:0 auto 80px;
+    border-radius:20px;
+    border:0.5px solid var(--line-strong);
+    background:var(--paper);
+    box-shadow:0 0 0 1px rgba(0,136,255,0.04), 0 30px 80px -40px rgba(0,136,255,0.25);
+    overflow:hidden;
+    transition:box-shadow 0.4s ease;
+  }
+  .bb-console.bb-glow{box-shadow:0 0 0 1px rgba(0,136,255,0.18), 0 30px 90px -30px rgba(0,136,255,0.4);}
+
+  .bb-console-body{padding:26px 26px 18px;text-align:left;min-height:120px;}
+  .bb-console-label{font-size:12px;color:var(--muted);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:8px;}
+  .bb-console-label svg{width:14px;height:14px;flex-shrink:0;}
+
+  .bb-typewrap{
+    font-family:'Inter',sans-serif;font-size:19px;line-height:1.6;
+    min-height:90px;color:var(--navy-deep);
+    display:flex;flex-wrap:wrap;align-items:flex-start;
+  }
+  .bb-typewrap .bb-placeholder-text{color:rgba(26,43,107,0.35);}
+  .bb-caret{
+    display:inline-block;width:2px;height:22px;background:var(--blueberry);
+    margin-left:2px;animation:blink 1s steps(2) infinite;vertical-align:text-bottom;
+  }
+  @keyframes blink{50%{opacity:0;}}
+
+  .bb-console-footer{
+    display:flex;align-items:center;justify-content:space-between;
+    padding:14px 22px;border-top:0.5px solid var(--line);
+  }
+  .bb-footer-left{display:flex;align-items:center;gap:10px;font-size:13px;color:var(--muted);}
+  .bb-footer-left .bb-icon-btn{
+    width:32px;height:32px;border-radius:10px;border:0.5px solid var(--line-strong);
+    display:flex;align-items:center;justify-content:center;color:var(--muted);
+  }
+  .bb-build-btn{
+    background:var(--blueberry);
+    color:#fff;font-weight:600;font-size:14px;
+    padding:10px 22px;border-radius:12px;border:none;cursor:pointer;
+    display:flex;align-items:center;gap:8px;
+    transition:transform 0.15s ease, opacity 0.2s;
+  }
+  .bb-build-btn:hover{transform:translateY(-1px);}
+  .bb-build-btn:active{transform:translateY(0) scale(0.98);}
+  .bb-build-btn:disabled{opacity:0.45;cursor:not-allowed;}
+
+  .bb-quick-suggestions{
+    display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-top:16px;
+  }
+  .bb-chip{
+    font-size:13px;color:var(--muted);border:0.5px solid var(--line-strong);
+    border-radius:999px;padding:7px 14px;cursor:pointer;background:var(--paper);
+    transition:all 0.15s ease;
+  }
+  .bb-chip:hover{color:var(--navy-deep);border-color:var(--blueberry);background:rgba(0,136,255,0.05);}
+
+  /* DEMO FORM (revealed state) */
+  .bb-demo-form{display:none;}
+  .bb-demo-form.bb-active{display:block;}
+  .bb-console-body.bb-form-mode{padding:32px 30px;}
+  .bb-form-goal-recap{
+    font-size:13px;color:var(--navy-deep);background:rgba(0,136,255,0.06);
+    border:0.5px solid rgba(0,136,255,0.2);border-radius:12px;
+    padding:12px 16px;margin-bottom:22px;line-height:1.5;
+  }
+  .bb-form-goal-recap b{color:var(--blueberry);font-weight:600;}
+  .bb-form-title{font-family:'Fraunces',serif;font-size:24px;font-weight:600;margin-bottom:6px;color:var(--navy-deep);}
+  .bb-form-desc{font-size:14px;color:var(--muted);margin-bottom:24px;}
+  .bb-form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;}
+  .bb-form-field{display:flex;flex-direction:column;gap:6px;}
+  .bb-form-field.bb-full{grid-column:1/-1;}
+  .bb-form-field label{font-size:12px;color:var(--muted);letter-spacing:0.02em;}
+  .bb-form-field input, .bb-form-field select{
+    background:var(--page-bg);border:0.5px solid var(--line-strong);
+    border-radius:10px;color:var(--navy-deep);font-family:'Inter',sans-serif;
+    font-size:14px;padding:11px 14px;outline:none;transition:border-color 0.15s;
+  }
+  .bb-form-field input:focus, .bb-form-field select:focus{border-color:var(--blueberry);}
+  .bb-form-field input::placeholder{color:rgba(26,43,107,0.3);}
+  .bb-form-field select option{background:var(--paper);color:var(--navy-deep);}
+  .bb-submit-row{display:flex;align-items:center;justify-content:space-between;margin-top:22px;}
+  .bb-back-link{font-size:13px;color:var(--muted);cursor:pointer;text-decoration:underline;text-decoration-color:transparent;transition:text-decoration-color 0.15s;}
+  .bb-back-link:hover{text-decoration-color:var(--muted);}
+
+  /* confirmation */
+  .bb-confirm{display:none;text-align:center;padding:48px 30px;}
+  .bb-confirm.bb-active{display:block;}
+  .bb-confirm-icon{
+    width:48px;height:48px;border-radius:50%;background:rgba(0,136,255,0.08);
+    border:0.5px solid var(--blueberry);display:flex;align-items:center;justify-content:center;
+    margin:0 auto 18px;color:var(--blueberry);
+  }
+  .bb-confirm-title{font-family:'Fraunces',serif;font-size:22px;font-weight:600;margin-bottom:8px;color:var(--navy-deep);}
+  .bb-confirm-sub{font-size:14px;color:var(--muted);max-width:380px;margin:0 auto;line-height:1.6;}
+
+  @media (max-width:640px){
+    .bb-nav-links{display:none;}
+    .bb-form-grid{grid-template-columns:1fr;}
+  }
+
+  /* ============ REST OF SITE ============ */
+  .bb-page section:not(.bb-hero){padding:88px 32px;}
+  .bb-page section.bb-hero{padding:80px 0 0;text-align:center;}
+  .bb-page .container, .bb-page .how-inner, .bb-page .features-inner, .bb-page .testi-inner,
+  .bb-page .value-props-inner, .bb-page .integrations-inner, .bb-page .why-inner,
+  .bb-page .enterprise-inner, .bb-page .faq-inner, .bb-page .cta-inner, .bb-page .foot-inner,
+  .bb-page .logos-container{
+    max-width:1080px;margin:0 auto;
+  }
+
+  /* Section heading row */
+  .bb-page .sec-hd{
+    display:grid;grid-template-columns:1fr 1fr;gap:48px;margin-bottom:56px;align-items:start;
+  }
+  .bb-page .eyebrow{
+    display:inline-flex;align-items:center;gap:8px;font-size:12px;font-weight:600;
+    letter-spacing:0.08em;text-transform:uppercase;color:var(--blueberry);margin-bottom:16px;
+  }
+  .bb-page .eyebrow-num{
+    display:inline-flex;align-items:center;justify-content:center;
+    width:22px;height:22px;border-radius:50%;background:rgba(0,136,255,0.1);
+    font-size:11px;color:var(--blueberry);
+  }
+  .bb-page .h2{
+    font-family:'Fraunces',serif;font-weight:600;font-size:clamp(28px,3.6vw,42px);
+    line-height:1.15;letter-spacing:-0.01em;color:var(--navy-deep);
+  }
+  .bb-page .h-accent--primary{color:var(--blueberry);}
+  .bb-page .body-lg{font-size:17px;line-height:1.7;color:var(--muted);max-width:480px;}
+
+  /* Trusted-by logos */
+  .bb-page .logos-section{padding:48px 32px;}
+  .bb-page .trusted-row{
+    display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:48px;
+  }
+  .bb-page .trusted-label{font-size:12px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;}
+  .bb-page .trusted-brand{
+    font-family:'Fraunces',serif;font-weight:500;font-size:16px;color:rgba(10,31,68,0.35);
+  }
+  .bb-page .trusted-brand-logo{height:22px;width:auto;max-width:120px;object-fit:contain;filter:grayscale(1);}
+
+  /* How it works */
+  .bb-page .steps-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;}
+  .bb-page .step{padding-top:20px;border-top:1px solid var(--line-strong);}
+  .bb-page .step-counter{font-size:13px;color:var(--muted);margin-bottom:14px;font-weight:500;}
+  .bb-page .step-counter span{color:rgba(10,31,68,0.35);}
+  .bb-page .step h3{font-family:'Fraunces',serif;font-weight:600;font-size:19px;color:var(--navy-deep);margin-bottom:10px;line-height:1.3;}
+  .bb-page .step p{font-size:14px;line-height:1.7;color:var(--muted);}
+
+  /* Features */
+  .bb-page .feat-block{padding:40px 0;border-top:1px solid var(--line-strong);}
+  .bb-page .feat-body{display:grid;grid-template-columns:1fr;gap:24px;}
+  .bb-page .feat-text{display:flex;gap:20px;}
+  .bb-page .feat-num{font-family:'Fraunces',serif;font-size:14px;color:rgba(10,31,68,0.3);font-weight:600;flex-shrink:0;padding-top:4px;}
+  .bb-page .feat-text h3{font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--navy-deep);margin-bottom:10px;}
+  .bb-page .feat-text p{font-size:15px;line-height:1.7;color:var(--muted);max-width:560px;margin-bottom:16px;}
+  .bb-page .tags{display:flex;flex-wrap:wrap;gap:8px;}
+  .bb-page .tag{
+    font-size:12px;font-weight:500;padding:6px 12px;border-radius:999px;
+    border:0.5px solid var(--line-strong);color:var(--muted);
+  }
+  .bb-page .tag-blue{background:rgba(0,136,255,0.08);border-color:rgba(0,136,255,0.2);color:var(--blueberry);}
+
+  .bb-page .features-cta{margin-top:40px;text-align:center;}
+  .bb-page .features-cta-btn{
+    display:inline-flex;align-items:center;gap:8px;background:var(--blueberry);color:#fff;
+    font-weight:600;font-size:14px;padding:12px 24px;border-radius:999px;text-decoration:none;
+    transition:transform 0.15s ease;
+  }
+  .bb-page .features-cta-btn:hover{transform:translateY(-1px);}
+
+  /* Metrics */
+  .bb-page #metrics{
+    background:var(--page-bg);padding:64px 32px;border-top:1px solid var(--line-strong);border-bottom:1px solid var(--line-strong);
+  }
+  .bb-page .metrics-inner{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;text-align:center;}
+  .bb-page .mval{font-family:'Fraunces',serif;font-size:clamp(32px,5vw,52px);font-weight:600;color:var(--blueberry);margin-bottom:10px;}
+  .bb-page .mdesc{font-size:13px;color:var(--muted);line-height:1.6;}
+
+  /* Testimonials */
+  .bb-page .testi-featured{
+    border:0.5px solid var(--line-strong);border-radius:20px;padding:40px;
+    display:grid;grid-template-columns:1.2fr 1fr;gap:40px;align-items:center;
+  }
+  .bb-page .testi-featured-q{
+    font-family:'Fraunces',serif;font-size:24px;line-height:1.4;color:var(--navy-deep);font-weight:500;
+  }
+  .bb-page .testi-featured-mark{color:var(--blueberry);font-size:32px;line-height:0;}
+  .bb-page .testi-featured-foot{margin-top:24px;}
+  .bb-page .testi-author{display:flex;align-items:center;gap:12px;}
+  .bb-page .tav-initials{
+    width:44px;height:44px;border-radius:50%;flex-shrink:0;
+    background:rgba(0,136,255,0.1);color:var(--blueberry);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:600;font-size:15px;
+  }
+  .bb-page .tname{font-weight:600;font-size:14px;color:var(--navy-deep);}
+  .bb-page .trole{font-size:13px;color:var(--muted);}
+  .bb-page .testi-stats{display:grid;grid-template-columns:1fr 1fr;gap:24px;}
+  .bb-page .testi-stat-val{font-family:'Fraunces',serif;font-size:32px;font-weight:600;color:var(--blueberry);margin-bottom:4px;}
+  .bb-page .testi-stat-lbl{font-size:12px;color:var(--muted);line-height:1.5;}
+
+  /* Value props */
+  .bb-page .vp-row{padding:32px 0;}
+  .bb-page .vp-row--border{border-bottom:1px solid var(--line-strong);}
+  .bb-page .vp-text h3{font-family:'Fraunces',serif;font-weight:600;font-size:20px;color:var(--navy-deep);margin-bottom:10px;}
+  .bb-page .vp-text p{font-size:15px;line-height:1.7;color:var(--muted);max-width:640px;}
+
+  /* Integrations */
+  .bb-page .int-row{display:grid;grid-template-columns:160px 1fr;gap:24px;padding:24px 0;border-top:1px solid var(--line-strong);align-items:center;}
+  .bb-page .int-label{font-size:13px;font-weight:600;color:var(--navy-deep);}
+  .bb-page .int-chips{display:flex;flex-wrap:wrap;gap:12px;}
+  .bb-page .int-chip{
+    display:inline-flex;align-items:center;gap:8px;border:0.5px solid var(--line-strong);
+    border-radius:999px;padding:8px 16px;font-size:13px;color:var(--navy-deep);background:var(--paper);
+  }
+  .bb-page .int-chip--more{color:var(--muted);}
+  .bb-page .platform-icon{width:18px;height:18px;color:var(--muted);flex-shrink:0;}
+
+  /* Why Blueberry */
+  .bb-page .why-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:24px;}
+  .bb-page .why-card{
+    border:0.5px solid var(--line-strong);border-radius:16px;padding:24px;background:var(--paper);
+  }
+  .bb-page .why-icon{
+    width:32px;height:32px;border-radius:10px;background:rgba(0,136,255,0.08);
+    display:flex;align-items:center;justify-content:center;margin-bottom:14px;
+  }
+  .bb-page .why-card h4{font-family:'Fraunces',serif;font-weight:600;font-size:16px;color:var(--navy-deep);margin-bottom:8px;}
+  .bb-page .why-card p{font-size:13.5px;line-height:1.7;color:var(--muted);}
+
+  /* Enterprise */
+  .bb-page #enterprise{background:var(--page-bg);}
+  .bb-page .enterprise-inner{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center;}
+  .bb-page .ent-right{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;}
+  .bb-page .ent-proof{
+    border:0.5px solid var(--line-strong);border-radius:14px;padding:20px;background:var(--paper);
+  }
+  .bb-page .ent-proof-icon{color:var(--blueberry);margin-bottom:12px;}
+  .bb-page .ent-proof h5{font-family:'Fraunces',serif;font-weight:600;font-size:14px;color:var(--navy-deep);line-height:1.4;}
+
+  /* FAQ */
+  .bb-page .faq-item{border-top:1px solid var(--line-strong);}
+  .bb-page .faq-trigger{
+    width:100%;display:flex;align-items:center;justify-content:space-between;
+    background:none;border:none;cursor:pointer;padding:22px 0;text-align:left;
+    font-size:16px;font-weight:500;color:var(--navy-deep);font-family:inherit;
+  }
+  .bb-page .faq-icon{color:var(--blueberry);flex-shrink:0;transition:transform 0.2s ease;}
+  .bb-page .faq-item.active .faq-icon{transform:rotate(45deg);}
+  .bb-page .faq-content{max-height:0;overflow:hidden;transition:max-height 0.25s ease;}
+  .bb-page .faq-item.active .faq-content{max-height:240px;}
+  .bb-page .faq-content p{font-size:14px;line-height:1.7;color:var(--muted);padding-bottom:22px;max-width:680px;}
+
+  /* CTA */
+  .bb-page #cta{background:var(--paper);text-align:center;border-top:1px solid var(--line-strong);}
+  .bb-page .cta-title{
+    font-family:'Fraunces',serif;font-weight:600;font-size:clamp(28px,4vw,40px);
+    color:var(--navy-deep);max-width:640px;margin:0 auto 32px;line-height:1.3;
+  }
+  .bb-page .btn-white{
+    display:inline-flex;align-items:center;gap:8px;background:var(--blueberry);color:#fff;
+    font-weight:600;font-size:14px;padding:12px 28px;border-radius:999px;text-decoration:none;
+    transition:transform 0.15s ease;
+  }
+  .bb-page .btn-white:hover{transform:translateY(-1px);}
+
+  /* Footer */
+  .bb-page footer{background:var(--paper);padding:64px 32px 32px;border-top:1px solid var(--line-strong);}
+  .bb-page .foot-top{display:grid;grid-template-columns:1.4fr 2fr;gap:48px;margin-bottom:48px;}
+  .bb-page .foot-logo-lockup{height:20px;width:auto;}
+  .bb-page .foot-logo.bb-logo{margin-bottom:0;}
+  .bb-page .foot-tagline{font-size:14px;color:var(--muted);margin:14px 0 20px;}
+  .bb-page .foot-badge{
+    display:inline-flex;align-items:center;font-size:12px;font-weight:600;color:var(--muted);
+    border:0.5px solid var(--line-strong);border-radius:999px;padding:6px 14px;letter-spacing:0.02em;
+  }
+  .bb-page .foot-cols{display:grid;grid-template-columns:repeat(4,1fr);gap:24px;}
+  .bb-page .foot-col-title{font-size:12px;font-weight:600;color:var(--navy-deep);letter-spacing:0.04em;text-transform:uppercase;margin-bottom:14px;}
+  .bb-page .foot-links{list-style:none;display:flex;flex-direction:column;gap:10px;}
+  .bb-page .foot-links a{font-size:13px;color:var(--muted);text-decoration:none;}
+  .bb-page .foot-links a:hover{color:var(--navy-deep);}
+  .bb-page .foot-bottom{
+    display:flex;align-items:center;justify-content:space-between;padding-top:24px;
+    border-top:1px solid var(--line-strong);font-size:13px;color:var(--muted);flex-wrap:wrap;gap:12px;
+  }
+  .bb-page .foot-made{margin-left:8px;}
+  .bb-page .foot-legal{display:flex;gap:20px;}
+  .bb-page .foot-legal a{color:var(--muted);text-decoration:none;}
+  .bb-page .foot-legal a:hover{color:var(--navy-deep);}
+
+  /* Demo modal */
+  .bb-page .demo-modal{
+    position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:100;
+  }
+  .bb-page .demo-modal.is-open{display:flex;}
+  .bb-page .demo-modal-backdrop{
+    position:absolute;inset:0;background:rgba(10,31,68,0.5);
+  }
+  .bb-page .demo-modal-card{
+    position:relative;background:var(--paper);border-radius:20px;padding:36px;
+    max-width:480px;width:90%;max-height:88vh;overflow-y:auto;z-index:1;
+  }
+  .bb-page .demo-modal-close{
+    position:absolute;top:20px;right:20px;background:none;border:none;cursor:pointer;
+    color:var(--muted);width:32px;height:32px;display:flex;align-items:center;justify-content:center;
+    border-radius:8px;
+  }
+  .bb-page .demo-modal-close:hover{background:var(--page-bg);}
+  .bb-page .demo-modal-logo{height:28px;width:auto;margin-bottom:16px;}
+  .bb-page .demo-modal-title{font-family:'Fraunces',serif;font-weight:600;font-size:22px;color:var(--navy-deep);margin-bottom:6px;}
+  .bb-page .demo-modal-sub{font-size:14px;color:var(--muted);margin-bottom:24px;}
+  .bb-page .demo-modal-form{display:flex;flex-direction:column;gap:14px;}
+  .bb-page .demo-modal-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+  .bb-page .demo-modal-field{display:flex;flex-direction:column;gap:6px;}
+  .bb-page .demo-modal-field span{font-size:12px;color:var(--muted);}
+  .bb-page .demo-modal-field em{font-style:normal;color:rgba(10,31,68,0.4);}
+  .bb-page .demo-modal-field input, .bb-page .demo-modal-field textarea{
+    background:var(--page-bg);border:0.5px solid var(--line-strong);border-radius:10px;
+    color:var(--navy-deep);font-family:'Inter',sans-serif;font-size:14px;padding:11px 14px;
+    outline:none;resize:vertical;
+  }
+  .bb-page .demo-modal-field input:focus, .bb-page .demo-modal-field textarea:focus{border-color:var(--blueberry);}
+  .bb-page .demo-modal-submit{
+    background:var(--blueberry);color:#fff;font-weight:600;font-size:14px;
+    padding:12px;border-radius:10px;border:none;cursor:pointer;margin-top:6px;
+    transition:opacity 0.15s ease;
+  }
+  .bb-page .demo-modal-submit:hover{opacity:0.92;}
+  .bb-page .demo-modal-status{font-size:13px;color:var(--blueberry);text-align:center;min-height:18px;}
+
+  @media (max-width:900px){
+    .bb-page .sec-hd, .bb-page .feat-body, .bb-page .testi-featured,
+    .bb-page .enterprise-inner, .bb-page .foot-top{grid-template-columns:1fr;}
+    .bb-page .steps-grid, .bb-page .metrics-inner, .bb-page .why-grid,
+    .bb-page .ent-right, .bb-page .foot-cols, .bb-page .testi-stats{grid-template-columns:repeat(2,1fr);}
+    .bb-page .demo-modal-row{grid-template-columns:1fr;}
+  }
+  @media (max-width:640px){
+    .bb-page section:not(.bb-hero){padding:56px 20px;}
+    .bb-page .steps-grid, .bb-page .metrics-inner, .bb-page .why-grid,
+    .bb-page .ent-right, .bb-page .foot-cols, .bb-page .testi-stats{grid-template-columns:1fr;}
+    .bb-page .int-row{grid-template-columns:1fr;gap:12px;}
+  }
+</style>
+</head>
+<body>
+
+<div class="bb-page">
+<nav class="bb-nav">
+  <div class="bb-logo"><img src="data:image/png;base64,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" alt="Blueberry" style="height:24px;width:auto;display:block;"></div>
+  <div class="bb-nav-links">
+    <a href="#how">How it works</a>
+    <a href="#features">Features</a>
+    <a href="#why">Why Blueberry</a>
+  </div>
+  <a class="bb-nav-cta" href="#demo-modal" data-demo-trigger="">Book a demo</a>
+</nav>
+
+<div class="bb-wrap">
+  <section class="bb-hero">
+    <h1>Turn social engagement <br>into <em>attributed revenue</em></h1>
+    <p class="bb-sub">Tell us your growth goal. Blueberry's agents will turn it into personalized DMs, captured subscribers, and revenue you can trace back to the post.</p>
+
+    <div class="bb-console" id="console">
+      <div class="bb-console-body" id="consoleBody">
+        <div class="bb-console-label">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          What's your goal with Blueberry?
+        </div>
+        <div class="bb-typewrap" id="typewrap">
+          <span class="bb-placeholder-text" id="placeholderText"></span><span class="bb-caret"></span>
+        </div>
+      </div>
+
+      <!-- Demo form, hidden until "Build" is pressed -->
+      <div class="bb-console-body bb-form-mode bb-demo-form" id="demoForm">
+        <div class="bb-form-goal-recap" id="goalRecap"></div>
+        <div class="bb-form-title">Book a demo</div>
+        <div class="bb-form-desc">We'll show you exactly how Blueberry would run this for your brand — live, in under 30 minutes.</div>
+        <div class="bb-form-grid">
+          <div class="bb-form-field">
+            <label>First name</label>
+            <input type="text" placeholder="Sarah">
+          </div>
+          <div class="bb-form-field">
+            <label>Last name</label>
+            <input type="text" placeholder="Jones">
+          </div>
+          <div class="bb-form-field bb-full">
+            <label>Work email</label>
+            <input type="email" placeholder="sarah@yourbrand.com">
+          </div>
+          <div class="bb-form-field bb-full">
+            <label>Brand / website</label>
+            <input type="text" placeholder="yourbrand.com">
+          </div>
+          <div class="bb-form-field">
+            <label>Monthly revenue</label>
+            <select>
+              <option>Under $50k</option>
+              <option>$50k – $250k</option>
+              <option>$250k – $1M</option>
+              <option>$1M+</option>
+            </select>
+          </div>
+          <div class="bb-form-field">
+            <label>Primary channel</label>
+            <select>
+              <option>Instagram</option>
+              <option>TikTok</option>
+              <option>Facebook</option>
+              <option>Multiple</option>
+            </select>
+          </div>
+        </div>
+        <div class="bb-submit-row">
+          <span class="bb-back-link" onclick="resetConsole()">← Edit goal</span>
+          <button class="bb-build-btn" onclick="submitDemo()">Request demo <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+        </div>
+      </div>
+
+      <!-- Confirmation -->
+      <div class="bb-confirm" id="confirmState">
+        <div class="bb-confirm-icon">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"/></svg>
+        </div>
+        <div class="bb-confirm-title">You're on the list</div>
+        <div class="bb-confirm-sub">A Blueberry strategist will reach out within 24 hours to build the exact flow you described — for your brand, your audience, your offers.</div>
+      </div>
+
+      <div class="bb-console-footer" id="consoleFooter">
+        <div class="bb-footer-left">
+          <div class="bb-icon-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+          </div>
+          <span>Powered by Blueberry's social AI</span>
+        </div>
+        <button class="bb-build-btn" id="buildBtn" onclick="goToForm()">
+          Build my flow
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="bb-quick-suggestions" id="quickSuggestions">
+      <button class="bb-chip" onclick="useGoal('Turn my Instagram comments into email subscribers')">Grow my email list from comments</button>
+      <button class="bb-chip" onclick="useGoal('DM everyone who replies to my story with a discount code')">Auto-DM story repliers</button>
+      <button class="bb-chip" onclick="useGoal('Track which posts are actually driving sales')">Attribute revenue to posts</button>
+    </div>
+  </section>
+</div>
+
+<script>
+  const phrases = [
+    "DM everyone who comments \u201Cprice\u201D with my catalog",
+    "Turn story replies into 15% off codes",
+    "Capture every email from my giveaway",
+    "Show me which posts drive checkouts"
+  ];
+  let phraseIndex = 0, charIndex = 0, deleting = false;
+  let userGoal = "";
+  let typingPaused = false;
+  const placeholderEl = document.getElementById('placeholderText');
+  const buildBtn = document.getElementById('buildBtn');
+
+  function typeLoop(){
+    if(typingPaused) return;
+    const current = phrases[phraseIndex];
+    if(!deleting){
+      charIndex++;
+      placeholderEl.textContent = current.slice(0, charIndex);
+      if(charIndex === current.length){
+        deleting = true;
+        setTimeout(typeLoop, 1800);
+        return;
+      }
+    } else {
+      charIndex--;
+      placeholderEl.textContent = current.slice(0, charIndex);
+      if(charIndex === 0){
+        deleting = false;
+        phraseIndex = (phraseIndex + 1) % phrases.length;
+      }
+    }
+    setTimeout(typeLoop, deleting ? 30 : 45);
+  }
+  typeLoop();
+
+  // make the typewrap clickable / editable
+  const typewrap = document.getElementById('typewrap');
+  const consoleEl = document.getElementById('console');
+  typewrap.style.cursor = 'text';
+  typewrap.addEventListener('click', () => {
+    if(document.getElementById('inputField')) return;
+    typingPaused = true;
+    const current = phrases[phraseIndex].slice(0, charIndex) || "";
+    typewrap.innerHTML = '';
+    const input = document.createElement('input');
+    input.id = 'inputField';
+    input.type = 'text';
+    input.value = current;
+    input.placeholder = 'e.g. DM everyone who comments "price" with a discount';
+    input.style.cssText = 'width:100%;background:transparent;border:none;outline:none;color:var(--cream);font-family:Inter,sans-serif;font-size:19px;line-height:1.6;';
+    typewrap.appendChild(input);
+    input.focus();
+    consoleEl.classList.add('bb-glow');
+    input.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') goToForm();
+    });
+  });
+
+  function useGoal(text){
+    typingPaused = true;
+    typewrap.innerHTML = '';
+    const input = document.createElement('input');
+    input.id = 'inputField';
+    input.type = 'text';
+    input.value = text;
+    input.style.cssText = 'width:100%;background:transparent;border:none;outline:none;color:var(--cream);font-family:Inter,sans-serif;font-size:19px;line-height:1.6;';
+    typewrap.appendChild(input);
+    consoleEl.classList.add('bb-glow');
+    input.addEventListener('keydown', (e) => {
+      if(e.key === 'Enter') goToForm();
+    });
+  }
+
+  function goToForm(){
+    const inputField = document.getElementById('inputField');
+    let goal = '';
+    if(inputField && inputField.value.trim()){
+      goal = inputField.value.trim();
+    } else {
+      goal = phrases[phraseIndex].slice(0, charIndex) || phrases[0];
+    }
+    userGoal = goal;
+
+    document.getElementById('consoleBody').style.display = 'none';
+    document.getElementById('quickSuggestions').style.display = 'none';
+    document.getElementById('consoleFooter').style.display = 'none';
+
+    const recap = document.getElementById('goalRecap');
+    recap.innerHTML = 'Your goal: <b>' + goal.replace(/</g,'&lt;') + '</b>';
+
+    document.getElementById('demoForm').classList.add('bb-active');
+  }
+
+  function resetConsole(){
+    document.getElementById('demoForm').classList.remove('bb-active');
+    document.getElementById('consoleBody').style.display = 'block';
+    document.getElementById('quickSuggestions').style.display = 'flex';
+    document.getElementById('consoleFooter').style.display = 'flex';
+  }
+
+  function submitDemo(){
+    document.getElementById('demoForm').classList.remove('bb-active');
+    document.getElementById('confirmState').classList.add('bb-active');
+  }
+</script>
+
+<section class="logos-section" aria-label="Trusted by leading brands">
+  <div class="logos-container">
+    <div class="trusted-row" role="list">
+      <span class="trusted-label" role="listitem">Trusted by</span>
+      <span class="trusted-brand" role="listitem">Glowing Goddess</span>
+      <span class="trusted-brand" role="listitem">Alice</span>
+      <span class="trusted-brand" role="listitem">ElevenEleven</span>
+      <span class="trusted-brand" role="listitem">49ers</span>
+      <span class="trusted-brand" role="listitem">Washington Spirit</span>
+      <span class="trusted-brand" role="listitem">Impact</span>
+    </div>
+  </div>
+</section>
+
+<section id="how"> <div class="how-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">01</span> How it works</div> <h2 class="h2">Turn your audience <br><span class="h-accent h-accent--primary">into customers.</span></h2> </div> <div class="sec-hd-r"> <p class="body-lg">Blueberry's agents send personalized DMs to every consumer who engages with your organic posts and ads, increasing revenue, ROAS, and customer LTV.</p> </div> </div> <div class="steps-grid"> <div class="step"> <div class="step-counter">01 <span>/ 03</span></div> <h3>A viewer engages with your content</h3> <p>Blueberry detects every interaction on organic posts and paid ads in real time, and understands the person behind each interaction.</p> </div> <div class="step"> <div class="step-counter">02 <span>/ 03</span></div> <h3>Blueberry sends DMs that convert</h3> <p>Within seconds, a personalized message goes out with the right offer, product recommendation, or discount. Delivered at peak intent.</p> </div> <div class="step"> <div class="step-counter">03 <span>/ 03</span></div> <h3>The sale is tracked back to the source</h3> <p>Every conversion is attributed to the original engagement. You see exactly which posts, comments, and DMs are driving revenue.</p> </div> </div> </div> </section>
+
+<section id="features"> <div class="features-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">02</span> Platform</div> <h2 class="h2">Turn every interaction into <span class="h-accent h-accent--primary">attributed sales.</span></h2> </div> <div class="sec-hd-r"> <p class="body-lg">From first interaction to final sale, Blueberry turns social engagement into attributed revenue. In one workspace, built for B2C brands.</p> </div> </div>
+
+<div class="feat-block"> <div class="feat-body"> <div class="feat-text"> <div class="feat-num">01</div> <div> <h3>Personalized DMs that convert</h3> <p>Blueberry learns what each customer cares about and reaches out with the exact message they'll respond to. Dynamic offers, product recommendations, and follow-up sequences sent automatically to drive revenue and LTV.</p> <div class="tags"> <span class="tag tag-blue">Personalized offers</span> <span class="tag">Product recommendations</span> <span class="tag">DM automation</span> </div> </div> </div> </div> </div>
+
+<div class="feat-block feat-block--flip"> <div class="feat-body"> <div class="feat-text"> <div class="feat-num">02</div> <div> <h3>Grow email &amp; SMS subscribers at scale</h3> <p>Turn every social engagement into a subscriber. Blueberry automatically captures emails and phone numbers from interested customers, building your owned audience directly from social. Sync to your email and SMS platforms instantly to nurture and convert.</p> <div class="tags"> <span class="tag tag-blue">Email capture</span> <span class="tag">SMS collection</span> <span class="tag">First-party data capture</span> </div> </div> </div> </div> </div>
+
+<div class="feat-block"> <div class="feat-body"> <div class="feat-text"> <div class="feat-num">03</div> <div> <h3>Revenue attribution that closes the loop</h3> <p>Stop guessing what's working. Blueberry tracks funnels from engagement to purchase, giving you clear ROI on every campaign, post, and automated conversation.</p> <div class="tags"> <span class="tag tag-blue">Purchase Attribution</span> <span class="tag">LTV tracking</span> <span class="tag">Post-level ROI</span> </div> </div> </div> </div> </div>
+
+<div class="features-cta"> <a href="#demo-modal" class="features-cta-btn" data-demo-trigger=""> <span>Book a demo</span> <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"> <path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path> </svg> </a> </div>
+
+</div> </section>
+
+<section id="metrics"> <div class="metrics-inner"> <div class="mcell"> <div class="mval">$2M+</div> <div class="mdesc">Revenue directly attributed to Blueberry<br>in &lt;2 mo</div> </div> <div class="mcell"> <div class="mval">&lt;48 hrs</div> <div class="mdesc">From setup to first sale<br>with Blueberry</div> </div> <div class="mcell"> <div class="mval">70%+</div> <div class="mdesc">Email and SMS opt-in rate from AI-driven DM campaigns</div> </div> </div> </section>
+
+<section id="testimonials"> <div class="testi-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">03</span> Results</div> <h2 class="h2">What leading brands say.</h2> </div> <div class="sec-hd-r"> <p class="body-lg">Trusted by the fastest-growing DTC brands and household names across beauty, wellness, media, sports, and more.</p> </div> </div> <div class="testi-featured"> <div class="testi-featured-left"> <p class="testi-featured-q"> <span class="testi-featured-mark">&ldquo;</span>The cost versus value is a no-brainer. We got 10&times; ROI in less than two weeks. </p> <div class="testi-featured-foot"> <div class="testi-author"> <div class="tav tav-initials">DB</div> <div> <div class="tname">Dyllan Barnes</div> <div class="trole">Head of Strategic Growth &amp; Community, Impact Dog Crates</div> </div> </div> </div> </div> <div class="testi-stats"> <div class="testi-stat"> <div class="testi-stat-val">10&times;</div> <div class="testi-stat-lbl">ROI in under two weeks</div> </div><div class="testi-stat"> <div class="testi-stat-val">48h</div> <div class="testi-stat-lbl">to first attributed sale</div> </div><div class="testi-stat"> <div class="testi-stat-val">81%</div> <div class="testi-stat-lbl">auto-response rate</div> </div><div class="testi-stat"> <div class="testi-stat-val">3.2&times;</div> <div class="testi-stat-lbl">ROAS lift vs. manual</div> </div> </div> </div> </div> </section>
+
+<section id="value-props"> <div class="value-props-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">04</span> More ways to win</div> <h2 class="h2">Unlock revenue from <span class="h-accent h-accent--primary">every angle.</span></h2> </div> <div class="sec-hd-r"> <p class="body-lg">Beyond your brand's DMs, Blueberry unlocks hidden revenue streams through influencer partnerships and comment optimization.</p> </div> </div> <div class="vp-row vp-row--border"> <div class="vp-text"> <h3>Drive conversions from influencer partnerships</h3> <p>Convert additional revenue through influencer partnerships and whitelisted pages. Reach out to engaged customers from influencer content with personalized offers, turning collaborations into measurable sales.</p> </div> </div> <div class="vp-row"> <div class="vp-text" style="border-right: none;"> <h3>Increase ROAS with smart comment moderation</h3> <p>Hide spam, remove haters, and boost conversions by strategically responding to high-intent comments. Manage comments across brand-owned and whitelisted partner pages in one place, turning every engagement into a revenue opportunity.</p> </div> </div> </div> </section>
+
+<section id="integrations"> <div class="integrations-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">05</span> Integrations</div> <h2 class="h2">Connects with your existing stack.</h2> </div> <div class="sec-hd-r"> <p class="body-lg">Blueberry fits into the tools you already use. No rip-and-replace. One integration and you're live in under 30 minutes.</p> </div> </div> <div class="integrations-list"> <div class="int-row"> <h4 class="int-label">Social</h4> <div class="int-chips"> <span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="3.5"/><circle cx="17.2" cy="6.8" r="0.6" fill="currentColor"/></svg> <span class="int-name">Instagram</span> </span><span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg> <span class="int-name">Facebook</span> </span><span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 12a4 4 0 1 0 4 4V4a5 5 0 0 0 5 5"/></svg> <span class="int-name">TikTok</span> </span><span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="12" rx="3"/><path d="M10 9.5l5 2.5-5 2.5z" fill="currentColor" stroke="none"/></svg> <span class="int-name">YouTube</span> </span> </div> </div><div class="int-row"> <h4 class="int-label">Commerce &amp; Marketing</h4> <div class="int-chips"> <span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 7h12l1.5 13.5a1 1 0 0 1-1 1.1H5.5a1 1 0 0 1-1-1.1z"/><path d="M9 7a3 3 0 0 1 6 0"/></svg> <span class="int-name">Shopify</span> </span><span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 8h18M9 4v16"/></svg> <span class="int-name">Klaviyo</span> </span> <span class="int-chip int-chip--more"> <span class="int-name">+ more</span> </span> </div> </div><div class="int-row"> <h4 class="int-label">Messaging</h4> <div class="int-chips"> <span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="13" rx="2"/><path d="M7 9h10M7 13h6"/></svg> <span class="int-name">Slack</span> </span><span class="int-chip"> <svg class="platform-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="8" r="2.5"/><path d="M3 19v-1a5 5 0 0 1 5-5h2a5 5 0 0 1 5 5v1"/><path d="M16 13a4 4 0 0 1 4 4v2"/></svg> <span class="int-name">Teams</span> </span> </div> </div> </div> </div> </section>
+
+<section id="why"> <div class="why-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">06</span> Why Blueberry</div> <h2 class="h2">Purpose-built for <br><span class="h-accent h-accent--primary">consumer brands.</span></h2> </div> <div class="sec-hd-r"> <p class="body-lg">You're already getting views. Blueberry is the B2C revenue engine that converts them into customers.</p> </div> </div> <div class="why-grid"> <div class="why-card"> <div class="why-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8l3.5 3.5L14 4" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div> <h4>Revenue-first</h4> <p>Every feature is built around one question: did this make money? Likes and impressions are table stakes. Blueberry turns them into attributable revenue.</p> </div><div class="why-card"> <div class="why-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="5.5" stroke="#5B7FFF" stroke-width="1.5"></circle><path d="M5.5 8l2 2 3-3" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path></svg></div> <h4>Your brand voice, not generic AI</h4> <p>Our AI learns from your tone, product catalog, and customer history. Every response sounds like you, not a chatbot. Powered by an AI model purpose-built for social.</p> </div><div class="why-card"> <div class="why-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 2v4M2 8h4M8 14v-4M14 8h-4" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round"></path></svg></div> <h4>One platform for the full funnel</h4> <p>Most tools stop at "message sent." Blueberry tracks the full path to purchase: opens, replies, clicks, and checkouts. All tied to revenue across every platform.</p> </div><div class="why-card"> <div class="why-icon"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><rect x="2" y="2" width="12" height="12" rx="1" stroke="#5B7FFF" stroke-width="1.5"></rect><path d="M5 8h6M8 5v6" stroke="#5B7FFF" stroke-width="1.5" stroke-linecap="round"></path></svg></div> <h4>Setup in under 30 minutes</h4> <p>Connect your channels, describe your campaigns in natural language, and go live in one click. No engineering required. Most customers see their first attributed conversion within 48 hours.</p> </div> </div> </div> </section>
+
+<section id="enterprise"> <div class="enterprise-inner"> <div class="ent-left"> <div class="eyebrow" style="margin-bottom: 16px"> <span class="eyebrow-num">07</span> Enterprise </div> <h2 class="h2" style="margin-bottom: 20px">Enterprise grade scale &amp; control.</h2> <p class="body-lg" style="margin-bottom: 0">Trusted by global enterprises &amp; the fastest growing brands. Blueberry meets the highest enterprise standards with controls that keep every interaction on-brand and on-policy.</p> </div> <div class="ent-right"> <div class="ent-proof"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ent-proof-icon"> <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><path d="M16 3.128a4 4 0 0 1 0 7.744"></path><path d="M22 21v-2a4 4 0 0 0-3-3.87"></path><circle cx="9" cy="7" r="4"></circle> </svg> <h5>Scale to hundreds of accounts</h5> </div><div class="ent-proof"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ent-proof-icon"> <path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"></path><path d="m9 12 2 2 4-4"></path> </svg> <h5>AI &amp; Brand Safety Guardrails</h5> </div><div class="ent-proof"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ent-proof-icon"> <path d="M3 14h3a2 2 0 0 1 2 2v3a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-7a9 9 0 0 1 18 0v7a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3" /> </svg> <h5>Premium Support</h5> </div><div class="ent-proof"> <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="ent-proof-icon"> <circle cx="12" cy="16" r="1"></circle><rect x="3" y="10" width="18" height="12" rx="2"></rect><path d="M7 10V7a5 5 0 0 1 10 0v3"></path> </svg> <h5>SOC 2 Compliant</h5> </div> </div> </div> </section>
+
+<section id="faq"> <div class="faq-inner"> <div class="sec-hd"> <div class="sec-hd-l"> <div class="eyebrow"><span class="eyebrow-num">08</span> FAQ</div> <h2 class="h2">Common questions.</h2> </div> <div class="sec-hd-r"> <p class="body-lg">Everything you need to know before getting started.</p> </div> </div> <div class="faq-list"> <div class="faq-item"> <button class="faq-trigger"> <span>How long does setup take?</span> <span class="faq-icon" aria-hidden="true"> <svg width="14" height="14" viewBox="0 0 14 14" fill="none"> <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path> </svg> </span> </button> <div class="faq-content"> <p>Most brands are fully live within 30 minutes. You connect your social channels, upload your brand voice guidelines and product catalog, and Blueberry handles the rest. No engineering or developer resources required.</p> </div> </div><div class="faq-item"> <button class="faq-trigger"> <span>How does your platform capture first-party data?</span> <span class="faq-icon" aria-hidden="true"> <svg width="14" height="14" viewBox="0 0 14 14" fill="none"> <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path> </svg> </span> </button> <div class="faq-content"> <p>Blueberry integrates with your email, SMS, and CRM platforms to capture interested customers from social conversations. When someone engages with your content, our AI can invite them to join your email list or opt into SMS for exclusive offers and updates.</p> </div> </div><div class="faq-item"> <button class="faq-trigger"> <span>Will the DMs actually sound like us?</span> <span class="faq-icon" aria-hidden="true"> <svg width="14" height="14" viewBox="0 0 14 14" fill="none"> <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path> </svg> </span> </button> <div class="faq-content"> <p>Yes. Your AI Agent is trained on your specific tone guidelines, product information, FAQs, and past community interactions. We build in a review period where you can read and correct replies before going to full autopilot.</p> </div> </div><div class="faq-item"> <button class="faq-trigger"> <span>Does Blueberry work on ads?</span> <span class="faq-icon" aria-hidden="true"> <svg width="14" height="14" viewBox="0 0 14 14" fill="none"> <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path> </svg> </span> </button> <div class="faq-content"> <p>Yes. Blueberry works across both organic and paid content. Every ad comment, DM, and story engagement is tracked and actionable, just like your organic posts.</p> </div> </div><div class="faq-item"> <button class="faq-trigger"> <span>What kind of results can I expect?</span> <span class="faq-icon" aria-hidden="true"> <svg width="14" height="14" viewBox="0 0 14 14" fill="none"> <path d="M7 1v12M1 7h12" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"></path> </svg> </span> </button> <div class="faq-content"> <p>Most brands see their first attributed sale within 48 hours of going live. Customers report an average 3.2x lift in ROAS vs. manual response and 70%+ opt-in rates on email and SMS capture.</p> </div> </div> </div> </div> </section>
+
+<section id="cta"> <div class="cta-inner"> <h2 class="cta-title">Stop missing revenue hiding in every social interaction.</h2> <div class="cta-acts"> <a href="#demo-modal" class="btn btn-white" data-demo-trigger="">Get in Touch</a> </div> </div> </section>
+
+<footer> <div class="foot-inner"> <div class="foot-top"> <div class="foot-brand"> <div class="foot-logo bb-logo"> <img src="data:image/png;base64,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" alt="Blueberry" class="foot-logo-lockup"> </div> <div class="foot-tagline">Turn your social audience into revenue.</div> <div class="foot-badge" aria-label="SOC 2 compliant">SOC 2 compliant</div> </div> <div class="foot-cols"> <div class="foot-col"> <div class="foot-col-title">Product</div> <ul class="foot-links"> <li> <a href="#how">How it works</a> </li><li> <a href="#features">Features</a> </li><li> <a href="#why">Why Blueberry</a> </li><li> <a href="#integrations">Integrations</a> </li> </ul> </div><div class="foot-col"> <div class="foot-col-title">Company</div> <ul class="foot-links"> <li> <a href="https://jobs.ashbyhq.com/Pear-VC?departmentId=5ea98567-9fe3-4758-bf4a-50101344d718">Careers</a> </li> </ul> </div><div class="foot-col"> <div class="foot-col-title">Resources</div> <ul class="foot-links"> <li> <a href="/blog">Blog</a> </li><li> <a href="#faq">FAQ</a> </li> </ul> </div><div class="foot-col"> <div class="foot-col-title">Connect</div> <ul class="foot-links"> <li> <a href="https://www.instagram.com/getblueberry">Instagram</a> </li><li> <a href="https://www.linkedin.com/company/blue-berry-social">LinkedIn</a> </li><li> <a href="https://x.com/useblueberry">Twitter / X</a> </li> </ul> </div> </div> </div> <div class="foot-bottom"> <div class="foot-copy">&copy; 2026 Blueberry<span class="foot-made">Made with love</span></div> <div class="foot-legal"> <a href="/privacy">Privacy</a> <a href="/terms">Terms</a> <a href="/dpa">DPA</a> </div> </div> </div> </footer>
+
+<div class="demo-modal" id="demo-modal" aria-hidden="true" role="dialog" aria-modal="true" aria-labelledby="demo-modal-title"> <div class="demo-modal-backdrop" data-demo-close=""></div> <div class="demo-modal-card"> <button class="demo-modal-close" type="button" aria-label="Close" data-demo-close=""> <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true"> <path d="M3 3L13 13M13 3L3 13" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"></path> </svg> </button> <img src="data:image/png;base64,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" alt="Blueberry" class="demo-modal-logo"> <h2 id="demo-modal-title" class="demo-modal-title">Request a demo</h2> <p class="demo-modal-sub">Fill out your information and we'll be in touch!</p> <form class="demo-modal-form" id="demo-form" novalidate=""> <div class="demo-modal-row"> <label class="demo-modal-field"> <span>First name</span> <input type="text" name="firstName" required="" autocomplete="given-name"> </label> <label class="demo-modal-field"> <span>Last name</span> <input type="text" name="lastName" required="" autocomplete="family-name"> </label> </div> <label class="demo-modal-field"> <span>Work email</span> <input type="email" name="email" required="" autocomplete="email"> </label> <label class="demo-modal-field"> <span>Company</span> <input type="text" name="company" required="" autocomplete="organization"> </label> <label class="demo-modal-field"> <span>What brings you to Blueberry?</span> <textarea name="message" rows="2" placeholder="Optional: How can we help?"></textarea> </label> <label class="demo-modal-field"> <span>Where did you hear about us? <em>(optional)</em></span> <input type="text" name="source"> </label> <button type="submit" class="demo-modal-submit">Book a demo</button> <p class="demo-modal-status" data-demo-status="" aria-live="polite"></p> </form> </div> </div>
+</div>
+
+<script>
+document.querySelectorAll(".faq-trigger").forEach(e=>{e.addEventListener("click",()=>{const t=e.closest(".faq-item");if(!t)return;const d=t.classList.contains("active");document.querySelectorAll(".faq-item").forEach(c=>c.classList.remove("active")),d||t.classList.add("active")})});
+
+(function(){
+  const modal = document.getElementById('demo-modal');
+  if(!modal) return;
+  const open = () => { modal.classList.add('is-open'); modal.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden'; };
+  const close = () => { modal.classList.remove('is-open'); modal.setAttribute('aria-hidden','true'); document.body.style.overflow=''; };
+  document.querySelectorAll('[data-demo-trigger]').forEach(el => el.addEventListener('click', (e) => { e.preventDefault(); open(); }));
+  modal.querySelectorAll('[data-demo-close]').forEach(el => el.addEventListener('click', close));
+  document.addEventListener('keydown', (e) => { if(e.key === 'Escape') close(); });
+  const form = document.getElementById('demo-form');
+  const submitBtn = form ? form.querySelector('.demo-modal-submit') : null;
+  if(submitBtn) submitBtn.disabled = false;
+  if(form) form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    const status = form.querySelector('[data-demo-status]');
+    if(status) status.textContent = "Thanks! We'll be in touch shortly.";
+  });
+})();
+</script>
+
+</body>
+</html>
