@@ -1287,16 +1287,16 @@ async function loadJournal() {
   list.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px;font-size:14px">Loading…</div>';
   try {
     const snap = await db.collection('dianne-health')
-      .where('type','==','journal')
       .orderBy('createdAt','desc')
-      .limit(30).get();
+      .limit(100).get();
+    const docs = snap.docs.filter(d => d.data().type === 'journal').slice(0, 30);
 
-    if (snap.empty) {
+    if (docs.length === 0) {
       list.innerHTML = '<div class="card" style="text-align:center;color:var(--text-3);font-size:14px;padding:24px">No entries yet. Start by saving how you feel today! 💕</div>';
       return;
     }
 
-    list.innerHTML = snap.docs.map(d => {
+    list.innerHTML = docs.map(d => {
       const r = d.data();
       const date = r.createdAt?.toDate
         ? r.createdAt.toDate().toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'})
@@ -1315,7 +1315,7 @@ async function loadJournal() {
     }).join('');
 
     if (!window._recDocs) window._recDocs = {};
-    snap.docs.forEach(d => { window._recDocs[d.id] = d.data(); });
+    docs.forEach(d => { window._recDocs[d.id] = d.data(); });
   } catch(e) {
     list.innerHTML = '<div style="color:var(--red);font-size:14px;padding:12px">Could not load entries. Check your internet connection.</div>';
     console.error(e);
