@@ -3,34 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <title>Dianne's Health</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
-/* ── TOKENS ───────────────────────────────── */
+/* ── TOKENS ────────────────────────────────────────── */
 :root {
-  --teal:     #0D9488;
-  --teal-dk:  #0F766E;
-  --teal-lt:  #F0FDFA;
-  --teal-mid: #99F6E4;
-  --red:      #DC2626;
-  --red-lt:   #FEF2F2;
-  --amber:    #D97706;
-  --amber-lt: #FFFBEB;
-  --green:    #16A34A;
-  --green-lt: #F0FDF4;
-  --bg:       #F8FAFC;
-  --surface:  #FFFFFF;
-  --text:     #0F172A;
-  --text-2:   #475569;
-  --text-3:   #94A3B8;
-  --border:   #E2E8F0;
-  --r:        12px;
-  --sh:       0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
+  --rose:    #DB2777;
+  --rose-dk: #BE185D;
+  --rose-vdk:#9D174D;
+  --rose-lt: #FDF2F8;
+  --rose-mid:#FBCFE8;
+  --red:     #DC2626;
+  --red-lt:  #FEF2F2;
+  --amber:   #D97706;
+  --amber-lt:#FFFBEB;
+  --green:   #16A34A;
+  --green-lt:#F0FDF4;
+  --bg:      #FFF5F9;
+  --surface: #FFFFFF;
+  --text:    #1A0B14;
+  --text-2:  #6B4E5C;
+  --text-3:  #A8899A;
+  --border:  #F0D5E5;
+  --r:       12px;
+  --sh:      0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
 }
 
-/* ── RESET ────────────────────────────────── */
+/* ── RESET ─────────────────────────────────────────── */
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { -webkit-text-size-adjust: 100%; }
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
@@ -42,161 +47,168 @@ body {
   min-height: 100dvh;
 }
 
-/* ── HEADER ───────────────────────────────── */
+/* ── WELCOME MODAL ─────────────────────────────────── */
+#welcome-modal {
+  position: fixed; inset: 0; z-index: 500;
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.welcome-overlay {
+  position: absolute; inset: 0;
+  background: rgba(157,23,77,.18);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+}
+.welcome-box {
+  background: #fff;
+  border-radius: 24px;
+  padding: 36px 28px 28px;
+  max-width: 440px;
+  width: 100%;
+  position: relative;
+  z-index: 1;
+  box-shadow: 0 20px 60px rgba(190,24,93,.22);
+  text-align: center;
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+.welcome-heart { font-size: 2.8em; margin-bottom: 8px; line-height: 1; }
+.welcome-box h2 {
+  font-size: 2em; font-weight: 800;
+  color: var(--rose); margin-bottom: 4px; letter-spacing: -.5px;
+}
+.welcome-from { font-size: 15px; color: var(--text-3); margin-bottom: 18px; font-style: italic; }
+.welcome-intro { font-size: 15px; color: var(--text-2); margin-bottom: 18px; line-height: 1.55; }
+.welcome-steps { text-align: left; margin-bottom: 16px; display: flex; flex-direction: column; gap: 8px; }
+.welcome-step {
+  display: flex; align-items: flex-start; gap: 10px;
+  font-size: 15px; color: var(--text);
+  background: var(--rose-lt); border-radius: 10px;
+  padding: 11px 14px; line-height: 1.4;
+}
+.welcome-step-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+.welcome-tip {
+  font-size: 13px; color: var(--text-2);
+  background: var(--rose-lt); border-radius: 10px;
+  padding: 11px 14px; margin-bottom: 22px; line-height: 1.5;
+  text-align: left;
+}
+.welcome-close {
+  width: 100%; padding: 16px;
+  background: var(--rose); color: #fff;
+  border: none; border-radius: 14px;
+  font-size: 17px; font-weight: 700;
+  font-family: inherit; cursor: pointer;
+  letter-spacing: -.2px;
+  box-shadow: 0 4px 14px rgba(219,39,119,.3);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.welcome-close:active { background: var(--rose-dk); }
+
+/* ── HEADER ─────────────────────────────────────────── */
 .app-header {
-  background: var(--teal);
-  padding: 18px 20px 16px;
-  position: sticky;
-  top: 0;
-  z-index: 90;
+  background: linear-gradient(150deg, var(--rose-vdk) 0%, var(--rose) 100%);
+  padding: 16px 20px 14px;
+  position: sticky; top: 0; z-index: 90;
 }
 .app-header-inner {
-  max-width: 680px;
-  margin: 0 auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+  max-width: 680px; margin: 0 auto;
+  display: flex; align-items: center; justify-content: space-between;
 }
-.header-left h1 {
-  font-size: 21px;
-  font-weight: 700;
-  color: #fff;
-  letter-spacing: -0.4px;
-}
-.header-left p {
-  font-size: 13px;
-  color: rgba(255,255,255,.65);
-  margin-top: 1px;
-}
-.header-date {
-  font-size: 12px;
-  color: rgba(255,255,255,.55);
-  text-align: right;
-  line-height: 1.5;
-}
+.header-left h1 { font-size: 21px; font-weight: 700; color: #fff; letter-spacing: -.4px; }
+.header-left p  { font-size: 13px; color: rgba(255,255,255,.65); margin-top: 1px; }
+.header-date { font-size: 12px; color: rgba(255,255,255,.55); text-align: right; line-height: 1.5; }
 
-/* ── BOTTOM NAV ───────────────────────────── */
+/* ── BOTTOM NAV ─────────────────────────────────────── */
 .bottom-nav {
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
+  position: fixed; bottom: 0; left: 0; right: 0;
   background: var(--surface);
   border-top: 1px solid var(--border);
-  display: flex;
-  z-index: 100;
+  display: flex; z-index: 100;
   padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 .tab {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 9px 2px 11px;
-  border: none;
-  background: transparent;
+  flex: 0 0 auto;
+  min-width: 62px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 10px 4px 12px;
+  border: none; background: transparent;
   color: var(--text-3);
-  font-family: inherit;
-  font-size: 10px;
-  font-weight: 500;
-  cursor: pointer;
-  gap: 3px;
-  transition: color .15s;
-  letter-spacing: .01em;
+  font-family: inherit; font-size: 10px; font-weight: 500;
+  cursor: pointer; gap: 3px; transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  min-height: 56px;
 }
 .tab svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.tab.on { color: var(--teal); }
+.tab.on { color: var(--rose); }
 
-/* ── CONTENT ──────────────────────────────── */
-.content {
-  max-width: 680px;
-  margin: 0 auto;
-  padding: 16px 16px 100px;
-}
+/* ── CONTENT ────────────────────────────────────────── */
+.content { max-width: 680px; margin: 0 auto; padding: 16px 16px 100px; }
 .panel { display: none; }
 .panel.on { display: block; }
 
-/* ── CARDS ────────────────────────────────── */
+/* ── CARDS ──────────────────────────────────────────── */
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--r);
-  padding: 20px;
-  margin-bottom: 10px;
+  padding: 20px; margin-bottom: 10px;
   box-shadow: var(--sh);
 }
 .card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; letter-spacing: -.1px; }
-.card-sub { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+.card-sub   { font-size: 14px; color: var(--text-2); line-height: 1.55; }
 
-/* ── SECTION LABEL ────────────────────────── */
+/* ── SECTION LABELS ─────────────────────────────────── */
 .sec-label {
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-3);
-  text-transform: uppercase;
-  letter-spacing: .07em;
-  margin: 20px 0 8px;
+  font-size: 11px; font-weight: 600; color: var(--text-3);
+  text-transform: uppercase; letter-spacing: .07em;
+  margin: 18px 0 8px;
 }
 .sec-label:first-child { margin-top: 4px; }
 
-/* ── BUTTONS ──────────────────────────────── */
+/* ── BUTTONS ────────────────────────────────────────── */
 .btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  padding: 12px 18px;
-  border: 1.5px solid transparent;
-  border-radius: 10px;
-  font-size: 14px;
-  font-family: inherit;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all .15s;
-  line-height: 1;
-  letter-spacing: -.1px;
+  display: inline-flex; align-items: center; justify-content: center;
+  gap: 6px; padding: 13px 20px;
+  border: 1.5px solid transparent; border-radius: 10px;
+  font-size: 15px; font-family: inherit; font-weight: 600;
+  cursor: pointer; transition: all .15s; line-height: 1;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  min-height: 44px;
 }
-.btn-primary { background: var(--teal); color: #fff; border-color: var(--teal); }
-.btn-primary:hover { background: var(--teal-dk); }
+.btn-primary   { background: var(--rose); color: #fff; border-color: var(--rose); }
+.btn-primary:active { background: var(--rose-dk); }
 .btn-secondary { background: var(--surface); color: var(--text-2); border-color: var(--border); }
-.btn-secondary:hover { background: var(--bg); }
-.btn-danger { background: var(--red-lt); color: var(--red); border-color: #FECACA; }
-.btn-success { background: var(--green-lt); color: var(--green); border-color: #BBF7D0; }
-.btn-full { width: 100%; padding: 15px; font-size: 16px; border-radius: 11px; }
-.btn-sm { padding: 8px 13px; font-size: 13px; border-radius: 8px; }
+.btn-secondary:active { background: var(--rose-lt); }
+.btn-danger    { background: var(--red-lt); color: var(--red); border-color: #FECACA; }
+.btn-success   { background: var(--green-lt); color: var(--green); border-color: #BBF7D0; }
+.btn-full  { width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; }
+.btn-sm    { padding: 9px 14px; font-size: 13px; border-radius: 8px; min-height: 40px; }
 .btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
 
-/* ── EMERGENCY ────────────────────────────── */
+/* ── EMERGENCY ──────────────────────────────────────── */
 .emer {
-  background: var(--red-lt);
-  border: 1px solid #FECACA;
-  border-radius: var(--r);
-  padding: 13px 16px;
-  margin-bottom: 12px;
-  color: #991B1B;
-  font-size: 14px;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  background: var(--red-lt); border: 1px solid #FECACA;
+  border-radius: var(--r); padding: 13px 16px; margin-bottom: 12px;
+  color: #991B1B; font-size: 14px; font-weight: 500;
+  display: flex; align-items: center; gap: 10px;
 }
 .emer svg { flex-shrink: 0; width: 17px; height: 17px; fill: none; stroke: #991B1B; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-/* ── CHAT ─────────────────────────────────── */
-.mic-wrap { text-align: center; padding: 6px 0 14px; }
+/* ── CHAT ───────────────────────────────────────────── */
+.mic-wrap { text-align: center; padding: 8px 0 16px; }
 #mic {
-  width: 76px; height: 76px;
-  border-radius: 50%;
-  background: var(--teal);
-  color: #fff;
-  border: none;
-  font-size: 28px;
-  cursor: pointer;
-  transition: all .2s;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 14px rgba(13,148,136,.3);
-  margin-bottom: 8px;
+  width: 80px; height: 80px; border-radius: 50%;
+  background: var(--rose); color: #fff; border: none;
+  font-size: 30px; cursor: pointer; transition: all .2s;
+  display: inline-flex; align-items: center; justify-content: center;
+  box-shadow: 0 4px 14px rgba(219,39,119,.32); margin-bottom: 8px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  min-width: 80px;
 }
 #mic.hot {
   background: var(--red);
@@ -207,31 +219,26 @@ body {
 
 .read-aloud-row {
   display: flex; align-items: center; justify-content: center;
-  gap: 8px; margin-top: 10px; font-size: 14px; color: var(--text-2);
+  gap: 8px; margin-top: 10px; font-size: 15px; color: var(--text-2);
 }
-.read-aloud-row input { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
+.read-aloud-row input { width: 20px; height: 20px; accent-color: var(--rose); cursor: pointer; }
 
 #msgs {
-  height: 360px;
-  overflow-y: auto;
-  padding: 4px 0;
-  margin-bottom: 12px;
-  scroll-behavior: smooth;
+  height: 360px; overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 4px 0; margin-bottom: 12px; scroll-behavior: smooth;
 }
 .msg { margin-bottom: 10px; display: flex; flex-direction: column; }
-.msg.me { align-items: flex-end; }
+.msg.me  { align-items: flex-end; }
 .msg.bot { align-items: flex-start; }
 .bub {
-  max-width: 82%;
-  padding: 11px 15px;
-  border-radius: 16px;
-  font-size: 15px;
-  line-height: 1.55;
+  max-width: 84%;
+  padding: 11px 15px; border-radius: 16px;
+  font-size: 15px; line-height: 1.55;
 }
-.bot .bub { background: #F1F5F9; color: var(--text); border-bottom-left-radius: 4px; }
-.me  .bub { background: var(--teal); color: #fff; border-bottom-right-radius: 4px; }
+.bot .bub { background: #F3EDF0; color: var(--text); border-bottom-left-radius: 4px; }
+.me  .bub { background: var(--rose); color: #fff; border-bottom-right-radius: 4px; }
 
-.dots { display: flex; gap: 4px; padding: 11px 14px; }
+.dots { display: flex; gap: 4px; padding: 12px 15px; }
 .dot { width: 8px; height: 8px; background: var(--text-3); border-radius: 50%; animation: bop 1.3s infinite; }
 .dot:nth-child(2) { animation-delay: .2s; }
 .dot:nth-child(3) { animation-delay: .4s; }
@@ -239,174 +246,120 @@ body {
 
 .chat-row { display: flex; gap: 8px; align-items: flex-end; }
 .chat-row textarea {
-  flex: 1;
-  padding: 12px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 12px;
-  font-size: 15px;
-  font-family: inherit;
-  resize: none;
-  outline: none;
-  line-height: 1.5;
-  background: var(--surface);
-  color: var(--text);
-  transition: border-color .15s;
+  flex: 1; padding: 12px 14px;
+  border: 1.5px solid var(--border); border-radius: 12px;
+  font-size: 16px; font-family: inherit; resize: none; outline: none;
+  line-height: 1.5; background: var(--surface); color: var(--text);
+  transition: border-color .15s; -webkit-appearance: none;
 }
-.chat-row textarea:focus { border-color: var(--teal); }
+.chat-row textarea:focus { border-color: var(--rose); }
 .chat-row button {
-  padding: 12px 16px;
-  border-radius: 12px;
-  background: var(--teal);
-  color: #fff;
-  border: none;
-  font-size: 15px;
-  font-weight: 600;
-  cursor: pointer;
-  font-family: inherit;
-  white-space: nowrap;
-  flex-shrink: 0;
-  transition: background .15s;
+  padding: 12px 16px; border-radius: 12px;
+  background: var(--rose); color: #fff; border: none;
+  font-size: 15px; font-weight: 600; cursor: pointer; font-family: inherit;
+  white-space: nowrap; flex-shrink: 0; transition: background .15s;
+  min-height: 48px; -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.chat-row button:hover { background: var(--teal-dk); }
+.chat-row button:active { background: var(--rose-dk); }
 
 .qqs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .qq {
-  background: var(--surface);
-  color: var(--text-2);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 8px 14px;
-  font-size: 13px;
-  font-family: inherit;
-  cursor: pointer;
-  transition: all .15s;
+  background: var(--surface); color: var(--text-2);
+  border: 1px solid var(--border); border-radius: 20px;
+  padding: 9px 15px; font-size: 13px; font-family: inherit;
+  cursor: pointer; transition: all .15s;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
+  min-height: 40px; display: flex; align-items: center;
 }
-.qq:hover { background: var(--teal-lt); color: var(--teal-dk); border-color: var(--teal-mid); }
+.qq:active { background: var(--rose-lt); color: var(--rose-dk); border-color: var(--rose-mid); }
 
-/* ── MEDICATION LIST ──────────────────────── */
+/* ── MED LIST ───────────────────────────────────────── */
 .med-list {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  overflow: hidden;
-  box-shadow: var(--sh);
-  margin-bottom: 10px;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); overflow: hidden; box-shadow: var(--sh); margin-bottom: 10px;
 }
 .med-item {
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  transition: background .12s;
-  display: flex;
-  align-items: flex-start;
-  gap: 14px;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+  cursor: pointer; transition: background .12s;
+  display: flex; align-items: flex-start; gap: 14px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 .med-item:last-child { border-bottom: none; }
-.med-item:hover { background: var(--bg); }
+.med-item:active { background: var(--rose-lt); }
 .med-icon {
-  width: 38px; height: 38px;
-  border-radius: 10px;
-  background: var(--teal-lt);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  font-size: 17px;
+  width: 40px; height: 40px; border-radius: 10px;
+  background: var(--rose-lt); display: flex;
+  align-items: center; justify-content: center;
+  flex-shrink: 0; font-size: 18px;
 }
 .med-body { flex: 1; min-width: 0; }
 .med-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
 .med-dose { font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
 .tag {
-  display: inline-block;
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 12px;
-  font-weight: 500;
-  margin-bottom: 5px;
-  margin-right: 4px;
+  display: inline-block; border-radius: 20px;
+  padding: 3px 10px; font-size: 12px; font-weight: 500;
+  margin-bottom: 5px; margin-right: 4px;
 }
-.tag-teal   { background: var(--teal-lt); color: var(--teal-dk); border: 1px solid #CCFBF1; }
-.tag-amber  { background: var(--amber-lt); color: var(--amber); border: 1px solid #FDE68A; }
-.tag-green  { background: var(--green-lt); color: var(--green); border: 1px solid #BBF7D0; }
-.med-why { font-size: 13px; color: var(--text-2); line-height: 1.45; }
-.med-chevron { color: var(--text-3); margin-top: 2px; font-size: 14px; }
+.tag-rose  { background: var(--rose-lt); color: var(--rose-dk); border: 1px solid var(--rose-mid); }
+.tag-amber { background: var(--amber-lt); color: var(--amber); border: 1px solid #FDE68A; }
+.tag-green { background: var(--green-lt); color: var(--green); border: 1px solid #BBF7D0; }
+.med-why    { font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.med-chevron { color: var(--text-3); margin-top: 2px; font-size: 16px; flex-shrink: 0; }
 
-/* ── CONDITIONS ───────────────────────────── */
+/* ── CONDITIONS ─────────────────────────────────────── */
 .cond-item {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 20px;
-  margin-bottom: 10px;
-  box-shadow: var(--sh);
-  cursor: pointer;
-  transition: border-color .15s;
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 20px; margin-bottom: 10px;
+  box-shadow: var(--sh); cursor: pointer; transition: border-color .15s;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
-.cond-item:hover { border-color: var(--teal-mid); }
+.cond-item:active { border-color: var(--rose-mid); }
 .cond-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
 .cond-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; }
 .warn-box {
-  background: var(--red-lt);
-  border: 1px solid #FECACA;
-  border-radius: 10px;
-  padding: 14px 16px;
-  margin-top: 14px;
+  background: var(--red-lt); border: 1px solid #FECACA;
+  border-radius: 10px; padding: 14px 16px; margin-top: 14px;
 }
-.warn-title { font-size: 13px; font-weight: 700; color: #991B1B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+.warn-title { font-size: 12px; font-weight: 700; color: #991B1B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .05em; }
 .warn-box ul { padding-left: 16px; }
 .warn-box li { font-size: 14px; color: #7F1D1D; margin-bottom: 5px; line-height: 1.4; }
 .warn-note { font-size: 12px; color: #B91C1C; margin-top: 9px; font-style: italic; }
 .tap-hint { font-size: 12px; color: var(--text-3); margin-top: 12px; }
 
-/* ── FORMS ────────────────────────────────── */
+/* ── FORMS ──────────────────────────────────────────── */
 .field { margin-bottom: 16px; }
 .field label { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
 .field .hint { font-size: 12px; color: var(--text-3); font-weight: 400; margin-left: 4px; }
 .field select, .field textarea {
-  width: 100%;
-  padding: 12px 14px;
-  border: 1.5px solid var(--border);
-  border-radius: 10px;
-  font-size: 15px;
-  font-family: inherit;
-  background: var(--surface);
-  color: var(--text);
-  outline: none;
-  transition: border-color .15s;
-  line-height: 1.5;
-  -webkit-appearance: none;
+  width: 100%; padding: 13px 14px;
+  border: 1.5px solid var(--border); border-radius: 10px;
+  font-size: 16px; font-family: inherit; background: var(--surface); color: var(--text);
+  outline: none; transition: border-color .15s; line-height: 1.5; -webkit-appearance: none;
 }
-.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
-.field select:focus, .field textarea:focus { border-color: var(--teal); }
+.field select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23A8899A' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+  background-repeat: no-repeat; background-position: right 14px center; padding-right: 38px;
+}
+.field select:focus, .field textarea:focus { border-color: var(--rose); }
 .field textarea { resize: none; }
 
 .output-box {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 16px;
-  min-height: 140px;
-  font-size: 15px;
-  line-height: 1.75;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 16px; min-height: 140px;
+  font-size: 15px; line-height: 1.75;
 }
 
-/* ── RECORDING ────────────────────────────── */
+/* ── RECORDING ──────────────────────────────────────── */
 .rec-center { text-align: center; padding: 8px 0 4px; }
 #rec-btn {
-  width: 116px; height: 116px;
-  border-radius: 50%;
-  background: var(--red);
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  display: inline-flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 18px rgba(220,38,38,.32);
-  transition: all .25s;
-  gap: 4px;
-  margin-bottom: 12px;
+  width: 116px; height: 116px; border-radius: 50%;
+  background: var(--red); color: #fff; border: none;
+  cursor: pointer; display: inline-flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  box-shadow: 0 4px 18px rgba(220,38,38,.32); transition: all .25s;
+  gap: 4px; margin-bottom: 12px;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation;
 }
 #rec-btn .rlbl { font-size: 9px; font-weight: 700; letter-spacing: 1.8px; font-family: inherit; opacity: .85; }
 #rec-btn.hot { animation: pulse 1.5s infinite; }
@@ -416,74 +369,123 @@ body {
 }
 #timer { font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 12px; display: none; letter-spacing: .02em; }
 #transcript {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 14px;
-  min-height: 160px;
-  max-height: 280px;
-  overflow-y: auto;
-  font-size: 15px;
-  line-height: 1.6;
-  color: var(--text);
-  margin-bottom: 12px;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 10px; padding: 14px; min-height: 160px; max-height: 280px;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  font-size: 15px; line-height: 1.6; color: var(--text); margin-bottom: 12px;
 }
 
-/* ── HISTORY ──────────────────────────────── */
+/* ── HISTORY ────────────────────────────────────────── */
 .rec-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r);
-  padding: 18px 20px;
-  margin-bottom: 10px;
-  box-shadow: var(--sh);
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 18px 20px; margin-bottom: 10px; box-shadow: var(--sh);
 }
 .rec-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 12px; }
 .rec-title { font-size: 15px; font-weight: 600; color: var(--text); }
-.rec-date { font-size: 12px; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
-.rec-type-badge {
-  display: inline-block;
-  border-radius: 20px;
-  padding: 3px 10px;
-  font-size: 11px;
-  font-weight: 600;
-  margin-bottom: 8px;
-  letter-spacing: .02em;
-}
-.rec-type-badge.appt { background: #EFF6FF; color: #1D4ED8; }
-.rec-type-badge.doc  { background: var(--green-lt); color: var(--green); }
+.rec-date  { font-size: 12px; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
+.rec-type-badge { display: inline-block; border-radius: 20px; padding: 3px 10px; font-size: 11px; font-weight: 600; margin-bottom: 8px; letter-spacing: .02em; }
+.rec-type-badge.appt  { background: #EFF6FF; color: #1D4ED8; }
+.rec-type-badge.doc   { background: var(--green-lt); color: var(--green); }
+.rec-type-badge.trans { background: var(--rose-lt); color: var(--rose-dk); }
 .rec-preview { font-size: 13px; color: var(--text-2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
-.rec-actions { display: flex; gap: 6px; margin-top: 12px; }
+.rec-actions { display: flex; gap: 6px; margin-top: 12px; flex-wrap: wrap; }
 
-/* ── UTILS ────────────────────────────────── */
+/* ── UTILS ──────────────────────────────────────────── */
 .hidden { display: none !important; }
 .mt { margin-top: 12px; }
-.divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+/* ── JOURNAL ────────────────────────────────────────── */
+.mood-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 12px 0 4px; }
+.mood-btn {
+  flex: 1; min-width: 64px;
+  padding: 11px 6px; border: 1.5px solid var(--border);
+  border-radius: 10px; background: var(--surface); color: var(--text-2);
+  font-family: inherit; font-size: 13px; cursor: pointer;
+  transition: all .15s; text-align: center; line-height: 1.3;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; min-height: 50px;
+}
+.mood-btn.on { background: var(--rose-lt); border-color: var(--rose); color: var(--rose); font-weight: 600; }
+
+.sym-row { display: flex; gap: 6px; flex-wrap: wrap; margin: 10px 0; }
+.sym-btn {
+  padding: 9px 14px; border: 1.5px solid var(--border);
+  border-radius: 20px; background: var(--surface); color: var(--text-2);
+  font-family: inherit; font-size: 13px; cursor: pointer; transition: all .15s;
+  -webkit-tap-highlight-color: transparent; touch-action: manipulation; min-height: 40px;
+}
+.sym-btn.on { background: var(--rose-lt); border-color: var(--rose); color: var(--rose); font-weight: 600; }
+
+.journal-entry { background: var(--surface); border: 1px solid var(--border); border-radius: var(--r); padding: 16px 18px; margin-bottom: 10px; box-shadow: var(--sh); }
+.journal-entry-hd { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; gap: 10px; }
+.journal-entry-date { font-size: 13px; font-weight: 600; color: var(--text); }
+.journal-entry-day { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+.journal-entry-body { font-size: 14px; color: var(--text-2); line-height: 1.65; white-space: pre-line; }
+.journal-entry-actions { display: flex; gap: 6px; margin-top: 10px; }
+
+.save-toast {
+  position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: #fff; border-radius: 20px;
+  padding: 10px 22px; font-size: 14px; font-weight: 600;
+  box-shadow: 0 4px 12px rgba(22,163,74,.3); z-index: 300;
+  animation: toast-in .25s ease, toast-out .3s ease 1.8s forwards;
+  white-space: nowrap;
+}
+@keyframes toast-in  { from{opacity:0;transform:translateX(-50%) translateY(12px)} to{opacity:1;transform:translateX(-50%) translateY(0)} }
+@keyframes toast-out { from{opacity:1} to{opacity:0} }
+
+@media (max-width: 430px) {
+  body { font-size: 16px; }
+  .app-header h1 { font-size: 19px; }
+  #msgs { height: 300px; }
+  #rec-btn { width: 104px; height: 104px; }
+  .welcome-box { padding: 28px 20px 22px; }
+  .welcome-box h2 { font-size: 1.7em; }
+}
 </style>
 </head>
 <body>
 
+<!-- ── WELCOME MODAL ──────────────────────────────────────────────── -->
+<div id="welcome-modal" class="hidden">
+  <div class="welcome-overlay"></div>
+  <div class="welcome-box">
+    <div class="welcome-heart">💕</div>
+    <h2>Hi Grandma!</h2>
+    <p class="welcome-from">Made just for you — with love, Mackenzie</p>
+    <p class="welcome-intro">I built this to help you keep track of your health, understand your medications, and get ready for doctor appointments. Here's what you can do:</p>
+    <div class="welcome-steps">
+      <div class="welcome-step"><span class="welcome-step-icon">💬</span><span><strong>Ask</strong> — Ask any question about your pills or health, by voice or typing</span></div>
+      <div class="welcome-step"><span class="welcome-step-icon">💊</span><span><strong>Medications</strong> — See all your pills and tap to learn more about them</span></div>
+      <div class="welcome-step"><span class="welcome-step-icon">❤️</span><span><strong>My Health</strong> — Learn about your conditions and warning signs</span></div>
+      <div class="welcome-step"><span class="welcome-step-icon">📋</span><span><strong>Summary</strong> — Make a health summary to bring to your doctor</span></div>
+      <div class="welcome-step"><span class="welcome-step-icon">🎙️</span><span><strong>Record</strong> — Record your doctor visit and get a clear summary after</span></div>
+    </div>
+    <div class="welcome-tip">💡 Tap the pink microphone button to speak your questions out loud — you don't have to type!</div>
+    <button class="welcome-close" onclick="closeWelcome()">Let's go! &nbsp;❤️</button>
+  </div>
+</div>
+
 <div id="app">
 
-<!-- ── HEADER ──────────────────────────────── -->
+<!-- ── HEADER ──────────────────────────────────────────────────────── -->
 <header class="app-header">
   <div class="app-header-inner">
     <div class="header-left">
       <h1>Dianne's Health</h1>
-      <p>Personal health companion</p>
+      <p>Your personal companion</p>
     </div>
     <div class="header-date" id="hdr-date"></div>
   </div>
 </header>
 
-<!-- ── CONTENT ─────────────────────────────── -->
+<!-- ── CONTENT ─────────────────────────────────────────────────────── -->
 <div class="content">
 
-<!-- ══ ASK ══════════════════════════════════ -->
+<!-- ══ ASK ══════════════════════════════════════════════════════ -->
 <div id="p-chat" class="panel on">
   <div class="emer">
     <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-    If you feel unwell or have an emergency, call 911 immediately
+    If you feel unwell or have an emergency, call 911 right away
   </div>
 
   <div class="card">
@@ -498,7 +500,7 @@ body {
 
     <div id="msgs">
       <div class="msg bot">
-        <div class="bub">Hello Dianne. I know all about your medications and health conditions. Ask me anything — what your pills are for, warning signs to watch for, how to prepare for a doctor visit, or anything else. How can I help?</div>
+        <div class="bub">Hi Grandma! 💕 Mackenzie set this up just for you. I know all about your medications and health — ask me anything at all. What your pills are for, what to watch out for, how to get ready for your doctor. How can I help you today?</div>
       </div>
     </div>
 
@@ -521,7 +523,7 @@ body {
   </div>
 </div>
 
-<!-- ══ MEDICATIONS ═══════════════════════════ -->
+<!-- ══ MEDICATIONS ════════════════════════════════════════════════ -->
 <div id="p-meds" class="panel">
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">Your Medications</div>
@@ -535,7 +537,7 @@ body {
       <div class="med-body">
         <div class="med-name">Brenzys (Etanercept)</div>
         <div class="med-dose">50 mg/mL — single dose injection</div>
-        <span class="tag tag-teal">Once per week</span>
+        <span class="tag tag-rose">Once per week</span>
         <div class="med-why">For Rheumatoid Arthritis — biologic that reduces joint inflammation</div>
       </div>
       <div class="med-chevron">›</div>
@@ -545,7 +547,7 @@ body {
       <div class="med-body">
         <div class="med-name">Methotrexate</div>
         <div class="med-dose">12.5 mg tablets</div>
-        <span class="tag tag-teal">Once per week</span>
+        <span class="tag tag-rose">Once per week</span>
         <div class="med-why">For Rheumatoid Arthritis — calms the immune system</div>
       </div>
       <div class="med-chevron">›</div>
@@ -555,7 +557,7 @@ body {
       <div class="med-body">
         <div class="med-name">Folic Acid</div>
         <div class="med-dose">5 mg</div>
-        <span class="tag tag-teal">5 days per week</span>
+        <span class="tag tag-rose">5 days per week</span>
         <div class="med-why">Prevents side effects from Methotrexate</div>
       </div>
       <div class="med-chevron">›</div>
@@ -569,7 +571,7 @@ body {
       <div class="med-body">
         <div class="med-name">Ratio-Irbesartan</div>
         <div class="med-dose">150 mg</div>
-        <span class="tag tag-teal">Once per day</span>
+        <span class="tag tag-rose">Once per day</span>
         <span class="tag tag-amber">New prescription</span>
         <div class="med-why">For High Blood Pressure — relaxes blood vessels</div>
       </div>
@@ -580,7 +582,7 @@ body {
       <div class="med-body">
         <div class="med-name">Pantoprazole</div>
         <div class="med-dose">40 mg</div>
-        <span class="tag tag-teal">Every morning</span>
+        <span class="tag tag-rose">Every morning</span>
         <div class="med-why">Protects stomach and prevents acid reflux</div>
       </div>
       <div class="med-chevron">›</div>
@@ -602,7 +604,7 @@ body {
   </div>
 </div>
 
-<!-- ══ MY HEALTH ═════════════════════════════ -->
+<!-- ══ MY HEALTH ══════════════════════════════════════════════════ -->
 <div id="p-health" class="panel">
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">Your Health Conditions</div>
@@ -636,13 +638,13 @@ body {
 
   <div class="cond-item" onclick="ask('Tell me about my high blood pressure — how does my medication help and what should I know?')">
     <div class="cond-name">High Blood Pressure</div>
-    <span class="tag tag-teal">Managed with medication</span>
+    <span class="tag tag-rose">Managed with medication</span>
     <div class="cond-desc">Your new Irbesartan prescription helps keep your blood pressure at a safe level. Taking it every single day without missing is very important — especially given the carotid artery narrowing.</div>
     <div class="tap-hint">Tap to ask questions →</div>
   </div>
 </div>
 
-<!-- ══ DOCTOR SUMMARY ════════════════════════ -->
+<!-- ══ DOCTOR SUMMARY ═════════════════════════════════════════════ -->
 <div id="p-summary" class="panel">
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">Doctor Visit Summary</div>
@@ -679,11 +681,11 @@ body {
   </div>
 </div>
 
-<!-- ══ RECORD VISIT ═══════════════════════════ -->
+<!-- ══ RECORD VISIT ═══════════════════════════════════════════════ -->
 <div id="p-record" class="panel">
   <div class="card" style="margin-bottom:16px">
     <div class="card-title">Record Your Appointment</div>
-    <div class="card-sub">Tap the button when your appointment starts. It will write down what is said. When done, get a clear summary you can keep.</div>
+    <div class="card-sub">Tap the button when your appointment starts. It writes down what is said. When done, get a clear summary — saved automatically.</div>
   </div>
 
   <div class="card" style="text-align:center">
@@ -714,24 +716,65 @@ body {
   </div>
 </div>
 
-<!-- ══ SAVED RECORDS ══════════════════════════ -->
+<!-- ══ JOURNAL ══════════════════════════════════════════════════════ -->
+<div id="p-journal" class="panel">
+
+  <div class="card">
+    <div class="card-title">How are you feeling today?</div>
+    <div class="card-sub">Tap to select your mood, then add any symptoms or notes.</div>
+
+    <div class="mood-row">
+      <button class="mood-btn" data-mood="Great 😊" onclick="setMood(this)">😊<br>Great</button>
+      <button class="mood-btn" data-mood="Good 🙂" onclick="setMood(this)">🙂<br>Good</button>
+      <button class="mood-btn" data-mood="Okay 😐" onclick="setMood(this)">😐<br>Okay</button>
+      <button class="mood-btn" data-mood="Not great 😔" onclick="setMood(this)">😔<br>Not great</button>
+    </div>
+
+    <div class="sec-label" style="margin-top:16px">Any symptoms?</div>
+    <div class="sym-row">
+      <button class="sym-btn" onclick="toggleSym(this)">Tired</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Joint pain</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Headache</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Dizzy</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Nausea</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Stomach upset</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Swelling</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Short of breath</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Slept well</button>
+      <button class="sym-btn" onclick="toggleSym(this)">Poor sleep</button>
+      <button class="sym-btn" onclick="toggleSym(this)">No symptoms</button>
+    </div>
+
+    <div class="field" style="margin-top:16px;margin-bottom:16px">
+      <label>Anything else to note? <span class="hint">(optional)</span></label>
+      <textarea id="journal-text" rows="4" placeholder="How did you sleep? Any aches or pains? Energy levels? Anything you want to remember or tell your doctor…"></textarea>
+    </div>
+
+    <button class="btn btn-primary btn-full" onclick="saveJournal()">Save Today's Entry</button>
+  </div>
+
+  <div class="sec-label">Past Entries</div>
+  <div id="journal-list"><div style="text-align:center;color:var(--text-3);padding:20px;font-size:14px">Loading entries…</div></div>
+</div>
+
+<!-- ══ SAVED RECORDS ══════════════════════════════════════════════ -->
 <div id="p-history" class="panel">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
     <div>
       <div style="font-size:17px;font-weight:700;color:var(--text)">Saved Records</div>
-      <div style="font-size:13px;color:var(--text-3);margin-top:2px">Summaries sync automatically across all devices</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:2px">Synced across all your devices</div>
     </div>
     <div id="sync-status" style="font-size:12px;color:var(--text-3)">Loading…</div>
   </div>
   <div id="records-list"><div style="text-align:center;color:var(--text-3);padding:40px;font-size:14px">Loading saved records…</div></div>
-  <div id="no-sync-msg" class="card hidden" style="text-align:center;color:var(--text-3)">
-    <div style="font-size:14px">Could not connect to sync. Check your internet connection and reload the page.</div>
+  <div id="no-sync-msg" class="card hidden" style="text-align:center;color:var(--text-3);font-size:14px">
+    Could not connect to sync. Check your internet and reload the page.
   </div>
 </div>
 
 </div><!-- .content -->
 
-<!-- ── BOTTOM NAV ───────────────────────────── -->
+<!-- ── BOTTOM NAV ───────────────────────────────────────────────── -->
 <nav class="bottom-nav">
   <button class="tab on" data-t="chat" onclick="go('chat')">
     <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -753,6 +796,10 @@ body {
     <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
     Record
   </button>
+  <button class="tab" data-t="journal" onclick="go('journal')">
+    <svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Journal
+  </button>
   <button class="tab" data-t="history" onclick="go('history')">
     <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
     Saved
@@ -762,8 +809,8 @@ body {
 </div><!-- #app -->
 
 <script>
-// ── PATIENT CONTEXT ────────────────────────────────────────────
-const SYS = `You are a compassionate, warm health assistant for Dianne Zodic Majewski, an elderly woman from Bowmanville, Ontario, Canada.
+// ── PATIENT CONTEXT ────────────────────────────────────────────────
+const SYS = `You are a compassionate, warm health assistant for Dianne Zodic Majewski, an elderly woman from Bowmanville, Ontario, Canada. Her granddaughter Mackenzie built this app to help her.
 
 MEDICAL CONDITIONS:
 1. Rheumatoid Arthritis (RA) — Rheumatologist says she is doing very well, pretty much in remission.
@@ -779,14 +826,14 @@ CURRENT MEDICATIONS:
 6. Pantoprazole 40 mg — Every morning — Stomach/acid protection
 
 HOW TO SPEAK TO DIANNE:
-- Use very simple, plain language — no jargon; if you use a medical term, immediately explain it simply
-- Be warm, kind, patient, and encouraging — like speaking to a dear grandmother
+- Use very simple, plain language — no jargon; explain any medical term immediately in plain words
+- Be warm, kind, patient, and encouraging — like speaking to a beloved grandmother
 - Short sentences. Short paragraphs. Easy to read or listen to.
 - For any medical decision, remind her to check with her doctor
 - For emergencies (stroke symptoms, chest pain, severe symptoms), say to call 911 right away
-- Stroke warning signs to always mention: sudden weakness or numbness on one side, sudden trouble speaking, sudden vision changes, sudden severe headache, sudden dizziness or loss of balance`;
+- Stroke warning signs: sudden weakness or numbness on one side, sudden trouble speaking, sudden vision changes, sudden severe headache, sudden dizziness or loss of balance`;
 
-// ── STATE ──────────────────────────────────────────────────────
+// ── STATE ──────────────────────────────────────────────────────────
 let history = [];
 let recog = null;
 let apptRecog = null;
@@ -797,6 +844,7 @@ let timerID = null;
 let secs = 0;
 const synth = window.speechSynthesis;
 
+// ── INIT ───────────────────────────────────────────────────────────
 window.onload = () => {
   const d = new Date();
   document.getElementById('hdr-date').innerHTML =
@@ -804,9 +852,21 @@ window.onload = () => {
     '<br>' + d.toLocaleTimeString('en-CA',{hour:'numeric',minute:'2-digit'});
   initSpeech();
   initFirebase();
+  showWelcome();
 };
 
-// ── TABS ───────────────────────────────────────────────────────
+// ── WELCOME ────────────────────────────────────────────────────────
+function showWelcome() {
+  if (!localStorage.getItem('dianne_welcomed_v1')) {
+    document.getElementById('welcome-modal').classList.remove('hidden');
+  }
+}
+function closeWelcome() {
+  localStorage.setItem('dianne_welcomed_v1', '1');
+  document.getElementById('welcome-modal').classList.add('hidden');
+}
+
+// ── TABS ───────────────────────────────────────────────────────────
 function go(t) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
@@ -814,9 +874,10 @@ function go(t) {
   document.querySelector(`[data-t="${t}"]`).classList.add('on');
   synth.cancel();
   if (t === 'history') loadRecords();
+  if (t === 'journal') loadJournal();
 }
 
-// ── CLAUDE API ─────────────────────────────────────────────────
+// ── CLAUDE API ─────────────────────────────────────────────────────
 async function claude(userMsg, sysOverride, oneShot) {
   if (!oneShot) history.push({ role:'user', content: userMsg });
   const msgs = oneShot ? [{ role:'user', content: userMsg }] : history;
@@ -842,7 +903,7 @@ async function claude(userMsg, sysOverride, oneShot) {
   return reply;
 }
 
-// ── CHAT ───────────────────────────────────────────────────────
+// ── CHAT ───────────────────────────────────────────────────────────
 function addMsg(role, html) {
   const c = document.getElementById('msgs');
   const d = document.createElement('div');
@@ -852,7 +913,6 @@ function addMsg(role, html) {
   c.scrollTop = c.scrollHeight;
   return d;
 }
-
 function addLoader() {
   const c = document.getElementById('msgs');
   const d = document.createElement('div');
@@ -879,16 +939,15 @@ async function sendMsg() {
     console.error(e);
   }
 }
-
 function ask(q) { go('chat'); document.getElementById('txt-in').value = q; sendMsg(); }
 function askMed(m) { ask(`Tell me about my medication ${m} — what does it do, how do I take it, and are there any side effects I should know about?`); }
 
-// ── SPEECH RECOGNITION ────────────────────────────────────────
+// ── SPEECH RECOGNITION ────────────────────────────────────────────
 function initSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
     document.getElementById('mic').style.opacity = '.4';
-    document.getElementById('mic-status').textContent = 'Voice input not available on this browser';
+    document.getElementById('mic-status').textContent = 'Voice not available on this browser';
     return;
   }
   recog = new SR();
@@ -917,35 +976,32 @@ function initSpeech() {
     isListen = false;
     document.getElementById('mic').classList.remove('hot');
     document.getElementById('mic').textContent = '🎤';
-    const msgs = { 'no-speech':'I did not hear anything — please try again', 'not-allowed':'Please allow microphone access in your browser settings' };
-    document.getElementById('mic-status').textContent = msgs[e.error] || 'Could not hear — please try again';
+    const m = { 'no-speech':'I didn\'t hear anything — please try again', 'not-allowed':'Please allow microphone access in your browser settings' };
+    document.getElementById('mic-status').textContent = m[e.error] || 'Could not hear — please try again';
   };
 }
-
 function toggleMic() {
-  if (!recog) { alert('Voice input is not available on this browser. Please type your question.'); return; }
+  if (!recog) { alert('Voice input is not supported on this browser. Please type your question.'); return; }
   synth.cancel();
   isListen ? recog.stop() : recog.start();
 }
 
-// ── SPEECH SYNTHESIS ──────────────────────────────────────────
+// ── SPEECH SYNTHESIS ──────────────────────────────────────────────
 function speak(text) {
   synth.cancel();
   const clean = text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6} /g,'').replace(/<[^>]+>/g,' ');
   const u = new SpeechSynthesisUtterance(clean);
   u.lang = 'en-CA'; u.rate = 0.85; u.volume = 1;
   const vs = synth.getVoices();
-  const v = vs.find(v=>v.lang.startsWith('en')&&/Samantha|Karen|Fiona|Moira/i.test(v.name))
-           || vs.find(v=>v.lang.startsWith('en'));
+  const v = vs.find(v=>v.lang.startsWith('en')&&/Samantha|Karen|Fiona|Moira/i.test(v.name)) || vs.find(v=>v.lang.startsWith('en'));
   if (v) u.voice = v;
   synth.speak(u);
 }
 function speakEl(id) { speak(document.getElementById(id).innerText); }
 
-// ── RECORDING ─────────────────────────────────────────────────
+// ── RECORDING ─────────────────────────────────────────────────────
 function toggleRec() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-
   if (!isRec) {
     transcript = '';
     document.getElementById('transcript').innerHTML = '<em style="color:var(--text-3)">Listening…</em>';
@@ -962,7 +1018,7 @@ function toggleRec() {
           e.results[i].isFinal ? (final += e.results[i][0].transcript+' ') : (interim += e.results[i][0].transcript);
         }
         transcript = final;
-        document.getElementById('transcript').innerHTML = final + `<em style="color:#94A3B8">${interim}</em>`;
+        document.getElementById('transcript').innerHTML = final + `<em style="color:#A8899A">${interim}</em>`;
       };
       apptRecog.onend = () => { if(isRec) try{ apptRecog.start(); }catch(e){} };
       apptRecog.start();
@@ -988,7 +1044,13 @@ function toggleRec() {
     document.getElementById('rec-btn').classList.remove('hot');
     document.getElementById('rec-btn').innerHTML = '⏺<span class="rlbl">TAP TO START</span>';
     document.getElementById('transcript').contentEditable = false;
-    if (transcript.trim()) document.getElementById('appt-btns').classList.remove('hidden');
+
+    if (transcript.trim()) {
+      document.getElementById('appt-btns').classList.remove('hidden');
+      // Auto-save the raw transcript immediately
+      const title = `Recording — ${new Date().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})}`;
+      saveRecord('transcript', title, transcript);
+    }
   }
 }
 
@@ -997,7 +1059,6 @@ function updateTimer() {
   const m = Math.floor(secs/60), s = secs%60;
   document.getElementById('timer-num').textContent = `${m}:${s.toString().padStart(2,'0')}`;
 }
-
 function clearRec() {
   transcript = '';
   document.getElementById('transcript').innerHTML = '<span style="color:var(--text-3);font-size:14px">Your appointment transcript will appear here as you record…</span>';
@@ -1009,54 +1070,40 @@ async function summariseAppt() {
   if (!transcript.trim()) { alert('No transcript yet — please record your appointment first.'); return; }
   document.getElementById('appt-card').classList.remove('hidden');
   document.getElementById('appt-out').innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-
   const prompt = `Here is a transcript from Dianne's doctor appointment. Please summarise it clearly and simply:
-
 1. What the doctor said about her health
 2. Any changes to medications or treatment
 3. What to watch for
 4. Follow-up actions (tests, appointments, prescriptions)
 5. Any important advice
-
 TRANSCRIPT:
 ${transcript}
-
 Write in very plain, simple language Dianne and her family can easily understand.`;
-
   try {
     const r = await claude(prompt, SYS, true);
     document.getElementById('appt-out').innerHTML = fmt(r);
-    const title = `Appointment — ${new Date().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'})}`;
+    const title = `Appointment Summary — ${new Date().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'})}`;
     await saveRecord('appointment', title, r);
   } catch(e) {
     document.getElementById('appt-out').innerHTML = 'Could not connect. Please check the internet and try again.';
   }
 }
 
-// ── DOCTOR SUMMARY ────────────────────────────────────────────
+// ── DOCTOR SUMMARY ────────────────────────────────────────────────
 async function genSummary() {
-  const docLabels = {
-    family:'Family / General Doctor', rheumatologist:'Rheumatologist',
-    cardiologist:'Cardiologist', neurologist:'Neurologist',
-    vascular:'Vascular Surgeon', other:'Specialist'
-  };
+  const docLabels = { family:'Family / General Doctor', rheumatologist:'Rheumatologist', cardiologist:'Cardiologist', neurologist:'Neurologist', vascular:'Vascular Surgeon', other:'Specialist' };
   const dt = document.getElementById('doc-type').value;
   const concerns = document.getElementById('sum-concerns').value.trim();
-
   document.getElementById('sum-card').classList.remove('hidden');
   document.getElementById('sum-out').innerHTML = '<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>';
-
   const prompt = `Create a clear medical summary for Dianne Zodic Majewski to bring to her ${docLabels[dt]} appointment.
-
 Include:
 1. Current medical conditions and status
 2. All current medications with doses and schedules
 3. Recent health updates (RA in remission; carotid artery status; blood pressure treatment)
 ${concerns ? `4. Her current concerns: ${concerns}` : ''}
 5. Three to five suggested questions she might want to ask the ${docLabels[dt]}
-
 Format as a clean, easy-to-read summary she can hand to the doctor or read from. Professional but written so Dianne can also understand it.`;
-
   try {
     const r = await claude(prompt, SYS, true);
     document.getElementById('sum-out').innerHTML = fmt(r);
@@ -1068,38 +1115,26 @@ Format as a clean, easy-to-read summary she can hand to the doctor or read from.
 }
 
 async function copySum() { copyEl('sum-out'); }
-
 async function copyEl(id) {
   const text = document.getElementById(id).innerText;
-  try {
-    await navigator.clipboard.writeText(text);
-    alert('Copied! You can paste it into a message or email.');
-  } catch {
-    const r = document.createRange();
-    r.selectNode(document.getElementById(id));
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(r);
-    document.execCommand('copy');
-    alert('Copied!');
-  }
+  try { await navigator.clipboard.writeText(text); alert('Copied! You can paste it into a message or email.'); }
+  catch { const r = document.createRange(); r.selectNode(document.getElementById(id)); window.getSelection().removeAllRanges(); window.getSelection().addRange(r); document.execCommand('copy'); alert('Copied!'); }
 }
-
 function printSum() {
   const d = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
   const w = window.open('','','width=820,height=700');
   w.document.write(`<!DOCTYPE html><html><head><title>Health Summary — Dianne Majewski</title>
   <style>body{font-family:-apple-system,sans-serif;font-size:13pt;line-height:1.7;padding:36px;max-width:720px;margin:0 auto}
-  h1{color:#0F766E;font-size:20pt}hr{border:none;border-top:1px solid #E2E8F0;margin:16px 0}</style></head>
+  h1{color:#BE185D}hr{border:none;border-top:1px solid #F0D5E5;margin:16px 0}</style></head>
   <body><h1>Health Summary — Dianne Zodic Majewski</h1>
-  <p style="color:#64748b"><em>${d}</em></p><hr>
+  <p style="color:#A8899A"><em>${d}</em></p><hr>
   ${document.getElementById('sum-out').innerHTML}
   </body></html>`);
   w.document.close(); w.focus(); w.print();
 }
 
-// ── HELPERS ───────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────────
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 function fmt(t) {
   return esc(t)
     .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
@@ -1107,9 +1142,8 @@ function fmt(t) {
     .replace(/\n\n/g,'</p><p style="margin-top:10px">').replace(/\n/g,'<br>');
 }
 
-// ── FIREBASE / SYNC ───────────────────────────────────────────
+// ── FIREBASE ──────────────────────────────────────────────────────
 let db = null;
-
 function initFirebase() {
   try {
     const cfg = {
@@ -1122,18 +1156,13 @@ function initFirebase() {
     };
     if (!firebase.apps.length) firebase.initializeApp(cfg);
     db = firebase.firestore();
-  } catch(e) {
-    console.warn('Firebase init failed:', e);
-  }
+  } catch(e) { console.warn('Firebase init failed:', e); }
 }
 
 async function saveRecord(type, title, content) {
   if (!db) return;
   try {
-    await db.collection('dianne-health').add({
-      type, title, content,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp()
-    });
+    await db.collection('dianne-health').add({ type, title, content, createdAt: firebase.firestore.FieldValue.serverTimestamp() });
   } catch(e) { console.warn('Save failed:', e); }
 }
 
@@ -1148,43 +1177,25 @@ async function loadRecords() {
   const list = document.getElementById('records-list');
   const status = document.getElementById('sync-status');
   const noSync = document.getElementById('no-sync-msg');
-
-  if (!db) {
-    list.innerHTML = '';
-    noSync.classList.remove('hidden');
-    status.textContent = 'Not connected';
-    return;
-  }
-
+  if (!db) { list.innerHTML = ''; noSync.classList.remove('hidden'); status.textContent = 'Not connected'; return; }
   noSync.classList.add('hidden');
   status.textContent = 'Syncing…';
   list.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:30px;font-size:14px">Loading…</div>';
-
   try {
-    const snap = await db.collection('dianne-health')
-      .orderBy('createdAt', 'desc').limit(60).get();
-
+    const snap = await db.collection('dianne-health').orderBy('createdAt', 'desc').limit(60).get();
     status.textContent = `${snap.size} record${snap.size===1?'':'s'}`;
-
-    if (snap.empty) {
-      list.innerHTML = '<div class="card" style="text-align:center;color:var(--text-3);font-size:14px">No saved records yet. Doctor summaries and appointment notes will appear here automatically.</div>';
-      return;
-    }
-
+    if (snap.empty) { list.innerHTML = '<div class="card" style="text-align:center;color:var(--text-3);font-size:14px">No saved records yet. Doctor summaries and appointment notes will appear here automatically.</div>'; return; }
+    const typeLabels = { appointment:'Appointment Summary', doctor_summary:'Doctor Summary', transcript:'Raw Recording' };
+    const typeClass  = { appointment:'appt', doctor_summary:'doc', transcript:'trans' };
     list.innerHTML = snap.docs.map(d => {
       const r = d.data();
-      const date = r.createdAt?.toDate
-        ? r.createdAt.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'})
-        : 'Just now';
-      const typeLabel = r.type === 'appointment' ? 'Appointment' : 'Doctor Summary';
-      const typeClass = r.type === 'appointment' ? 'appt' : 'doc';
-      const preview = (r.content || '').replace(/<[^>]+>/g,' ').slice(0, 180);
+      const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'}) : 'Just now';
+      const tl = typeLabels[r.type] || 'Record';
+      const tc = typeClass[r.type] || 'trans';
+      const preview = (r.content||'').replace(/<[^>]+>/g,' ').slice(0,180);
       return `<div class="rec-card">
-        <div class="rec-header">
-          <div class="rec-title">${esc(r.title || 'Untitled')}</div>
-          <div class="rec-date">${date}</div>
-        </div>
-        <span class="rec-type-badge ${typeClass}">${typeLabel}</span>
+        <div class="rec-header"><div class="rec-title">${esc(r.title||'Untitled')}</div><div class="rec-date">${date}</div></div>
+        <span class="rec-type-badge ${tc}">${tl}</span>
         <div class="rec-preview">${esc(preview)}…</div>
         <div class="rec-actions">
           <button class="btn btn-secondary btn-sm" onclick="viewRecord('${d.id}')">View</button>
@@ -1193,10 +1204,8 @@ async function loadRecords() {
         </div>
       </div>`;
     }).join('');
-
     window._recDocs = {};
     snap.docs.forEach(d => { window._recDocs[d.id] = d.data(); });
-
   } catch(e) {
     status.textContent = 'Sync error';
     list.innerHTML = '<div class="card" style="color:var(--red);font-size:14px">Could not load records. Check your internet connection.</div>';
@@ -1205,35 +1214,124 @@ async function loadRecords() {
 }
 
 function viewRecord(id) {
-  const r = window._recDocs?.[id];
-  if (!r) return;
+  const r = window._recDocs?.[id]; if (!r) return;
   const w = window.open('','','width=820,height=700');
-  const date = r.createdAt?.toDate
-    ? r.createdAt.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'})
-    : '';
+  const date = r.createdAt?.toDate ? r.createdAt.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'}) : '';
   w.document.write(`<!DOCTYPE html><html><head><title>${r.title||'Record'}</title>
   <style>body{font-family:-apple-system,sans-serif;font-size:13pt;line-height:1.7;padding:36px;max-width:720px;margin:0 auto}
-  h1{color:#0F766E}hr{border:none;border-top:1px solid #E2E8F0;margin:16px 0}
-  button{padding:10px 18px;background:#0D9488;color:#fff;border:none;border-radius:8px;font-size:12pt;cursor:pointer;margin-top:16px}
+  h1{color:#BE185D}hr{border:none;border-top:1px solid #F0D5E5;margin:16px 0}
+  button{padding:10px 18px;background:#DB2777;color:#fff;border:none;border-radius:8px;font-size:12pt;cursor:pointer;margin-top:16px}
   </style></head><body>
   <h1>${esc(r.title||'Health Record')}</h1>
-  <p style="color:#94A3B8"><em>${date}</em></p><hr>
+  <p style="color:#A8899A"><em>${date}</em></p><hr>
   <p>${(r.content||'').replace(/\n/g,'<br>')}</p>
-  <button onclick="window.print()">Print</button>
-  </body></html>`);
+  <button onclick="window.print()">Print</button></body></html>`);
   w.document.close();
 }
+function speakRecord(id) { const r = window._recDocs?.[id]; if (r) speak(r.content||''); }
 
-function speakRecord(id) {
-  const r = window._recDocs?.[id];
-  if (r) speak(r.content || '');
+// ── JOURNAL ───────────────────────────────────────────────────────
+let selectedMood = '';
+let selectedSymptoms = [];
+
+function setMood(btn) {
+  document.querySelectorAll('.mood-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  selectedMood = btn.dataset.mood;
+}
+
+function toggleSym(btn) {
+  btn.classList.toggle('on');
+  const s = btn.textContent.trim();
+  selectedSymptoms = btn.classList.contains('on')
+    ? [...selectedSymptoms, s]
+    : selectedSymptoms.filter(x => x !== s);
+}
+
+async function saveJournal() {
+  const text = document.getElementById('journal-text').value.trim();
+  if (!selectedMood && selectedSymptoms.length === 0 && !text) {
+    alert('Please select how you are feeling or add a note before saving.');
+    return;
+  }
+
+  const parts = [];
+  if (selectedMood)          parts.push(`Mood: ${selectedMood}`);
+  if (selectedSymptoms.length) parts.push(`Symptoms: ${selectedSymptoms.join(', ')}`);
+  if (text)                  parts.push(text);
+
+  const now = new Date();
+  const title = now.toLocaleDateString('en-CA',{weekday:'long',year:'numeric',month:'long',day:'numeric'});
+  await saveRecord('journal', title, parts.join('\n\n'));
+
+  // Reset
+  document.getElementById('journal-text').value = '';
+  document.querySelectorAll('.mood-btn, .sym-btn').forEach(b => b.classList.remove('on'));
+  selectedMood = '';
+  selectedSymptoms = [];
+
+  // Toast
+  const t = document.createElement('div');
+  t.className = 'save-toast';
+  t.textContent = 'Entry saved ✓';
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 2200);
+
+  loadJournal();
+}
+
+async function loadJournal() {
+  const list = document.getElementById('journal-list');
+  if (!db) { list.innerHTML = '<div class="card" style="text-align:center;color:var(--text-3);font-size:14px">Not connected to sync.</div>'; return; }
+
+  list.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:20px;font-size:14px">Loading…</div>';
+  try {
+    const snap = await db.collection('dianne-health')
+      .where('type','==','journal')
+      .orderBy('createdAt','desc')
+      .limit(30).get();
+
+    if (snap.empty) {
+      list.innerHTML = '<div class="card" style="text-align:center;color:var(--text-3);font-size:14px;padding:24px">No entries yet. Start by saving how you feel today! 💕</div>';
+      return;
+    }
+
+    list.innerHTML = snap.docs.map(d => {
+      const r = d.data();
+      const date = r.createdAt?.toDate
+        ? r.createdAt.toDate().toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'})
+        : 'Just now';
+      return `<div class="journal-entry">
+        <div class="journal-entry-hd">
+          <div class="journal-entry-date">${esc(r.title||'Daily Note')}</div>
+          <div class="journal-entry-day">${date}</div>
+        </div>
+        <div class="journal-entry-body">${esc(r.content||'')}</div>
+        <div class="journal-entry-actions">
+          <button class="btn btn-secondary btn-sm" onclick="speakRecord('${d.id}')">Read Aloud</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteJournalEntry('${d.id}')">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+
+    if (!window._recDocs) window._recDocs = {};
+    snap.docs.forEach(d => { window._recDocs[d.id] = d.data(); });
+  } catch(e) {
+    list.innerHTML = '<div style="color:var(--red);font-size:14px;padding:12px">Could not load entries. Check your internet connection.</div>';
+    console.error(e);
+  }
+}
+
+async function deleteJournalEntry(id) {
+  if (!db) return;
+  if (!confirm('Delete this entry?')) return;
+  await db.collection('dianne-health').doc(id).delete();
+  loadJournal();
 }
 
 // Enter to send
 document.addEventListener('keydown', e => {
-  if (e.key==='Enter' && !e.shiftKey && document.activeElement.id==='txt-in') {
-    e.preventDefault(); sendMsg();
-  }
+  if (e.key==='Enter' && !e.shiftKey && document.activeElement.id==='txt-in') { e.preventDefault(); sendMsg(); }
 });
 </script>
 </body>
