@@ -3,266 +3,513 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
-<title>Dianne's Health Helper</title>
+<title>Dianne's Health</title>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <style>
+/* ── TOKENS ───────────────────────────────── */
 :root {
-  --primary: #2563eb;
-  --primary-dk: #1d4ed8;
-  --green: #16a34a;
-  --red: #dc2626;
-  --amber: #d97706;
-  --bg: #f0f4f8;
-  --card: #ffffff;
-  --text: #1e293b;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --radius: 18px;
+  --teal:     #0D9488;
+  --teal-dk:  #0F766E;
+  --teal-lt:  #F0FDFA;
+  --teal-mid: #99F6E4;
+  --red:      #DC2626;
+  --red-lt:   #FEF2F2;
+  --amber:    #D97706;
+  --amber-lt: #FFFBEB;
+  --green:    #16A34A;
+  --green-lt: #F0FDF4;
+  --bg:       #F8FAFC;
+  --surface:  #FFFFFF;
+  --text:     #0F172A;
+  --text-2:   #475569;
+  --text-3:   #94A3B8;
+  --border:   #E2E8F0;
+  --r:        12px;
+  --sh:       0 1px 2px rgba(0,0,0,.04), 0 2px 8px rgba(0,0,0,.06);
 }
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Georgia,'Times New Roman',serif;font-size:20px;line-height:1.65;background:var(--bg);color:var(--text);min-height:100vh}
 
-/* ── FIREBASE SETUP MODAL ── */
-#fb-setup{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;padding:20px;
-  background:rgba(0,0,0,.55);z-index:999;backdrop-filter:blur(4px)}
-#fb-setup .box{background:#fff;border-radius:22px;padding:32px 28px;max-width:560px;width:100%;
-  box-shadow:0 20px 60px rgba(0,0,0,.35)}
-#fb-setup h2{font-size:1.5em;margin-bottom:8px}
-#fb-setup p{color:var(--muted);margin-bottom:14px;font-size:.93em;line-height:1.5}
-#fb-setup textarea{width:100%;padding:12px;border:2px solid var(--border);border-radius:10px;
-  font-size:.85em;font-family:monospace;resize:vertical;height:160px;outline:none}
-#fb-setup textarea:focus{border-color:var(--primary)}
+/* ── RESET ────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-/* ── SAVED BADGE ── */
-.saved-badge{display:inline-flex;align-items:center;gap:5px;background:#f0fdf4;color:var(--green);
-  border:1px solid #bbf7d0;border-radius:20px;padding:5px 12px;font-size:.85em;font-weight:bold}
-
-/* ── RECORD CARDS ── */
-.rec-card{background:#fff;border-radius:14px;padding:18px;margin-bottom:11px;
-  border:1px solid var(--border);box-shadow:0 2px 6px rgba(0,0,0,.06)}
-.rec-card-hd{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;gap:10px}
-.rec-title{font-weight:bold;font-size:1em}
-.rec-date{color:var(--muted);font-size:.82em;white-space:nowrap}
-.rec-type{font-size:.8em;padding:3px 10px;border-radius:12px;font-weight:bold;display:inline-block;margin-bottom:7px}
-.rec-type.appt{background:#eff6ff;color:var(--primary)}
-.rec-type.doc{background:#f0fdf4;color:var(--green)}
-.rec-preview{color:var(--muted);font-size:.88em;line-height:1.5;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.rec-actions{display:flex;gap:8px;margin-top:10px}
-
-/* ── SETUP SCREEN (unused) ── */
-#setup input{width:100%;padding:16px;border:2px solid var(--border);border-radius:12px;font-size:1em;
-  margin-bottom:14px;outline:none;font-family:inherit}
-#setup input:focus{border-color:var(--primary)}
-
-/* ── HEADER ── */
-header{background:linear-gradient(135deg,#667eea,#764ba2);color:#fff;padding:20px 24px;text-align:center}
-header h1{font-size:1.9em;margin-bottom:4px}
-header p{font-size:.95em;opacity:.9}
-
-/* ── NAV ── */
-nav{background:#fff;padding:8px 6px;display:flex;gap:4px;overflow-x:auto;
-  border-bottom:2px solid var(--border);position:sticky;top:0;z-index:100;-webkit-overflow-scrolling:touch}
-.tab{flex:1;min-width:100px;padding:11px 6px;border:2px solid transparent;border-radius:12px;
-  background:transparent;color:var(--muted);font-size:.82em;font-family:inherit;cursor:pointer;
-  transition:all .2s;text-align:center;line-height:1.3}
-.tab:hover{background:#f1f5f9}
-.tab.on{background:#eff6ff;border-color:var(--primary);color:var(--primary);font-weight:bold}
-
-/* ── TAB PANELS ── */
-.panel{display:none;padding:18px;max-width:820px;margin:0 auto}
-.panel.on{display:block}
-
-/* ── CARDS ── */
-.card{background:#fff;border-radius:var(--radius);padding:22px;margin-bottom:14px;
-  box-shadow:0 2px 8px rgba(0,0,0,.07);border:1px solid var(--border)}
-
-/* ── BUTTONS ── */
-.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;
-  padding:15px 22px;border:none;border-radius:12px;font-size:1.05em;font-family:inherit;
-  cursor:pointer;transition:all .2s;font-weight:bold;line-height:1}
-.btn-blue{background:var(--primary);color:#fff}
-.btn-blue:hover{background:var(--primary-dk);transform:translateY(-1px)}
-.btn-green{background:var(--green);color:#fff}
-.btn-red{background:var(--red);color:#fff}
-.btn-gray{background:#f1f5f9;color:var(--text)}
-.btn-full{width:100%;padding:18px;font-size:1.15em;border-radius:14px}
-.btn-sm{padding:9px 14px;font-size:.88em}
-
-/* ── CHAT ── */
-#msgs{height:400px;overflow-y:auto;padding:14px;background:#f8fafc;border-radius:12px;
-  margin-bottom:14px;border:1px solid var(--border);scroll-behavior:smooth}
-.msg{margin-bottom:14px;max-width:82%}
-.msg.me{margin-left:auto}
-.lbl{font-size:.78em;color:var(--muted);margin-bottom:3px}
-.me .lbl{text-align:right}
-.bub{padding:13px 17px;border-radius:18px;font-size:.97em;line-height:1.55}
-.bot .bub{background:#fff;border:1px solid var(--border);border-bottom-left-radius:4px}
-.me .bub{background:var(--primary);color:#fff;border-bottom-right-radius:4px}
-
-/* loading dots */
-.dots{display:flex;gap:5px;padding:14px 16px;align-items:center}
-.dot{width:9px;height:9px;background:var(--muted);border-radius:50%;animation:bop 1.3s infinite}
-.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
-@keyframes bop{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-9px)}}
-
-/* mic button */
-#mic{width:96px;height:96px;border-radius:50%;background:var(--primary);color:#fff;border:none;
-  font-size:2.4em;cursor:pointer;transition:all .25s;display:flex;align-items:center;
-  justify-content:center;margin:0 auto 12px;box-shadow:0 4px 14px rgba(37,99,235,.4)}
-#mic.hot{background:var(--red);transform:scale(1.08);box-shadow:0 0 0 10px rgba(220,38,38,.18)}
-#mic-status{color:var(--muted);font-size:.9em;text-align:center;margin-bottom:14px}
-
-/* quick Qs */
-.qqs{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
-.qq{background:#eff6ff;color:var(--primary-dk);border:1px solid #bfdbfe;border-radius:20px;
-  padding:9px 14px;font-size:.88em;font-family:inherit;cursor:pointer;transition:background .2s}
-.qq:hover{background:#dbeafe}
-
-/* ── MEDS ── */
-.med{background:#fff;border-radius:14px;padding:18px;margin-bottom:11px;
-  border-left:6px solid var(--primary);box-shadow:0 2px 6px rgba(0,0,0,.06);cursor:pointer;
-  transition:transform .15s}
-.med:hover{transform:translateX(4px)}
-.med-name{font-size:1.25em;font-weight:bold;color:var(--primary);margin-bottom:5px}
-.med-dose{font-size:1.05em;margin-bottom:5px}
-.pill{display:inline-block;background:#f0fdf4;color:var(--green);border-radius:20px;
-  padding:5px 12px;font-size:.88em;font-weight:bold;margin-bottom:7px}
-.med-why{color:var(--muted);font-size:.92em}
-
-/* ── CONDITIONS ── */
-.cond{background:#fff;border-radius:14px;padding:18px;margin-bottom:11px;
-  border-left:6px solid var(--amber);box-shadow:0 2px 6px rgba(0,0,0,.06);cursor:pointer;
-  transition:transform .15s}
-.cond:hover{transform:translateX(4px)}
-.cond-name{font-size:1.22em;font-weight:bold;color:#92400e;margin-bottom:7px}
-.status-ok{background:#f0fdf4;color:var(--green);padding:5px 13px;border-radius:20px;
-  display:inline-block;font-size:.88em;font-weight:bold;margin-bottom:8px}
-.status-watch{background:#fef3c7;color:#92400e;padding:5px 13px;border-radius:20px;
-  display:inline-block;font-size:.88em;font-weight:bold;margin-bottom:8px}
-.status-managed{background:#eff6ff;color:var(--primary-dk);padding:5px 13px;border-radius:20px;
-  display:inline-block;font-size:.88em;font-weight:bold;margin-bottom:8px}
-.warn-box{background:#fef2f2;border-radius:10px;padding:13px;margin-top:11px}
-.warn-box strong{color:#991b1b}
-.warn-box ul{padding-left:18px;color:#7f1d1d;margin-top:6px}
-.warn-box li{margin-bottom:3px;font-size:.92em}
-
-/* ── RECORD ── */
-#rec-btn{width:136px;height:136px;border-radius:50%;background:var(--red);color:#fff;border:none;
-  font-size:2.8em;cursor:pointer;transition:all .3s;display:flex;flex-direction:column;
-  align-items:center;justify-content:center;margin:0 auto 20px;
-  box-shadow:0 4px 16px rgba(220,38,38,.4);gap:3px}
-#rec-btn .rlbl{font-size:.28em;font-weight:bold;letter-spacing:1px;margin-top:2px}
-#rec-btn.hot{animation:pulse 1.5s infinite;background:#b91c1c}
-@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 4px 16px rgba(220,38,38,.4)}
-  50%{transform:scale(1.06);box-shadow:0 0 0 18px rgba(220,38,38,.12)}}
-#timer{font-size:1.5em;font-weight:bold;color:var(--red);text-align:center;margin-bottom:14px;display:none}
-#transcript{background:#f8fafc;border:1px solid var(--border);border-radius:12px;
-  padding:15px;min-height:180px;max-height:360px;overflow-y:auto;font-size:.97em;
-  line-height:1.6;color:var(--text);margin-bottom:13px}
-
-/* ── SUMMARY OUTPUT ── */
-#sum-out,#appt-out{background:#f8fafc;border:1px solid var(--border);border-radius:12px;
-  padding:18px;min-height:160px;font-size:.97em;line-height:1.75;white-space:pre-wrap}
-
-/* ── EMERGENCY BANNER ── */
-.emer{background:#fef2f2;border:2px solid #fecaca;border-radius:12px;padding:15px;
-  margin-bottom:14px;text-align:center;color:#991b1b;font-weight:bold;font-size:.95em}
-
-/* ── TEXTAREA ── */
-textarea{width:100%;padding:14px;border:2px solid var(--border);border-radius:12px;
-  font-size:1.05em;font-family:inherit;resize:none;outline:none;line-height:1.55}
-textarea:focus{border-color:var(--primary)}
-select{width:100%;padding:13px;border:2px solid var(--border);border-radius:12px;
-  font-size:1em;font-family:inherit;background:#fff;outline:none;margin-top:4px}
-select:focus{border-color:var(--primary)}
-label.lbl2{font-weight:bold;display:block;margin-bottom:4px}
-
-/* toggle row */
-.trow{display:flex;align-items:center;gap:11px;padding:10px 0;font-size:1em;justify-content:center}
-.trow input[type=checkbox]{width:22px;height:22px;cursor:pointer;accent-color:var(--primary)}
-
-.sec-title{font-size:1.2em;font-weight:bold;color:var(--text);margin-bottom:13px}
-.hidden{display:none!important}
-.row{display:flex;gap:10px;flex-wrap:wrap;margin-top:13px}
-.mt{margin-top:14px}
-
-@media(max-width:600px){
-  body{font-size:18px}
-  header h1{font-size:1.5em}
-  .tab{font-size:.76em;min-width:80px}
-  #msgs{height:280px}
-  #rec-btn{width:116px;height:116px;font-size:2.4em}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', system-ui, sans-serif;
+  font-size: 17px;
+  line-height: 1.6;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  min-height: 100dvh;
 }
+
+/* ── HEADER ───────────────────────────────── */
+.app-header {
+  background: var(--teal);
+  padding: 18px 20px 16px;
+  position: sticky;
+  top: 0;
+  z-index: 90;
+}
+.app-header-inner {
+  max-width: 680px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left h1 {
+  font-size: 21px;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.4px;
+}
+.header-left p {
+  font-size: 13px;
+  color: rgba(255,255,255,.65);
+  margin-top: 1px;
+}
+.header-date {
+  font-size: 12px;
+  color: rgba(255,255,255,.55);
+  text-align: right;
+  line-height: 1.5;
+}
+
+/* ── BOTTOM NAV ───────────────────────────── */
+.bottom-nav {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  display: flex;
+  z-index: 100;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+.tab {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 2px 11px;
+  border: none;
+  background: transparent;
+  color: var(--text-3);
+  font-family: inherit;
+  font-size: 10px;
+  font-weight: 500;
+  cursor: pointer;
+  gap: 3px;
+  transition: color .15s;
+  letter-spacing: .01em;
+}
+.tab svg { width: 21px; height: 21px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.tab.on { color: var(--teal); }
+
+/* ── CONTENT ──────────────────────────────── */
+.content {
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 16px 16px 100px;
+}
+.panel { display: none; }
+.panel.on { display: block; }
+
+/* ── CARDS ────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  margin-bottom: 10px;
+  box-shadow: var(--sh);
+}
+.card-title { font-size: 16px; font-weight: 600; color: var(--text); margin-bottom: 4px; letter-spacing: -.1px; }
+.card-sub { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+
+/* ── SECTION LABEL ────────────────────────── */
+.sec-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--text-3);
+  text-transform: uppercase;
+  letter-spacing: .07em;
+  margin: 20px 0 8px;
+}
+.sec-label:first-child { margin-top: 4px; }
+
+/* ── BUTTONS ──────────────────────────────── */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 12px 18px;
+  border: 1.5px solid transparent;
+  border-radius: 10px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all .15s;
+  line-height: 1;
+  letter-spacing: -.1px;
+}
+.btn-primary { background: var(--teal); color: #fff; border-color: var(--teal); }
+.btn-primary:hover { background: var(--teal-dk); }
+.btn-secondary { background: var(--surface); color: var(--text-2); border-color: var(--border); }
+.btn-secondary:hover { background: var(--bg); }
+.btn-danger { background: var(--red-lt); color: var(--red); border-color: #FECACA; }
+.btn-success { background: var(--green-lt); color: var(--green); border-color: #BBF7D0; }
+.btn-full { width: 100%; padding: 15px; font-size: 16px; border-radius: 11px; }
+.btn-sm { padding: 8px 13px; font-size: 13px; border-radius: 8px; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+
+/* ── EMERGENCY ────────────────────────────── */
+.emer {
+  background: var(--red-lt);
+  border: 1px solid #FECACA;
+  border-radius: var(--r);
+  padding: 13px 16px;
+  margin-bottom: 12px;
+  color: #991B1B;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.emer svg { flex-shrink: 0; width: 17px; height: 17px; fill: none; stroke: #991B1B; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ── CHAT ─────────────────────────────────── */
+.mic-wrap { text-align: center; padding: 6px 0 14px; }
+#mic {
+  width: 76px; height: 76px;
+  border-radius: 50%;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  transition: all .2s;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 14px rgba(13,148,136,.3);
+  margin-bottom: 8px;
+}
+#mic.hot {
+  background: var(--red);
+  box-shadow: 0 0 0 10px rgba(220,38,38,.1), 0 4px 14px rgba(220,38,38,.3);
+  transform: scale(1.06);
+}
+#mic-status { font-size: 13px; color: var(--text-3); display: block; }
+
+.read-aloud-row {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; margin-top: 10px; font-size: 14px; color: var(--text-2);
+}
+.read-aloud-row input { width: 18px; height: 18px; accent-color: var(--teal); cursor: pointer; }
+
+#msgs {
+  height: 360px;
+  overflow-y: auto;
+  padding: 4px 0;
+  margin-bottom: 12px;
+  scroll-behavior: smooth;
+}
+.msg { margin-bottom: 10px; display: flex; flex-direction: column; }
+.msg.me { align-items: flex-end; }
+.msg.bot { align-items: flex-start; }
+.bub {
+  max-width: 82%;
+  padding: 11px 15px;
+  border-radius: 16px;
+  font-size: 15px;
+  line-height: 1.55;
+}
+.bot .bub { background: #F1F5F9; color: var(--text); border-bottom-left-radius: 4px; }
+.me  .bub { background: var(--teal); color: #fff; border-bottom-right-radius: 4px; }
+
+.dots { display: flex; gap: 4px; padding: 11px 14px; }
+.dot { width: 8px; height: 8px; background: var(--text-3); border-radius: 50%; animation: bop 1.3s infinite; }
+.dot:nth-child(2) { animation-delay: .2s; }
+.dot:nth-child(3) { animation-delay: .4s; }
+@keyframes bop { 0%,80%,100%{transform:translateY(0)} 40%{transform:translateY(-7px)} }
+
+.chat-row { display: flex; gap: 8px; align-items: flex-end; }
+.chat-row textarea {
+  flex: 1;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  resize: none;
+  outline: none;
+  line-height: 1.5;
+  background: var(--surface);
+  color: var(--text);
+  transition: border-color .15s;
+}
+.chat-row textarea:focus { border-color: var(--teal); }
+.chat-row button {
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--teal);
+  color: #fff;
+  border: none;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .15s;
+}
+.chat-row button:hover { background: var(--teal-dk); }
+
+.qqs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.qq {
+  background: var(--surface);
+  color: var(--text-2);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 8px 14px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all .15s;
+}
+.qq:hover { background: var(--teal-lt); color: var(--teal-dk); border-color: var(--teal-mid); }
+
+/* ── MEDICATION LIST ──────────────────────── */
+.med-list {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  overflow: hidden;
+  box-shadow: var(--sh);
+  margin-bottom: 10px;
+}
+.med-item {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+  transition: background .12s;
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+}
+.med-item:last-child { border-bottom: none; }
+.med-item:hover { background: var(--bg); }
+.med-icon {
+  width: 38px; height: 38px;
+  border-radius: 10px;
+  background: var(--teal-lt);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-size: 17px;
+}
+.med-body { flex: 1; min-width: 0; }
+.med-name { font-size: 15px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.med-dose { font-size: 13px; color: var(--text-2); margin-bottom: 6px; }
+.tag {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 12px;
+  font-weight: 500;
+  margin-bottom: 5px;
+  margin-right: 4px;
+}
+.tag-teal   { background: var(--teal-lt); color: var(--teal-dk); border: 1px solid #CCFBF1; }
+.tag-amber  { background: var(--amber-lt); color: var(--amber); border: 1px solid #FDE68A; }
+.tag-green  { background: var(--green-lt); color: var(--green); border: 1px solid #BBF7D0; }
+.med-why { font-size: 13px; color: var(--text-2); line-height: 1.45; }
+.med-chevron { color: var(--text-3); margin-top: 2px; font-size: 14px; }
+
+/* ── CONDITIONS ───────────────────────────── */
+.cond-item {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 20px;
+  margin-bottom: 10px;
+  box-shadow: var(--sh);
+  cursor: pointer;
+  transition: border-color .15s;
+}
+.cond-item:hover { border-color: var(--teal-mid); }
+.cond-name { font-size: 17px; font-weight: 600; color: var(--text); margin-bottom: 8px; }
+.cond-desc { font-size: 14px; color: var(--text-2); line-height: 1.6; }
+.warn-box {
+  background: var(--red-lt);
+  border: 1px solid #FECACA;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 14px;
+}
+.warn-title { font-size: 13px; font-weight: 700; color: #991B1B; margin-bottom: 8px; text-transform: uppercase; letter-spacing: .04em; }
+.warn-box ul { padding-left: 16px; }
+.warn-box li { font-size: 14px; color: #7F1D1D; margin-bottom: 5px; line-height: 1.4; }
+.warn-note { font-size: 12px; color: #B91C1C; margin-top: 9px; font-style: italic; }
+.tap-hint { font-size: 12px; color: var(--text-3); margin-top: 12px; }
+
+/* ── FORMS ────────────────────────────────── */
+.field { margin-bottom: 16px; }
+.field label { display: block; font-size: 14px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+.field .hint { font-size: 12px; color: var(--text-3); font-weight: 400; margin-left: 4px; }
+.field select, .field textarea {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  font-size: 15px;
+  font-family: inherit;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s;
+  line-height: 1.5;
+  -webkit-appearance: none;
+}
+.field select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 36px; }
+.field select:focus, .field textarea:focus { border-color: var(--teal); }
+.field textarea { resize: none; }
+
+.output-box {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  min-height: 140px;
+  font-size: 15px;
+  line-height: 1.75;
+}
+
+/* ── RECORDING ────────────────────────────── */
+.rec-center { text-align: center; padding: 8px 0 4px; }
+#rec-btn {
+  width: 116px; height: 116px;
+  border-radius: 50%;
+  background: var(--red);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px rgba(220,38,38,.32);
+  transition: all .25s;
+  gap: 4px;
+  margin-bottom: 12px;
+}
+#rec-btn .rlbl { font-size: 9px; font-weight: 700; letter-spacing: 1.8px; font-family: inherit; opacity: .85; }
+#rec-btn.hot { animation: pulse 1.5s infinite; }
+@keyframes pulse {
+  0%,100%{transform:scale(1);box-shadow:0 4px 18px rgba(220,38,38,.32)}
+  50%{transform:scale(1.04);box-shadow:0 0 0 18px rgba(220,38,38,.08)}
+}
+#timer { font-size: 15px; font-weight: 700; color: var(--red); margin-bottom: 12px; display: none; letter-spacing: .02em; }
+#transcript {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 14px;
+  min-height: 160px;
+  max-height: 280px;
+  overflow-y: auto;
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+/* ── HISTORY ──────────────────────────────── */
+.rec-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  padding: 18px 20px;
+  margin-bottom: 10px;
+  box-shadow: var(--sh);
+}
+.rec-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px; gap: 12px; }
+.rec-title { font-size: 15px; font-weight: 600; color: var(--text); }
+.rec-date { font-size: 12px; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
+.rec-type-badge {
+  display: inline-block;
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  letter-spacing: .02em;
+}
+.rec-type-badge.appt { background: #EFF6FF; color: #1D4ED8; }
+.rec-type-badge.doc  { background: var(--green-lt); color: var(--green); }
+.rec-preview { font-size: 13px; color: var(--text-2); line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.rec-actions { display: flex; gap: 6px; margin-top: 12px; }
+
+/* ── UTILS ────────────────────────────────── */
+.hidden { display: none !important; }
+.mt { margin-top: 12px; }
+.divider { height: 1px; background: var(--border); margin: 16px 0; }
 </style>
 </head>
 <body>
 
-<!-- ─── FIREBASE SETUP MODAL ─── -->
-<div id="fb-setup" class="hidden">
-  <div class="box">
-    <div style="font-size:2.5em;margin-bottom:10px">🔗</div>
-    <h2>Connect Sync (one-time setup)</h2>
-    <p>To save Dianne's summaries and records across all devices, paste your Firebase config below.<br>
-    Get it from <strong>console.firebase.google.com</strong> → Project Settings → Your Apps → Web App → Config.</p>
-    <textarea id="fb-cfg-in" placeholder='Paste your Firebase config object here, e.g.:
-{
-  apiKey: "...",
-  authDomain: "...",
-  projectId: "...",
-  ...
-}'></textarea>
-    <div style="display:flex;gap:10px;margin-top:14px">
-      <button class="btn btn-blue" style="flex:1" onclick="saveFbConfig()">Connect →</button>
-      <button class="btn btn-gray" onclick="document.getElementById('fb-setup').classList.add('hidden')">Skip for now</button>
-    </div>
-  </div>
-</div>
-
-<!-- ─── MAIN APP ─── -->
 <div id="app">
 
-<header>
-  <h1>🌸 Dianne's Health Helper</h1>
-  <p>Your personal health companion</p>
+<!-- ── HEADER ──────────────────────────────── -->
+<header class="app-header">
+  <div class="app-header-inner">
+    <div class="header-left">
+      <h1>Dianne's Health</h1>
+      <p>Personal health companion</p>
+    </div>
+    <div class="header-date" id="hdr-date"></div>
+  </div>
 </header>
 
-<nav>
-  <button class="tab on" data-t="chat"    onclick="go('chat')">💬<br>Ask</button>
-  <button class="tab"    data-t="meds"    onclick="go('meds')">💊<br>Medications</button>
-  <button class="tab"    data-t="health"  onclick="go('health')">🏥<br>My Health</button>
-  <button class="tab"    data-t="summary" onclick="go('summary')">📋<br>Doctor Summary</button>
-  <button class="tab"    data-t="record"  onclick="go('record')">🎙️<br>Record Visit</button>
-  <button class="tab"    data-t="history" onclick="go('history')">📂<br>Saved</button>
-</nav>
+<!-- ── CONTENT ─────────────────────────────── -->
+<div class="content">
 
-<!-- ═══════════════════════ CHAT ═══════════════════════ -->
+<!-- ══ ASK ══════════════════════════════════ -->
 <div id="p-chat" class="panel on">
-  <div class="emer">⚠️ If you feel unwell or have an emergency — call 911 right away</div>
+  <div class="emer">
+    <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    If you feel unwell or have an emergency, call 911 immediately
+  </div>
 
-  <div class="card" style="text-align:center">
-    <div class="sec-title">Tap the microphone and speak your question</div>
-    <button id="mic" onclick="toggleMic()">🎤</button>
-    <div id="mic-status">Tap and speak your question</div>
-    <div class="trow">
-      <input type="checkbox" id="read-aloud" checked>
-      <label for="read-aloud">Read answers aloud</label>
+  <div class="card">
+    <div class="mic-wrap">
+      <button id="mic" onclick="toggleMic()">🎤</button>
+      <span id="mic-status">Tap and speak your question</span>
+      <div class="read-aloud-row">
+        <input type="checkbox" id="read-aloud" checked>
+        <label for="read-aloud">Read answers aloud</label>
+      </div>
+    </div>
+
+    <div id="msgs">
+      <div class="msg bot">
+        <div class="bub">Hello Dianne. I know all about your medications and health conditions. Ask me anything — what your pills are for, warning signs to watch for, how to prepare for a doctor visit, or anything else. How can I help?</div>
+      </div>
+    </div>
+
+    <div class="chat-row">
+      <textarea id="txt-in" rows="2" placeholder="Type your question here…"></textarea>
+      <button onclick="sendMsg()">Send</button>
     </div>
   </div>
 
-  <div id="msgs">
-    <div class="msg bot">
-      <div class="lbl">Dianne's Helper</div>
-      <div class="bub">Hello Dianne! 🌸 I know all about your medications and health. You can ask me anything — what your pills are for, what to watch out for, how to prepare for your doctor, or anything else. How can I help you today?</div>
-    </div>
-  </div>
-
-  <textarea id="txt-in" rows="3" placeholder="Or type your question here..."></textarea>
-  <button class="btn btn-blue btn-full mt" onclick="sendMsg()">Send Question →</button>
-
-  <div class="card mt">
-    <div style="color:var(--muted);font-size:.9em;margin-bottom:9px">Common Questions:</div>
+  <div class="sec-label">Common Questions</div>
+  <div class="card" style="padding:16px">
     <div class="qqs">
       <button class="qq" onclick="ask('What are all my medications and what does each one do?')">My medications</button>
       <button class="qq" onclick="ask('Are there any interactions between my medications I should know about?')">Drug interactions</button>
@@ -274,183 +521,248 @@ label.lbl2{font-weight:bold;display:block;margin-bottom:4px}
   </div>
 </div>
 
-<!-- ═══════════════════════ MEDICATIONS ═══════════════════════ -->
+<!-- ══ MEDICATIONS ═══════════════════════════ -->
 <div id="p-meds" class="panel">
-  <div class="card">
-    <div class="sec-title">💊 Dianne's Medications</div>
-    <p style="color:var(--muted)">Tap any medication to learn more about it.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Your Medications</div>
+    <div class="card-sub">Tap any medication to ask questions about it.</div>
   </div>
 
-  <div class="med" onclick="askMed('Brenzys (Etanercept biosimilar) injection')">
-    <div class="med-name">💉 Brenzys (Etanercept)</div>
-    <div class="med-dose">50 mg/mL — single dose injection</div>
-    <div class="pill">Once per week</div>
-    <div class="med-why">For Rheumatoid Arthritis — a biologic that calms the immune system to reduce joint inflammation and pain</div>
+  <div class="sec-label">Weekly</div>
+  <div class="med-list">
+    <div class="med-item" onclick="askMed('Brenzys (Etanercept biosimilar) injection')">
+      <div class="med-icon">💉</div>
+      <div class="med-body">
+        <div class="med-name">Brenzys (Etanercept)</div>
+        <div class="med-dose">50 mg/mL — single dose injection</div>
+        <span class="tag tag-teal">Once per week</span>
+        <div class="med-why">For Rheumatoid Arthritis — biologic that reduces joint inflammation</div>
+      </div>
+      <div class="med-chevron">›</div>
+    </div>
+    <div class="med-item" onclick="askMed('Methotrexate')">
+      <div class="med-icon">💊</div>
+      <div class="med-body">
+        <div class="med-name">Methotrexate</div>
+        <div class="med-dose">12.5 mg tablets</div>
+        <span class="tag tag-teal">Once per week</span>
+        <div class="med-why">For Rheumatoid Arthritis — calms the immune system</div>
+      </div>
+      <div class="med-chevron">›</div>
+    </div>
+    <div class="med-item" onclick="askMed('Folic Acid')">
+      <div class="med-icon">🟡</div>
+      <div class="med-body">
+        <div class="med-name">Folic Acid</div>
+        <div class="med-dose">5 mg</div>
+        <span class="tag tag-teal">5 days per week</span>
+        <div class="med-why">Prevents side effects from Methotrexate</div>
+      </div>
+      <div class="med-chevron">›</div>
+    </div>
   </div>
 
-  <div class="med" onclick="askMed('Methotrexate')">
-    <div class="med-name">💊 Methotrexate</div>
-    <div class="med-dose">12.5 mg tablets</div>
-    <div class="pill">Once per week</div>
-    <div class="med-why">For Rheumatoid Arthritis — slows the overactive immune system to reduce inflammation</div>
+  <div class="sec-label">Daily</div>
+  <div class="med-list">
+    <div class="med-item" onclick="askMed('Ratio-Irbesartan (irbesartan)')">
+      <div class="med-icon">💊</div>
+      <div class="med-body">
+        <div class="med-name">Ratio-Irbesartan</div>
+        <div class="med-dose">150 mg</div>
+        <span class="tag tag-teal">Once per day</span>
+        <span class="tag tag-amber">New prescription</span>
+        <div class="med-why">For High Blood Pressure — relaxes blood vessels</div>
+      </div>
+      <div class="med-chevron">›</div>
+    </div>
+    <div class="med-item" onclick="askMed('Pantoprazole')">
+      <div class="med-icon">🛡️</div>
+      <div class="med-body">
+        <div class="med-name">Pantoprazole</div>
+        <div class="med-dose">40 mg</div>
+        <span class="tag tag-teal">Every morning</span>
+        <div class="med-why">Protects stomach and prevents acid reflux</div>
+      </div>
+      <div class="med-chevron">›</div>
+    </div>
   </div>
 
-  <div class="med" onclick="askMed('Ratio-Irbesartan (irbesartan)')">
-    <div class="med-name">💊 Ratio-Irbesartan</div>
-    <div class="med-dose">150 mg <span style="color:var(--amber)">(New prescription)</span></div>
-    <div class="pill">Once per day</div>
-    <div class="med-why">For High Blood Pressure — relaxes blood vessels to lower blood pressure</div>
-  </div>
-
-  <div class="med" onclick="askMed('Folic Acid')">
-    <div class="med-name">🟡 Folic Acid</div>
-    <div class="med-dose">5 mg</div>
-    <div class="pill">5 days per week</div>
-    <div class="med-why">Taken alongside Methotrexate to prevent side effects like nausea and mouth sores</div>
-  </div>
-
-  <div class="med" onclick="askMed('Zopiclone')">
-    <div class="med-name">🌙 Zopiclone</div>
-    <div class="med-dose">5 mg</div>
-    <div class="pill">Only when needed for sleep</div>
-    <div class="med-why">A sleep aid — only take on nights when you truly need help sleeping, not every night</div>
-  </div>
-
-  <div class="med" onclick="askMed('Pantoprazole')">
-    <div class="med-name">🛡️ Pantoprazole</div>
-    <div class="med-dose">40 mg</div>
-    <div class="pill">Every morning</div>
-    <div class="med-why">Protects your stomach and prevents acid reflux — especially helpful when taking other medications</div>
+  <div class="sec-label">As Needed</div>
+  <div class="med-list">
+    <div class="med-item" onclick="askMed('Zopiclone')">
+      <div class="med-icon">🌙</div>
+      <div class="med-body">
+        <div class="med-name">Zopiclone</div>
+        <div class="med-dose">5 mg</div>
+        <span class="tag tag-green">Only when needed for sleep</span>
+        <div class="med-why">Sleep aid — not for every night</div>
+      </div>
+      <div class="med-chevron">›</div>
+    </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ HEALTH ═══════════════════════ -->
+<!-- ══ MY HEALTH ═════════════════════════════ -->
 <div id="p-health" class="panel">
-  <div class="card">
-    <div class="sec-title">🏥 Dianne's Health Conditions</div>
-    <p style="color:var(--muted)">Tap any condition to ask questions about it.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Your Health Conditions</div>
+    <div class="card-sub">Tap any condition to ask questions about it.</div>
   </div>
 
-  <div class="cond" onclick="ask('Tell me about my rheumatoid arthritis — how is it doing and what do I need to know?')">
-    <div class="cond-name">🦴 Rheumatoid Arthritis (RA)</div>
-    <div class="status-ok">✅ Pretty much in remission!</div>
-    <p>Your rheumatologist says you are doing very well and are almost completely in remission. This means the disease activity is very low. Keep taking your medications as prescribed so this continues.</p>
+  <div class="cond-item" onclick="ask('Tell me about my rheumatoid arthritis — how is it doing and what do I need to know?')">
+    <div class="cond-name">Rheumatoid Arthritis</div>
+    <span class="tag tag-green">✓ &nbsp;In remission</span>
+    <div class="cond-desc">Your rheumatologist says you are doing very well and are almost completely in remission. Keep taking your medications as prescribed so this continues.</div>
+    <div class="tap-hint">Tap to ask questions →</div>
   </div>
 
-  <div class="cond" onclick="ask('Tell me about my carotid artery blockage — what does it mean and what warning signs should I know?')">
-    <div class="cond-name">🫀 Carotid Artery Narrowing</div>
-    <div class="status-watch">⚠️ Being monitored by your doctors</div>
-    <p>The carotid arteries are the main vessels that carry blood to your brain. One side is significantly narrowed, while the other has only minor narrowing. Your doctors are aware and watching this.</p>
+  <div class="cond-item" onclick="ask('Tell me about my carotid artery blockage — what does it mean and what warning signs should I know?')">
+    <div class="cond-name">Carotid Artery Narrowing</div>
+    <span class="tag tag-amber">Being monitored</span>
+    <div class="cond-desc">The carotid arteries carry blood to your brain. One side is significantly narrowed, while the other has only minor narrowing. Your doctors are closely watching this.</div>
     <div class="warn-box">
-      <strong>Call 911 immediately if you suddenly experience:</strong>
+      <div class="warn-title">Call 911 immediately if you suddenly experience</div>
       <ul>
         <li>Weakness or numbness on one side of your face, arm, or leg</li>
         <li>Trouble speaking or understanding words</li>
         <li>Vision problems in one or both eyes</li>
         <li>A very sudden, severe headache</li>
-        <li>Dizziness or loss of balance suddenly</li>
+        <li>Dizziness or sudden loss of balance</li>
       </ul>
-      <p style="margin-top:8px;font-size:.9em;color:#7f1d1d">These could be signs of a stroke — every second counts.</p>
+      <div class="warn-note">These may be signs of a stroke — every minute counts.</div>
     </div>
+    <div class="tap-hint">Tap to ask questions →</div>
   </div>
 
-  <div class="cond" onclick="ask('Tell me about my high blood pressure — how does my medication help and what should I know?')">
-    <div class="cond-name">🩺 High Blood Pressure (Hypertension)</div>
-    <div class="status-managed">💊 Managed with medication</div>
-    <p>High blood pressure means the heart has to work harder than it should. Your new Irbesartan prescription helps keep your blood pressure at a safe level. Taking it every day without missing is very important — especially with the carotid artery narrowing.</p>
+  <div class="cond-item" onclick="ask('Tell me about my high blood pressure — how does my medication help and what should I know?')">
+    <div class="cond-name">High Blood Pressure</div>
+    <span class="tag tag-teal">Managed with medication</span>
+    <div class="cond-desc">Your new Irbesartan prescription helps keep your blood pressure at a safe level. Taking it every single day without missing is very important — especially given the carotid artery narrowing.</div>
+    <div class="tap-hint">Tap to ask questions →</div>
   </div>
 </div>
 
-<!-- ═══════════════════════ DOCTOR SUMMARY ═══════════════════════ -->
+<!-- ══ DOCTOR SUMMARY ════════════════════════ -->
 <div id="p-summary" class="panel">
-  <div class="card">
-    <div class="sec-title">📋 Create a Doctor Visit Summary</div>
-    <p style="color:var(--muted);margin-bottom:16px">Generate a health summary you can share with your doctor before an appointment — or print and bring with you.</p>
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Doctor Visit Summary</div>
+    <div class="card-sub">Generate a health summary to bring to your appointment — or print it out for your doctor.</div>
+  </div>
 
-    <div style="margin-bottom:14px">
-      <label class="lbl2">Which doctor are you seeing?</label>
+  <div class="card">
+    <div class="field">
+      <label>Which doctor are you seeing?</label>
       <select id="doc-type">
         <option value="family">Family / General Doctor</option>
-        <option value="rheumatologist">Rheumatologist (Arthritis Doctor)</option>
-        <option value="cardiologist">Cardiologist (Heart Doctor)</option>
-        <option value="neurologist">Neurologist (Brain / Nerve Doctor)</option>
-        <option value="vascular">Vascular Surgeon (Blood Vessel Doctor)</option>
+        <option value="rheumatologist">Rheumatologist (Arthritis)</option>
+        <option value="cardiologist">Cardiologist (Heart)</option>
+        <option value="neurologist">Neurologist (Brain / Nerves)</option>
+        <option value="vascular">Vascular Surgeon (Blood Vessels)</option>
         <option value="other">Other Specialist</option>
       </select>
     </div>
-
-    <div style="margin-bottom:14px">
-      <label class="lbl2">Any concerns to mention? <span style="font-weight:normal;color:var(--muted)">(optional)</span></label>
-      <textarea id="sum-concerns" rows="3" placeholder="e.g. I've been having more headaches lately, or I'm feeling dizzy in the morning..."></textarea>
+    <div class="field">
+      <label>Any concerns to mention? <span class="hint">(optional)</span></label>
+      <textarea id="sum-concerns" rows="3" placeholder="e.g. I've been having more headaches lately, or I feel dizzy in the mornings…"></textarea>
     </div>
-
-    <button class="btn btn-blue btn-full" onclick="genSummary()">📋 Generate My Summary</button>
+    <button class="btn btn-primary btn-full" onclick="genSummary()">Generate Summary</button>
   </div>
 
   <div id="sum-card" class="card hidden">
-    <div class="sec-title">Your Health Summary</div>
-    <div id="sum-out">Generating your summary…</div>
-    <div class="row">
-      <button class="btn btn-green btn-sm" onclick="copySum()">📋 Copy</button>
-      <button class="btn btn-gray btn-sm" onclick="printSum()">🖨️ Print</button>
-      <button class="btn btn-gray btn-sm" onclick="speakEl('sum-out')">🔊 Read Aloud</button>
+    <div class="card-title" style="margin-bottom:12px">Your Summary</div>
+    <div id="sum-out" class="output-box">Generating your summary…</div>
+    <div class="btn-group">
+      <button class="btn btn-success btn-sm" onclick="copySum()">Copy</button>
+      <button class="btn btn-secondary btn-sm" onclick="printSum()">Print</button>
+      <button class="btn btn-secondary btn-sm" onclick="speakEl('sum-out')">Read Aloud</button>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ RECORD ═══════════════════════ -->
+<!-- ══ RECORD VISIT ═══════════════════════════ -->
 <div id="p-record" class="panel">
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-title">Record Your Appointment</div>
+    <div class="card-sub">Tap the button when your appointment starts. It will write down what is said. When done, get a clear summary you can keep.</div>
+  </div>
+
   <div class="card" style="text-align:center">
-    <div class="sec-title">🎙️ Record Your Doctor Appointment</div>
-    <p style="color:var(--muted);margin-bottom:18px">Tap the button when your appointment begins. It will write down what is said. When you are finished, tap it again and get a summary you can keep.</p>
-    <button id="rec-btn" onclick="toggleRec()">⏺<span class="rlbl">TAP TO START</span></button>
-    <div id="timer">⏱ Recording: <span id="timer-num">0:00</span></div>
+    <div class="rec-center">
+      <button id="rec-btn" onclick="toggleRec()">⏺<span class="rlbl">TAP TO START</span></button>
+      <div id="timer">⏱ &nbsp;<span id="timer-num">0:00</span></div>
+    </div>
   </div>
 
   <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
-      <div class="sec-title" style="margin-bottom:0">What Was Said:</div>
-      <button class="btn btn-gray btn-sm" onclick="clearRec()">Clear</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:14px;font-weight:600;color:var(--text)">Transcript</div>
+      <button class="btn btn-secondary btn-sm" onclick="clearRec()">Clear</button>
     </div>
-    <div id="transcript">Your appointment transcript will appear here as you record…</div>
+    <div id="transcript" style="color:var(--text-3);font-size:14px">Your appointment transcript will appear here as you record…</div>
   </div>
 
   <div id="appt-btns" class="hidden">
-    <button class="btn btn-blue btn-full" onclick="summariseAppt()">📋 Summarise This Appointment</button>
+    <button class="btn btn-primary btn-full" onclick="summariseAppt()">Summarise This Appointment</button>
     <div id="appt-card" class="card mt hidden">
-      <div class="sec-title">Appointment Summary</div>
-      <div id="appt-out"></div>
-      <div class="row">
-        <button class="btn btn-green btn-sm" onclick="copyEl('appt-out')">📋 Copy</button>
-        <button class="btn btn-gray btn-sm" onclick="speakEl('appt-out')">🔊 Read Aloud</button>
+      <div class="card-title" style="margin-bottom:12px">Appointment Summary</div>
+      <div id="appt-out" class="output-box"></div>
+      <div class="btn-group">
+        <button class="btn btn-success btn-sm" onclick="copyEl('appt-out')">Copy</button>
+        <button class="btn btn-secondary btn-sm" onclick="speakEl('appt-out')">Read Aloud</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- ═══════════════════════ HISTORY ═══════════════════════ -->
+<!-- ══ SAVED RECORDS ══════════════════════════ -->
 <div id="p-history" class="panel">
-  <div class="card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <div class="sec-title" style="margin-bottom:0">📂 Saved Records</div>
-      <div id="sync-status" style="font-size:.82em;color:var(--muted)">Loading…</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-size:17px;font-weight:700;color:var(--text)">Saved Records</div>
+      <div style="font-size:13px;color:var(--text-3);margin-top:2px">Summaries sync automatically across all devices</div>
     </div>
-    <p style="color:var(--muted);margin-top:8px;font-size:.9em">Doctor summaries and appointment notes are saved here automatically.</p>
+    <div id="sync-status" style="font-size:12px;color:var(--text-3)">Loading…</div>
   </div>
-  <div id="records-list"><div style="text-align:center;color:var(--muted);padding:40px">Loading saved records…</div></div>
-  <div id="no-sync-msg" class="card hidden" style="text-align:center;color:var(--muted)">
-    <div style="font-size:2em;margin-bottom:10px">🔗</div>
-    <p>Sync is not set up yet.</p>
-    <button class="btn btn-blue mt" onclick="document.getElementById('fb-setup').classList.remove('hidden')">Connect Sync →</button>
+  <div id="records-list"><div style="text-align:center;color:var(--text-3);padding:40px;font-size:14px">Loading saved records…</div></div>
+  <div id="no-sync-msg" class="card hidden" style="text-align:center;color:var(--text-3)">
+    <div style="font-size:14px">Could not connect to sync. Check your internet connection and reload the page.</div>
   </div>
 </div>
+
+</div><!-- .content -->
+
+<!-- ── BOTTOM NAV ───────────────────────────── -->
+<nav class="bottom-nav">
+  <button class="tab on" data-t="chat" onclick="go('chat')">
+    <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+    Ask
+  </button>
+  <button class="tab" data-t="meds" onclick="go('meds')">
+    <svg viewBox="0 0 24 24"><path d="m10.5 20.5-7-7a5 5 0 0 1 7-7l7 7a5 5 0 0 1-7 7z"/><line x1="8.5" y1="13.5" x2="15.5" y2="6.5"/></svg>
+    Medications
+  </button>
+  <button class="tab" data-t="health" onclick="go('health')">
+    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+    My Health
+  </button>
+  <button class="tab" data-t="summary" onclick="go('summary')">
+    <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+    Summary
+  </button>
+  <button class="tab" data-t="record" onclick="go('record')">
+    <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+    Record
+  </button>
+  <button class="tab" data-t="history" onclick="go('history')">
+    <svg viewBox="0 0 24 24"><polyline points="21 8 21 21 3 21 3 8"/><rect x="1" y="3" width="22" height="5" rx="1"/><line x1="10" y1="12" x2="14" y2="12"/></svg>
+    Saved
+  </button>
+</nav>
 
 </div><!-- #app -->
 
 <script>
-// ──────────────────────────────────────────────────────────────
-// PATIENT CONTEXT (fed to Claude as system prompt)
-// ──────────────────────────────────────────────────────────────
+// ── PATIENT CONTEXT ────────────────────────────────────────────
 const SYS = `You are a compassionate, warm health assistant for Dianne Zodic Majewski, an elderly woman from Bowmanville, Ontario, Canada.
 
 MEDICAL CONDITIONS:
@@ -474,9 +786,7 @@ HOW TO SPEAK TO DIANNE:
 - For emergencies (stroke symptoms, chest pain, severe symptoms), say to call 911 right away
 - Stroke warning signs to always mention: sudden weakness or numbness on one side, sudden trouble speaking, sudden vision changes, sudden severe headache, sudden dizziness or loss of balance`;
 
-// ──────────────────────────────────────────────────────────────
-// STATE
-// ──────────────────────────────────────────────────────────────
+// ── STATE ──────────────────────────────────────────────────────
 let history = [];
 let recog = null;
 let apptRecog = null;
@@ -487,22 +797,26 @@ let timerID = null;
 let secs = 0;
 const synth = window.speechSynthesis;
 
-window.onload = () => { initSpeech(); initFirebase(); };
+window.onload = () => {
+  const d = new Date();
+  document.getElementById('hdr-date').innerHTML =
+    d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'}) +
+    '<br>' + d.toLocaleTimeString('en-CA',{hour:'numeric',minute:'2-digit'});
+  initSpeech();
+  initFirebase();
+};
 
-// ──────────────────────────────────────────────────────────────
-// TABS
-// ──────────────────────────────────────────────────────────────
+// ── TABS ───────────────────────────────────────────────────────
 function go(t) {
   document.querySelectorAll('.panel').forEach(p => p.classList.remove('on'));
   document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
   document.getElementById('p-'+t).classList.add('on');
   document.querySelector(`[data-t="${t}"]`).classList.add('on');
   synth.cancel();
+  if (t === 'history') loadRecords();
 }
 
-// ──────────────────────────────────────────────────────────────
-// CLAUDE API
-// ──────────────────────────────────────────────────────────────
+// ── CLAUDE API ─────────────────────────────────────────────────
 async function claude(userMsg, sysOverride, oneShot) {
   if (!oneShot) history.push({ role:'user', content: userMsg });
   const msgs = oneShot ? [{ role:'user', content: userMsg }] : history;
@@ -528,14 +842,12 @@ async function claude(userMsg, sysOverride, oneShot) {
   return reply;
 }
 
-// ──────────────────────────────────────────────────────────────
-// CHAT
-// ──────────────────────────────────────────────────────────────
+// ── CHAT ───────────────────────────────────────────────────────
 function addMsg(role, html) {
   const c = document.getElementById('msgs');
   const d = document.createElement('div');
   d.className = 'msg ' + (role === 'user' ? 'me' : 'bot');
-  d.innerHTML = `<div class="lbl">${role==='user'?'You':"Dianne's Helper"}</div><div class="bub">${html}</div>`;
+  d.innerHTML = `<div class="bub">${html}</div>`;
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
   return d;
@@ -545,7 +857,7 @@ function addLoader() {
   const c = document.getElementById('msgs');
   const d = document.createElement('div');
   d.className = 'msg bot'; d.id = 'ld';
-  d.innerHTML = `<div class="lbl">Dianne's Helper</div><div class="bub dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
+  d.innerHTML = `<div class="bub dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div>`;
   c.appendChild(d); c.scrollTop = c.scrollHeight;
 }
 function rmLoader() { const l = document.getElementById('ld'); if(l) l.remove(); }
@@ -563,7 +875,7 @@ async function sendMsg() {
     if (document.getElementById('read-aloud').checked) speak(r);
   } catch(e) {
     rmLoader();
-    addMsg('bot', '⚠️ Sorry, I could not connect. Please check the internet and try again.');
+    addMsg('bot', 'Sorry, I could not connect. Please check the internet and try again.');
     console.error(e);
   }
 }
@@ -571,9 +883,7 @@ async function sendMsg() {
 function ask(q) { go('chat'); document.getElementById('txt-in').value = q; sendMsg(); }
 function askMed(m) { ask(`Tell me about my medication ${m} — what does it do, how do I take it, and are there any side effects I should know about?`); }
 
-// ──────────────────────────────────────────────────────────────
-// SPEECH RECOGNITION
-// ──────────────────────────────────────────────────────────────
+// ── SPEECH RECOGNITION ────────────────────────────────────────
 function initSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
   if (!SR) {
@@ -618,9 +928,7 @@ function toggleMic() {
   isListen ? recog.stop() : recog.start();
 }
 
-// ──────────────────────────────────────────────────────────────
-// SPEECH SYNTHESIS
-// ──────────────────────────────────────────────────────────────
+// ── SPEECH SYNTHESIS ──────────────────────────────────────────
 function speak(text) {
   synth.cancel();
   const clean = text.replace(/\*\*/g,'').replace(/\*/g,'').replace(/#{1,6} /g,'').replace(/<[^>]+>/g,' ');
@@ -632,19 +940,15 @@ function speak(text) {
   if (v) u.voice = v;
   synth.speak(u);
 }
-
 function speakEl(id) { speak(document.getElementById(id).innerText); }
 
-// ──────────────────────────────────────────────────────────────
-// RECORDING
-// ──────────────────────────────────────────────────────────────
+// ── RECORDING ─────────────────────────────────────────────────
 function toggleRec() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
 
   if (!isRec) {
-    // ── START ──
     transcript = '';
-    document.getElementById('transcript').innerHTML = '<em style="color:var(--muted)">Listening…</em>';
+    document.getElementById('transcript').innerHTML = '<em style="color:var(--text-3)">Listening…</em>';
 
     if (SR) {
       apptRecog = new SR();
@@ -658,16 +962,15 @@ function toggleRec() {
           e.results[i].isFinal ? (final += e.results[i][0].transcript+' ') : (interim += e.results[i][0].transcript);
         }
         transcript = final;
-        document.getElementById('transcript').innerHTML = final + `<em style="color:#94a3b8">${interim}</em>`;
+        document.getElementById('transcript').innerHTML = final + `<em style="color:#94A3B8">${interim}</em>`;
       };
       apptRecog.onend = () => { if(isRec) try{ apptRecog.start(); }catch(e){} };
       apptRecog.start();
     } else {
-      // Fallback: editable box
       const tb = document.getElementById('transcript');
       tb.contentEditable = true; tb.textContent = '';
       tb.oninput = () => { transcript = tb.innerText; };
-      document.getElementById('transcript').focus();
+      tb.focus();
     }
 
     isRec = true;
@@ -678,7 +981,6 @@ function toggleRec() {
     timerID = setInterval(updateTimer, 1000);
 
   } else {
-    // ── STOP ──
     isRec = false;
     if (apptRecog) { apptRecog.stop(); apptRecog = null; }
     clearInterval(timerID);
@@ -698,7 +1000,7 @@ function updateTimer() {
 
 function clearRec() {
   transcript = '';
-  document.getElementById('transcript').innerHTML = 'Your appointment transcript will appear here as you record…';
+  document.getElementById('transcript').innerHTML = '<span style="color:var(--text-3);font-size:14px">Your appointment transcript will appear here as you record…</span>';
   document.getElementById('appt-btns').classList.add('hidden');
   document.getElementById('appt-card').classList.add('hidden');
 }
@@ -727,13 +1029,11 @@ Write in very plain, simple language Dianne and her family can easily understand
     const title = `Appointment — ${new Date().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'})}`;
     await saveRecord('appointment', title, r);
   } catch(e) {
-    document.getElementById('appt-out').innerHTML = '⚠️ Could not connect. Please check the internet and try again.';
+    document.getElementById('appt-out').innerHTML = 'Could not connect. Please check the internet and try again.';
   }
 }
 
-// ──────────────────────────────────────────────────────────────
-// DOCTOR SUMMARY
-// ──────────────────────────────────────────────────────────────
+// ── DOCTOR SUMMARY ────────────────────────────────────────────
 async function genSummary() {
   const docLabels = {
     family:'Family / General Doctor', rheumatologist:'Rheumatologist',
@@ -763,7 +1063,7 @@ Format as a clean, easy-to-read summary she can hand to the doctor or read from.
     const title = `Doctor Summary — ${docLabels[dt]} — ${new Date().toLocaleDateString('en-CA',{year:'numeric',month:'short',day:'numeric'})}`;
     await saveRecord('doctor_summary', title, r);
   } catch(e) {
-    document.getElementById('sum-out').innerHTML = '⚠️ Could not connect. Please check the internet and try again.';
+    document.getElementById('sum-out').innerHTML = 'Could not connect. Please check the internet and try again.';
   }
 }
 
@@ -788,61 +1088,42 @@ function printSum() {
   const d = new Date().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'});
   const w = window.open('','','width=820,height=700');
   w.document.write(`<!DOCTYPE html><html><head><title>Health Summary — Dianne Majewski</title>
-  <style>body{font-family:Arial,sans-serif;font-size:13pt;line-height:1.65;padding:36px;max-width:720px;margin:0 auto}
-  h1{color:#1e40af}hr{border:none;border-top:2px solid #e2e8f0;margin:16px 0}</style></head>
+  <style>body{font-family:-apple-system,sans-serif;font-size:13pt;line-height:1.7;padding:36px;max-width:720px;margin:0 auto}
+  h1{color:#0F766E;font-size:20pt}hr{border:none;border-top:1px solid #E2E8F0;margin:16px 0}</style></head>
   <body><h1>Health Summary — Dianne Zodic Majewski</h1>
-  <p><em>Date: ${d}</em></p><hr>
+  <p style="color:#64748b"><em>${d}</em></p><hr>
   ${document.getElementById('sum-out').innerHTML}
   </body></html>`);
   w.document.close(); w.focus(); w.print();
 }
 
-// ──────────────────────────────────────────────────────────────
-// HELPERS
-// ──────────────────────────────────────────────────────────────
+// ── HELPERS ───────────────────────────────────────────────────
 function esc(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
 function fmt(t) {
   return esc(t)
     .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
     .replace(/\*(.*?)\*/g,'<em>$1</em>')
-    .replace(/\n\n/g,'</p><p>').replace(/\n/g,'<br>');
+    .replace(/\n\n/g,'</p><p style="margin-top:10px">').replace(/\n/g,'<br>');
 }
 
-// ──────────────────────────────────────────────────────────────
-// FIREBASE / SYNC
-// ──────────────────────────────────────────────────────────────
+// ── FIREBASE / SYNC ───────────────────────────────────────────
 let db = null;
 
 function initFirebase() {
-  const raw = localStorage.getItem('fb_cfg');
-  if (!raw) {
-    // Show connect button quietly — don't interrupt Dianne
-    return;
-  }
   try {
-    const cfg = JSON.parse(raw);
+    const cfg = {
+      apiKey: "AIzaSyCvToXVB6qnhX1DWoMhRMhSlpqjediVjXM",
+      authDomain: "grandma-health-tracker.firebaseapp.com",
+      projectId: "grandma-health-tracker",
+      storageBucket: "grandma-health-tracker.firebasestorage.app",
+      messagingSenderId: "942612337345",
+      appId: "1:942612337345:web:78e6f869de49cbe7777a40"
+    };
     if (!firebase.apps.length) firebase.initializeApp(cfg);
     db = firebase.firestore();
   } catch(e) {
     console.warn('Firebase init failed:', e);
-  }
-}
-
-function saveFbConfig() {
-  let raw = document.getElementById('fb-cfg-in').value.trim();
-  // Accept either a bare object or wrapped in a variable assignment
-  raw = raw.replace(/^.*?=\s*/, '').replace(/;?\s*$/, '');
-  try {
-    const cfg = JSON.parse(raw);
-    localStorage.setItem('fb_cfg', JSON.stringify(cfg));
-    if (!firebase.apps.length) firebase.initializeApp(cfg);
-    else firebase.app(); // already init
-    db = firebase.firestore();
-    document.getElementById('fb-setup').classList.add('hidden');
-    loadRecords();
-  } catch(e) {
-    alert('Could not read that config — make sure you paste the full { apiKey: "...", ... } object.');
   }
 }
 
@@ -877,16 +1158,16 @@ async function loadRecords() {
 
   noSync.classList.add('hidden');
   status.textContent = 'Syncing…';
-  list.innerHTML = '<div style="text-align:center;color:var(--muted);padding:30px">Loading…</div>';
+  list.innerHTML = '<div style="text-align:center;color:var(--text-3);padding:30px;font-size:14px">Loading…</div>';
 
   try {
     const snap = await db.collection('dianne-health')
       .orderBy('createdAt', 'desc').limit(60).get();
 
-    status.textContent = `${snap.size} record${snap.size===1?'':'s'} saved`;
+    status.textContent = `${snap.size} record${snap.size===1?'':'s'}`;
 
     if (snap.empty) {
-      list.innerHTML = '<div class="card" style="text-align:center;color:var(--muted)">No saved records yet. Doctor summaries and appointment notes will appear here automatically.</div>';
+      list.innerHTML = '<div class="card" style="text-align:center;color:var(--text-3);font-size:14px">No saved records yet. Doctor summaries and appointment notes will appear here automatically.</div>';
       return;
     }
 
@@ -897,29 +1178,28 @@ async function loadRecords() {
         : 'Just now';
       const typeLabel = r.type === 'appointment' ? 'Appointment' : 'Doctor Summary';
       const typeClass = r.type === 'appointment' ? 'appt' : 'doc';
-      const preview = (r.content || '').replace(/<[^>]+>/g,' ').slice(0, 200);
+      const preview = (r.content || '').replace(/<[^>]+>/g,' ').slice(0, 180);
       return `<div class="rec-card">
-        <div class="rec-card-hd">
+        <div class="rec-header">
           <div class="rec-title">${esc(r.title || 'Untitled')}</div>
           <div class="rec-date">${date}</div>
         </div>
-        <div class="rec-type ${typeClass}">${typeLabel}</div>
+        <span class="rec-type-badge ${typeClass}">${typeLabel}</span>
         <div class="rec-preview">${esc(preview)}…</div>
         <div class="rec-actions">
-          <button class="btn btn-gray btn-sm" onclick="viewRecord('${d.id}')">📖 View</button>
-          <button class="btn btn-gray btn-sm" onclick="speakRecord('${d.id}')">🔊 Read Aloud</button>
-          <button class="btn btn-sm" style="background:#fef2f2;color:var(--red)" onclick="deleteRecord('${d.id}')">🗑 Delete</button>
+          <button class="btn btn-secondary btn-sm" onclick="viewRecord('${d.id}')">View</button>
+          <button class="btn btn-secondary btn-sm" onclick="speakRecord('${d.id}')">Read Aloud</button>
+          <button class="btn btn-danger btn-sm" onclick="deleteRecord('${d.id}')">Delete</button>
         </div>
       </div>`;
     }).join('');
 
-    // Cache docs for view/speak
     window._recDocs = {};
     snap.docs.forEach(d => { window._recDocs[d.id] = d.data(); });
 
   } catch(e) {
     status.textContent = 'Sync error';
-    list.innerHTML = '<div class="card" style="color:var(--red)">Could not load records. Check your internet connection.</div>';
+    list.innerHTML = '<div class="card" style="color:var(--red);font-size:14px">Could not load records. Check your internet connection.</div>';
     console.error(e);
   }
 }
@@ -932,15 +1212,14 @@ function viewRecord(id) {
     ? r.createdAt.toDate().toLocaleDateString('en-CA',{year:'numeric',month:'long',day:'numeric'})
     : '';
   w.document.write(`<!DOCTYPE html><html><head><title>${r.title||'Record'}</title>
-  <style>body{font-family:Georgia,serif;font-size:14pt;line-height:1.7;padding:36px;max-width:720px;margin:0 auto}
-  h1{color:#1e40af}hr{border:none;border-top:2px solid #e2e8f0;margin:16px 0}
-  button{padding:10px 18px;background:#2563eb;color:#fff;border:none;border-radius:8px;
-    font-size:12pt;cursor:pointer;margin-top:16px}
+  <style>body{font-family:-apple-system,sans-serif;font-size:13pt;line-height:1.7;padding:36px;max-width:720px;margin:0 auto}
+  h1{color:#0F766E}hr{border:none;border-top:1px solid #E2E8F0;margin:16px 0}
+  button{padding:10px 18px;background:#0D9488;color:#fff;border:none;border-radius:8px;font-size:12pt;cursor:pointer;margin-top:16px}
   </style></head><body>
   <h1>${esc(r.title||'Health Record')}</h1>
-  <p><em>${date}</em></p><hr>
+  <p style="color:#94A3B8"><em>${date}</em></p><hr>
   <p>${(r.content||'').replace(/\n/g,'<br>')}</p>
-  <button onclick="window.print()">🖨️ Print</button>
+  <button onclick="window.print()">Print</button>
   </body></html>`);
   w.document.close();
 }
@@ -950,14 +1229,6 @@ function speakRecord(id) {
   if (r) speak(r.content || '');
 }
 
-// Hook into go() to auto-load records when switching to history tab
-const _origGo = go;
-function go(t) {
-  _origGo(t);
-  if (t === 'history') loadRecords();
-}
-
-// ──────────────────────────────────────────────────────────────
 // Enter to send
 document.addEventListener('keydown', e => {
   if (e.key==='Enter' && !e.shiftKey && document.activeElement.id==='txt-in') {
