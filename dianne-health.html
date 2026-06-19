@@ -263,6 +263,16 @@ body {
 }
 .chat-row button:active { background: var(--rose-dk); }
 
+.msg-pin {
+  display: inline-block; margin-top: 5px; margin-left: 4px;
+  font-size: 12px; color: var(--text-3); background: none; border: none;
+  cursor: pointer; padding: 3px 6px; border-radius: 6px;
+  font-family: inherit; transition: color .15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.msg-pin:hover { color: var(--rose); }
+.msg-pin:disabled { cursor: default; }
+
 .qqs { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
 .qq {
   background: var(--surface); color: var(--text-2);
@@ -862,17 +872,61 @@ let transcript = '';
 let timerID = null;
 let secs = 0;
 const synth = window.speechSynthesis;
+let dynamicContext = '';
+let msgIdx = 0;
+const msgTexts = {};
 
 // ── INIT ───────────────────────────────────────────────────────────
-window.onload = () => {
+window.onload = async () => {
   const d = new Date();
   document.getElementById('hdr-date').innerHTML =
     d.toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'}) +
     '<br>' + d.toLocaleTimeString('en-CA',{hour:'numeric',minute:'2-digit'});
   initSpeech();
   initFirebase();
+  await buildContext();
   showWelcome();
 };
+
+// ── LIVE CONTEXT FROM FIREBASE ────────────────────────────────────
+async function buildContext() {
+  if (!db) return;
+  try {
+    const snap = await db.collection('dianne-health')
+      .orderBy('createdAt', 'desc')
+      .limit(80)
+      .get();
+
+    const journals = [], notes = [], recentQs = [];
+
+    snap.docs.forEach(d => {
+      const r = d.data();
+      const date = r.createdAt?.toDate
+        ? r.createdAt.toDate().toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'})
+        : 'recently';
+
+      if (r.type === 'health_note' && notes.length < 12)
+        notes.push(`${date}: ${r.content}`);
+      if (r.type === 'journal' && journals.length < 10)
+        journals.push(`${date}: ${r.content}`);
+      if (r.type === 'query' && recentQs.length < 8)
+        recentQs.push(`${date} — ${r.title}`);
+    });
+
+    const parts = [];
+    if (notes.length)
+      parts.push('THINGS DIANNE HAS TOLD YOU TO REMEMBER (her own pinned notes — treat these as facts about her current health):\n' + notes.map(n=>`• ${n}`).join('\n'));
+    if (journals.length)
+      parts.push('HER RECENT JOURNAL ENTRIES (how she has actually been feeling — use these to give personalized answers):\n' + journals.join('\n'));
+    if (recentQs.length)
+      parts.push('TOPICS SHE HAS BEEN ASKING ABOUT RECENTLY (so you can follow up if relevant):\n' + recentQs.map(q=>`• ${q}`).join('\n'));
+
+    if (parts.length)
+      dynamicContext = '\n\n━━━\nLIVE CONTEXT — pulled from Dianne\'s own records. Always factor this in when answering her:\n\n' + parts.join('\n\n');
+  } catch(e) {
+    console.warn('Could not load context:', e);
+  }
+}
 
 // ── WELCOME ────────────────────────────────────────────────────────
 function showWelcome() {
@@ -907,7 +961,7 @@ async function claude(userMsg, sysOverride, oneShot) {
     body: JSON.stringify({
       model: 'claude-sonnet-4-6',
       max_tokens: 1024,
-      system: sysOverride || SYS,
+      system: sysOverride || (SYS + dynamicContext),
       messages: msgs
     })
   });
@@ -923,11 +977,17 @@ async function claude(userMsg, sysOverride, oneShot) {
 }
 
 // ── CHAT ───────────────────────────────────────────────────────────
-function addMsg(role, html) {
+function addMsg(role, html, rawText) {
   const c = document.getElementById('msgs');
   const d = document.createElement('div');
   d.className = 'msg ' + (role === 'user' ? 'me' : 'bot');
-  d.innerHTML = `<div class="bub">${html}</div>`;
+  if (role === 'bot' && rawText) {
+    const idx = ++msgIdx;
+    msgTexts[idx] = rawText;
+    d.innerHTML = `<div class="bub">${html}</div><button class="msg-pin" onclick="pinNote(${idx},this)">💾 Remember this</button>`;
+  } else {
+    d.innerHTML = `<div class="bub">${html}</div>`;
+  }
   c.appendChild(d);
   c.scrollTop = c.scrollHeight;
   return d;
@@ -950,7 +1010,7 @@ async function sendMsg() {
   try {
     const r = await claude(txt);
     rmLoader();
-    addMsg('bot', fmt(r));
+    addMsg('bot', fmt(r), r);
     if (document.getElementById('read-aloud').checked) speak(r);
     saveRecord('query', txt.length > 80 ? txt.slice(0,80)+'…' : txt, `Question: ${txt}\n\nAnswer: ${r}`);
   } catch(e) {
@@ -959,6 +1019,16 @@ async function sendMsg() {
     console.error(e);
   }
 }
+async function pinNote(idx, btn) {
+  const text = msgTexts[idx];
+  if (!text) return;
+  const date = new Date().toLocaleDateString('en-CA',{month:'short',day:'numeric'});
+  await saveRecord('health_note', `Saved note — ${date}`, text.slice(0, 1200));
+  // Add to live context immediately so it affects the rest of this session too
+  dynamicContext += `\n• ${date}: ${text.slice(0, 300)}${text.length > 300 ? '…' : ''}`;
+  if (btn) { btn.textContent = '✓ Saved to your notes'; btn.style.color = 'var(--green)'; btn.disabled = true; }
+}
+
 function ask(q) { go('chat'); document.getElementById('txt-in').value = q; sendMsg(); }
 function askMed(m) { ask(`Tell me about my medication ${m} — what does it do, how do I take it, and are there any side effects I should know about?`); }
 
