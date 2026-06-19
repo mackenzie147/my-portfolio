@@ -933,6 +933,7 @@ async function sendMsg() {
     rmLoader();
     addMsg('bot', fmt(r));
     if (document.getElementById('read-aloud').checked) speak(r);
+    saveRecord('query', txt.length > 80 ? txt.slice(0,80)+'…' : txt, `Question: ${txt}\n\nAnswer: ${r}`);
   } catch(e) {
     rmLoader();
     addMsg('bot', 'Sorry, I could not connect. Please check the internet and try again.');

@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dianne — Admin View</title>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<style>
+:root {
+  --rose:    #DB2777;
+  --rose-lt: #FDF2F8;
+  --green:   #16A34A;
+  --green-lt:#F0FDF4;
+  --blue:    #2563EB;
+  --blue-lt: #EFF6FF;
+  --amber:   #D97706;
+  --amber-lt:#FFFBEB;
+  --purple:  #7C3AED;
+  --purple-lt:#F5F3FF;
+  --red:     #DC2626;
+  --red-lt:  #FEF2F2;
+  --bg:      #F8FAFC;
+  --surface: #FFFFFF;
+  --text:    #0F172A;
+  --text-2:  #475569;
+  --text-3:  #94A3B8;
+  --border:  #E2E8F0;
+  --r:       10px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', system-ui, sans-serif;
+  font-size: 14px; line-height: 1.6; background: var(--bg); color: var(--text);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── HEADER ── */
+.header {
+  background: #fff; border-bottom: 1px solid var(--border);
+  padding: 16px 24px; position: sticky; top: 0; z-index: 50;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+}
+.header-left h1 { font-size: 17px; font-weight: 700; color: var(--text); }
+.header-left p  { font-size: 12px; color: var(--text-3); margin-top: 1px; }
+.refresh-btn {
+  padding: 8px 14px; background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; font-size: 13px; font-family: inherit;
+  color: var(--text-2); cursor: pointer; font-weight: 500; transition: all .15s;
+}
+.refresh-btn:hover { background: var(--border); }
+
+/* ── STATS ── */
+.stats { display: flex; gap: 10px; padding: 16px 24px; flex-wrap: wrap; max-width: 1100px; margin: 0 auto; }
+.stat {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); padding: 14px 18px; flex: 1; min-width: 110px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.05);
+}
+.stat-num  { font-size: 28px; font-weight: 700; color: var(--text); line-height: 1; }
+.stat-label{ font-size: 12px; color: var(--text-3); margin-top: 4px; }
+
+/* ── FILTERS ── */
+.filters { display: flex; gap: 6px; padding: 0 24px 14px; flex-wrap: wrap; max-width: 1100px; margin: 0 auto; }
+.filter-btn {
+  padding: 7px 14px; border: 1.5px solid var(--border);
+  border-radius: 20px; background: var(--surface); color: var(--text-2);
+  font-size: 13px; font-family: inherit; cursor: pointer; font-weight: 500;
+  transition: all .15s;
+}
+.filter-btn.on { border-color: var(--rose); background: var(--rose-lt); color: var(--rose); }
+
+/* ── CONTENT ── */
+.main { max-width: 1100px; margin: 0 auto; padding: 0 24px 40px; }
+
+/* ── RECORD CARD ── */
+.rec {
+  background: var(--surface); border: 1px solid var(--border);
+  border-radius: var(--r); margin-bottom: 8px;
+  box-shadow: 0 1px 2px rgba(0,0,0,.04);
+  overflow: hidden;
+}
+.rec-head {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 16px; cursor: pointer; transition: background .12s;
+}
+.rec-head:hover { background: var(--bg); }
+.type-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
+.rec-meta { flex: 1; min-width: 0; display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+.rec-title { font-size: 13px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 480px; }
+.rec-date  { font-size: 12px; color: var(--text-3); white-space: nowrap; flex-shrink: 0; }
+.type-badge {
+  font-size: 11px; font-weight: 600; padding: 2px 9px;
+  border-radius: 20px; letter-spacing: .02em; flex-shrink: 0;
+}
+.chevron { color: var(--text-3); font-size: 14px; flex-shrink: 0; transition: transform .2s; }
+.rec.open .chevron { transform: rotate(90deg); }
+
+.rec-body {
+  display: none; padding: 0 16px 16px;
+  border-top: 1px solid var(--border); background: var(--bg);
+}
+.rec.open .rec-body { display: block; }
+.rec-body pre {
+  font-family: inherit; font-size: 13px; color: var(--text-2);
+  line-height: 1.7; white-space: pre-wrap; word-break: break-word;
+  padding-top: 14px;
+}
+
+/* Type colours */
+.query   .type-dot  { background: var(--blue); }
+.journal .type-dot  { background: var(--rose); }
+.appointment .type-dot { background: var(--purple); }
+.doctor_summary .type-dot { background: var(--green); }
+.transcript .type-dot { background: var(--amber); }
+
+.badge-query   { background: var(--blue-lt); color: var(--blue); }
+.badge-journal { background: var(--rose-lt); color: var(--rose); }
+.badge-appointment { background: var(--purple-lt); color: var(--purple); }
+.badge-doctor_summary { background: var(--green-lt); color: var(--green); }
+.badge-transcript { background: var(--amber-lt); color: var(--amber); }
+
+/* ── EMPTY / LOADING ── */
+.state { text-align: center; padding: 60px 20px; color: var(--text-3); font-size: 14px; }
+.state strong { display: block; font-size: 16px; color: var(--text-2); margin-bottom: 6px; }
+
+/* ── STATUS BAR ── */
+.status-bar { font-size: 12px; color: var(--text-3); margin-bottom: 12px; }
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="header-left">
+    <h1>Dianne's Health — Admin</h1>
+    <p>All saved records, questions, and journal entries</p>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <span id="last-updated" style="font-size:12px;color:var(--text-3)"></span>
+    <button class="refresh-btn" onclick="load()">↻ Refresh</button>
+  </div>
+</header>
+
+<!-- STATS -->
+<div class="stats" id="stats">
+  <div class="stat"><div class="stat-num" id="s-total">—</div><div class="stat-label">Total records</div></div>
+  <div class="stat"><div class="stat-num" id="s-query" style="color:var(--blue)">—</div><div class="stat-label">Questions asked</div></div>
+  <div class="stat"><div class="stat-num" id="s-journal" style="color:var(--rose)">—</div><div class="stat-label">Journal entries</div></div>
+  <div class="stat"><div class="stat-num" id="s-appointment" style="color:var(--purple)">—</div><div class="stat-label">Appointments</div></div>
+  <div class="stat"><div class="stat-num" id="s-doctor_summary" style="color:var(--green)">—</div><div class="stat-label">Doctor summaries</div></div>
+  <div class="stat"><div class="stat-num" id="s-transcript" style="color:var(--amber)">—</div><div class="stat-label">Transcripts</div></div>
+</div>
+
+<!-- FILTERS -->
+<div class="filters">
+  <button class="filter-btn on" data-f="all"            onclick="setFilter(this)">All</button>
+  <button class="filter-btn"   data-f="query"           onclick="setFilter(this)">Questions</button>
+  <button class="filter-btn"   data-f="journal"         onclick="setFilter(this)">Journal</button>
+  <button class="filter-btn"   data-f="appointment"     onclick="setFilter(this)">Appointments</button>
+  <button class="filter-btn"   data-f="doctor_summary"  onclick="setFilter(this)">Doctor Summaries</button>
+  <button class="filter-btn"   data-f="transcript"      onclick="setFilter(this)">Transcripts</button>
+</div>
+
+<div class="main">
+  <div class="status-bar" id="status-bar">Loading…</div>
+  <div id="list"><div class="state"><strong>Loading records…</strong>Connecting to Firebase</div></div>
+</div>
+
+<script>
+const CFG = {
+  apiKey: "AIzaSyCvToXVB6qnhX1DWoMhRMhSlpqjediVjXM",
+  authDomain: "grandma-health-tracker.firebaseapp.com",
+  projectId: "grandma-health-tracker",
+  storageBucket: "grandma-health-tracker.firebasestorage.app",
+  messagingSenderId: "942612337345",
+  appId: "1:942612337345:web:78e6f869de49cbe7777a40"
+};
+
+const TYPE_LABELS = {
+  query:          'Question',
+  journal:        'Journal',
+  appointment:    'Appointment',
+  doctor_summary: 'Doctor Summary',
+  transcript:     'Recording'
+};
+
+let db = null;
+let allDocs = [];
+let activeFilter = 'all';
+
+window.onload = () => {
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(CFG);
+    db = firebase.firestore();
+    load();
+  } catch(e) {
+    document.getElementById('list').innerHTML = `<div class="state"><strong>Could not connect</strong>${e.message}</div>`;
+  }
+};
+
+async function load() {
+  document.getElementById('status-bar').textContent = 'Loading…';
+  document.getElementById('list').innerHTML = '<div class="state"><strong>Loading…</strong>Fetching records from Firebase</div>';
+
+  try {
+    const snap = await db.collection('dianne-health')
+      .orderBy('createdAt', 'desc')
+      .limit(500)
+      .get();
+
+    allDocs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+    // Stats
+    const counts = { query:0, journal:0, appointment:0, doctor_summary:0, transcript:0 };
+    allDocs.forEach(r => { if (counts[r.type] !== undefined) counts[r.type]++; });
+    document.getElementById('s-total').textContent = allDocs.length;
+    Object.entries(counts).forEach(([k,v]) => {
+      const el = document.getElementById('s-'+k);
+      if (el) el.textContent = v;
+    });
+
+    const now = new Date();
+    document.getElementById('last-updated').textContent =
+      'Updated ' + now.toLocaleTimeString('en-CA',{hour:'numeric',minute:'2-digit'});
+
+    render();
+  } catch(e) {
+    document.getElementById('list').innerHTML = `<div class="state"><strong>Permission error</strong>${e.message}<br><br>Make sure Firestore rules allow read access.</div>`;
+    document.getElementById('status-bar').textContent = 'Error loading records';
+    console.error(e);
+  }
+}
+
+function render() {
+  const filtered = activeFilter === 'all'
+    ? allDocs
+    : allDocs.filter(r => r.type === activeFilter);
+
+  document.getElementById('status-bar').textContent =
+    `Showing ${filtered.length} of ${allDocs.length} records`;
+
+  if (filtered.length === 0) {
+    document.getElementById('list').innerHTML = '<div class="state"><strong>No records</strong>Nothing saved yet of this type.</div>';
+    return;
+  }
+
+  document.getElementById('list').innerHTML = filtered.map(r => {
+    const date = r.createdAt?.toDate
+      ? r.createdAt.toDate().toLocaleString('en-CA',{month:'short',day:'numeric',hour:'numeric',minute:'2-digit'})
+      : 'Unknown date';
+    const typeLabel = TYPE_LABELS[r.type] || r.type;
+    const typeClass = r.type || 'query';
+    const preview = (r.content || '').replace(/<[^>]+>/g,'').slice(0,120);
+
+    return `<div class="rec ${typeClass}" id="rec-${r.id}">
+      <div class="rec-head" onclick="toggle('${r.id}')">
+        <div class="type-dot"></div>
+        <div class="rec-meta">
+          <div class="rec-title">${esc(r.title || 'Untitled')}</div>
+          <span class="type-badge badge-${typeClass}">${typeLabel}</span>
+        </div>
+        <div class="rec-date">${date}</div>
+        <div class="chevron">›</div>
+      </div>
+      <div class="rec-body">
+        <pre>${esc(r.content || '')}</pre>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggle(id) {
+  document.getElementById('rec-'+id).classList.toggle('open');
+}
+
+function setFilter(btn) {
+  document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('on'));
+  btn.classList.add('on');
+  activeFilter = btn.dataset.f;
+  render();
+}
+
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+</script>
+</body>
+</html>
